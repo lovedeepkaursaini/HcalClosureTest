@@ -1,0 +1,9 @@
+<flags   EDM_PLUGIN="1"/>
+<use   name="HcalClosureTest/DataFormat"/>
+<use   name="DataFormats/JetReco"/>
+<use   name="FWCore/Framework"/>
+<use   name="JetMETCorrections/Objects"/>
+<use   name="root"/>
+<export>
+  <lib   name="1"/>
+</export>
