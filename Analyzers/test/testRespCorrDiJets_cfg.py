@@ -4,9 +4,14 @@ process = cms.Process('ANALYSIS')
 
 process.load('FWCore.MessageService.MessageLogger_cfi')
 
+process.load('Configuration.StandardSequences.Services_cff')
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+process.GlobalTag.globaltag = 'GR_R_52_V9::All' # not sure what tag to use
+
 #load the response corrections calculator
 process.load('HcalClosureTest.Analyzers.calcrespcorrdijets_cfi')
 process.load('JetMETCorrections.Configuration.JetCorrectionProducers_cff')
+process.load('JetMETCorrections.Configuration.JetCorrectionServices_cff')
 #process.load('JetMETCorrections.Configuration.L2L3Corrections_Summer09_cff')
 
 # run over files
