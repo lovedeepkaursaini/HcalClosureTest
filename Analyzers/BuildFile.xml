@@ -5,5 +5,5 @@
 <use   name="JetMETCorrections/Objects"/>
 <use   name="root"/>
 <export>
-  <lib   name="1"/>
+   <lib name="HcalClosureTestAnalyzers"/>
 </export>

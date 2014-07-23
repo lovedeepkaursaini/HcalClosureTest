@@ -6,7 +6,7 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 
 process.load('Configuration.StandardSequences.Services_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
-process.GlobalTag.globaltag = 'GR_R_52_V9::All' # not sure what tag to use
+process.GlobalTag.globaltag = 'START53_V19D::All' #'GR_R_52_V9::All' # not sure what tag to use
 
 #load the response corrections calculator
 process.load('HcalClosureTest.Analyzers.calcrespcorrdijets_cfi')
@@ -26,7 +26,7 @@ process.source = cms.Source("PoolSource",
                             fileNames = cms.untracked.vstring(
     #'/store/mc/Summer12/QCD_Pt-1400to1800_TuneZ2star_8TeV_pythia6/AODSIM/PU_S7_START52_V9-v1/0000/009E226E-F499-E111-B2BD-0025904B12FC.root'
     #'file:SinglePiPt100_cfi_py_GEN_FASTSIM_HLT_VALIDATION.root'
-    'file:/eos/uscms/store/user/maravin/HCAL/singlePiPt50_2_AODSIM.root'
+    'file:myfile.root'
     )
                             )
 #print readFiles

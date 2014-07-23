@@ -47,7 +47,6 @@ CalcRespCorrDiJets::~CalcRespCorrDiJets()
 {
 }
   
-  
 //
 // member functions
 //
@@ -73,7 +72,6 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
   }
 
   const JetCorrector* corrector = JetCorrector::getJetCorrector(jetCorrName_,evSetup);
-
 
   //////////////////////////////
   // Event Selection
@@ -130,6 +128,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 
   // make the cuts
   hPassSel_->Fill(passSel);
+  std::cout << passSel << std::endl;
   if(passSel) return;
 
   // dump
@@ -230,10 +229,8 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
   return;
 }
 
-
 // ------------ method called once each job just before starting event loop  ------------
-void 
-CalcRespCorrDiJets::beginJob(const edm::EventSetup&)
+void CalcRespCorrDiJets::beginJob()
 {
   // book histograms
   rootfile_ = new TFile(rootHistFilename_.c_str(), "RECREATE");
@@ -285,17 +282,18 @@ CalcRespCorrDiJets::beginJob(const edm::EventSetup&)
   tree_->Branch("thirdjet_py",&thirdjet_py_, "thirdjet_py/F");
   
   return;
-}
+}  
 
 // ------------ method called once each job just after ending the event loop  ------------
 void 
 CalcRespCorrDiJets::endJob() {
-
+  std::cerr << "END" << std::endl;
   // write histograms
   rootfile_->cd();
   hPassSel_->Write();
   tree_->Write();
   rootfile_->Close();
+  std::cout << "wrote?" << std::endl;
 }
 
 // helper function

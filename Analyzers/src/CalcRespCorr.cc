@@ -162,7 +162,7 @@ CalcRespCorr::analyze(const edm::Event& iEvent, const edm::EventSetup&)
 
 // ------------ method called once each job just before starting event loop  ------------
 void 
-CalcRespCorr::beginJob(const edm::EventSetup&)
+CalcRespCorr::beginJob()
 {
   // book histograms
   rootfile_ = new TFile(rootHistFilename_.c_str(), "RECREATE");
