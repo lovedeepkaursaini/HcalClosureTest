@@ -24,6 +24,14 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 #include "DataFormats/JetReco/interface/CaloJetCollection.h"
+#include "DataFormats/JetReco/interface/PFJetCollection.h"
+#include "DataFormats/HcalRecHit/interface/HBHERecHit.h"
+#include "DataFormats/HcalRecHit/interface/HFRecHit.h"
+#include "DataFormats/HcalRecHit/interface/HORecHit.h"
+#include "DataFormats/ParticleFlowReco/interface/PFBlockFwd.h"
+#include "DataFormats/ParticleFlowReco/interface/PFBlock.h"
+#include "DataFormats/ParticleFlowReco/interface/PFCluster.h"
+#include "DataFormats/HcalDetId/interface/HcalDetId.h"
 
 // forward declarations
 class TH1D;
@@ -35,17 +43,17 @@ class TTree;
 // class declarations
 //
 
-class JetCorretPair : protected std::pair<const reco::CaloJet*, double> {
+class CaloJetCorretPair : protected std::pair<const reco::CaloJet*, double> {
  public:
-  JetCorretPair() {
+  CaloJetCorretPair() {
     first=0;
     second=1.0;
   }
-  JetCorretPair(const reco::CaloJet* j, double s) {
+  CaloJetCorretPair(const reco::CaloJet* j, double s) {
     first=j;
     second=s;
   }
-  ~JetCorretPair() {}
+  ~CaloJetCorretPair() {}
 
   inline const reco::CaloJet* jet(void) const { return first; }
   inline void jet(const reco::CaloJet* j) { first=j; return; }
@@ -56,6 +64,26 @@ class JetCorretPair : protected std::pair<const reco::CaloJet*, double> {
   
 };
 
+class PFJetCorretPair : protected std::pair<const reco::PFJet*, double> {
+ public:
+  PFJetCorretPair() {
+    first=0;
+    second=1.0;
+  }
+  PFJetCorretPair(const reco::PFJet* j, double s) {
+    first=j;
+    second=s;
+  }
+  ~PFJetCorretPair() {}
+
+  inline const reco::PFJet* jet(void) const { return first; }
+  inline void jet(const reco::PFJet* j) { first=j; return; }
+  inline double scale(void) const { return second; }
+  inline void scale(double d) { second=d; return; }
+
+ private:
+  
+};
 
 class CalcRespCorrDiJets : public edm::EDAnalyzer {
  public:
@@ -71,9 +99,15 @@ class CalcRespCorrDiJets : public edm::EDAnalyzer {
   
   // parameters
   bool debug_;                   // print debug statements
-  std::string jetCollName_;      // label for the jet collection
-  std::string jetCorrName_;      // label for the jet correction service
+  std::string caloJetCollName_;  // label for the calo jet collection
+  std::string caloJetCorrName_;  // label for the calo jet correction service
+  std::string pfJetCollName_;    // label for the PF jet collection
+  std::string pfJetCorrName_;    // label for the PF jet correction service
   std::string genJetCollName_;   // label for the genjet collection
+  std::string RecHitLabelName_;  // label for the rechits
+  std::string hbheRecHitInstance_; // instance for HBHERecHits
+  std::string hfRecHitInstance_; // instance for HFRecHit
+  std::string hoRecHitInstance_; // instance for HORecHit
   std::string rootHistFilename_; // name of the histogram file
   double maxDeltaEta_;           // maximum delta-|Eta| between Jets
   double minTagJetEta_;          // minimum |eta| of the tag jet
@@ -82,32 +116,56 @@ class CalcRespCorrDiJets : public edm::EDAnalyzer {
   double minJetEt_;              // minimum Jet Et
   double maxThirdJetEt_;         // maximum 3rd jet Et
   double maxJetEMF_;             // maximum EMF of the tag and probe jets
+  bool doCaloJets_;              // use CaloJets
+  bool doPFJets_;                // use PFJets
 
   // root file/histograms
   TFile* rootfile_;
 
-  TH1D* hPassSel_;
-  TTree* tree_;
-  float tjet_pt_, tjet_p_, tjet_eta_, tjet_phi_, tjet_emf_, tjet_scale_;
-  float tjet_gendr_, tjet_genpt_, tjet_genp_;
-  float tjet_EBE_, tjet_EEE_, tjet_HBE_, tjet_HEE_, tjet_HFE_;
-  int tjet_ntwrs_;
-  int tjet_twr_ieta_[100];
-  float tjet_twr_eme_[100], tjet_twr_hade_[100];
-  float pjet_pt_, pjet_p_, pjet_eta_, pjet_phi_, pjet_emf_, pjet_scale_;
-  float pjet_gendr_, pjet_genpt_, pjet_genp_;
-  float pjet_EBE_, pjet_EEE_, pjet_HBE_, pjet_HEE_, pjet_HFE_;
-  int pjet_ntwrs_;
-  int pjet_twr_ieta_[100];
-  float pjet_twr_eme_[100], pjet_twr_hade_[100];
-  float dijet_deta_, dijet_dphi_, dijet_balance_;
-  float thirdjet_px_, thirdjet_py_;
+  TH1D* hPassSelCalo_;
+  TH1D* hPassSelPF_;
+  TTree* calo_tree_;
+  TTree* pf_tree_;
+  float tcalojet_pt_, tcalojet_p_, tcalojet_eta_, tcalojet_phi_, tcalojet_emf_, tcalojet_scale_;
+  float tcalojet_gendr_, tcalojet_genpt_, tcalojet_genp_;
+  float tcalojet_EBE_, tcalojet_EEE_, tcalojet_HBE_, tcalojet_HEE_, tcalojet_HFE_;
+  int tcalojet_ntwrs_;
+  int tcalojet_twr_ieta_[100];
+  float tcalojet_twr_eme_[100], tcalojet_twr_hade_[100];
+  float pcalojet_pt_, pcalojet_p_, pcalojet_eta_, pcalojet_phi_, pcalojet_emf_, pcalojet_scale_;
+  float pcalojet_gendr_, pcalojet_genpt_, pcalojet_genp_;
+  float pcalojet_EBE_, pcalojet_EEE_, pcalojet_HBE_, pcalojet_HEE_, pcalojet_HFE_;
+  int pcalojet_ntwrs_;
+  int pcalojet_twr_ieta_[100];
+  float pcalojet_twr_eme_[100], pcalojet_twr_hade_[100];
+  float calo_dijet_deta_, calo_dijet_dphi_, calo_dijet_balance_;
+  float calo_thirdjet_px_, calo_thirdjet_py_;
+  float tpfjet_pt_, tpfjet_p_, tpfjet_eta_, tpfjet_phi_, tpfjet_emf_, tpfjet_scale_;
+  float tpfjet_gendr_, tpfjet_genpt_, tpfjet_genp_;
+  float tpfjet_EBE_, tpfjet_EEE_, tpfjet_HBE_, tpfjet_HEE_, tpfjet_HFE_;
+  int tpfjet_ntwrs_;
+  int tpfjet_twr_ieta_[100];
+  float tpfjet_twr_eme_[100], tpfjet_twr_hade_[100];
+  float ppfjet_pt_, ppfjet_p_, ppfjet_eta_, ppfjet_phi_, ppfjet_emf_, ppfjet_scale_;
+  float ppfjet_gendr_, ppfjet_genpt_, ppfjet_genp_;
+  float ppfjet_EBE_, ppfjet_EEE_, ppfjet_HBE_, ppfjet_HEE_, ppfjet_HFE_;
+  int ppfjet_ntwrs_;
+  int ppfjet_twr_ieta_[100];
+  float ppfjet_twr_eme_[100], ppfjet_twr_hade_[100];
+  float pf_dijet_deta_, pf_dijet_dphi_, pf_dijet_balance_;
+  float pf_thirdjet_px_, pf_thirdjet_py_;
 
   // helper functions
   double deltaR(const reco::Jet* j1, const reco::Jet* j2);
 
-  struct JetCorretPairComp {
-    inline bool operator() ( const JetCorretPair& a, const JetCorretPair& b) {
+  struct CaloJetCorretPairComp {
+    inline bool operator() ( const CaloJetCorretPair& a, const CaloJetCorretPair& b) {
+      return (a.jet()->pt()*a.scale()) > (b.jet()->pt()*b.scale());
+    }
+  };
+
+  struct PFJetCorretPairComp {
+    inline bool operator() ( const PFJetCorretPair& a, const PFJetCorretPair& b) {
       return (a.jet()->pt()*a.scale()) > (b.jet()->pt()*b.scale());
     }
   };
