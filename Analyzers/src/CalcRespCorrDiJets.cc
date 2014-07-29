@@ -65,13 +65,13 @@ CalcRespCorrDiJets::~CalcRespCorrDiJets()
 void
 CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evSetup)
 { 
-  edm::Handle<reco::GenJetCollection> genjets;
+  /*~~~edm::Handle<reco::GenJetCollection> genjets;
   iEvent.getByLabel(genJetCollName_,genjets);
   if(!genjets.isValid()) {
     throw edm::Exception(edm::errors::ProductNotFound)
       << " could not find GenJetCollection named " << genJetCollName_ << ".\n";
     return;
-  }
+    }*/
 
   if(doCaloJets_){
     edm::Handle<reco::CaloJetCollection> calojets;
@@ -217,7 +217,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
       pcalojet_gendr_ = 99999.;
       pcalojet_genpt_ = 0;
       pcalojet_genp_  = 0;
-      for(reco::GenJetCollection::const_iterator it=genjets->begin(); it!=genjets->end(); ++it) {
+      /*~~~for(reco::GenJetCollection::const_iterator it=genjets->begin(); it!=genjets->end(); ++it) {
 	const reco::GenJet* jet=&(*it);
 	double dr=deltaR(jet, calo_probe.jet());
 	if(dr<pcalojet_gendr_) {
@@ -231,7 +231,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	  tcalojet_genpt_ = jet->pt();
 	  tcalojet_genp_ = jet->p();
 	}
-      }
+	}*/
       
       // fill dijet variables
       calo_dijet_deta_=std::fabs(std::fabs(calo_tag.jet()->eta())-std::fabs(calo_probe.jet()->eta()));
@@ -253,16 +253,23 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
     }
 
     edm::Handle<edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>> hbhereco;
-    //iEvent.get("HBHERecHitsSorted_reducedHcalRecHits_hbhereco_RECO",hbreco);
-    //iEvent.getManyByType(hbreco);
-    //iEvent.getByLabel("reducedHcalRecHits","hbhereco",hbreco);
     iEvent.getByLabel(RecHitLabelName_,hbheRecHitInstance_,hbhereco);
-    //iEvent.getByLabel(hbRecHitName_,hbreco);
+    //iEvent.getByLabel(hbheRecHitInstance_,hbhereco);
+    //const reco::HBHERecHitCollection* hbherecoColl=hbhereco.product();
     if(!hbhereco.isValid()) {
       throw edm::Exception(edm::errors::ProductNotFound)
 	<< " could not find HBHERecHit named " << RecHitLabelName_ << ":" << hbheRecHitInstance_ << ".\n";
       return;
     }
+    
+    /*edm::Handle<HBHERecHitCollection> HBHERecHitsHandle;
+    iEvent.getByLabel("hbhereco",HBHERecHitsHandle);
+    if(!HBHERecHitsHandle.isValid()) {
+      throw edm::Exception(edm::errors::ProductNotFound)
+	<< " could not find HBHERecHitCollection named " << "hbhereco" << ".\n";
+      return;
+    }
+    const HBHERecHitCollection* HBHERecHits = HBHERecHitsHandle.product();*/
 
     edm::Handle<edm::SortedCollection<HFRecHit,edm::StrictWeakOrdering<HFRecHit>>> hfreco;
     iEvent.getByLabel(RecHitLabelName_,hfRecHitInstance_,hfreco);
@@ -358,9 +365,12 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
       tpfjet_p_     = pf_tag.jet()->p();
       tpfjet_eta_   = pf_tag.jet()->eta();
       tpfjet_phi_   = pf_tag.jet()->phi();
-      /*double sumEM = pf_tag.jet()->chargedEmEnergy() + pf_tag.jet()->neutralEmEnergy() + pf_tag.jet()->HFEMEnergy();
-	double sumHad = pf_tag.jet()->chargedHadronEnergy() + pf_tag.jet()->neutralHadronEnergy() + pf_tag.jet()->HFHadronEnergy();
-	tpfjet_emf_   = sumEM/(sumEM + sumHad);*/
+      tpfjet_photonE_   = pf_tag.jet()->photonEnergy();
+      tpfjet_photonN_   = pf_tag.jet()->photonMultiplicity();
+      tpfjet_electronE_ = pf_tag.jet()->electronEnergy();
+      tpfjet_electronN_ = pf_tag.jet()->electronMultiplicity();
+      tpfjet_muonE_     = pf_tag.jet()->muonEnergy();
+      tpfjet_muonN_     = pf_tag.jet()->muonMultiplicity();
       tpfjet_scale_ = pf_tag.scale();
       //tpfjet_EBE_   = pf_tag.jet()->emEnergyInEB();
       //tpfjet_EEE_   = pf_tag.jet()->emEnergyInEE();
@@ -386,27 +396,88 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	    if(elements[iEle].index() == (*it)->elementsInBlocks()[e].second){//matched to your candidate //elements[iEle].trackRef() or elements[iEle].clusterRef()
 	      //std::cout << "matched element " << iEle << "   " << elements[iEle].type() << std::endl;
 	      if(elements[iEle].type() == reco::PFBlockElement::HCAL){
-		std::cout << "HCal Cluster" << std::endl;
+		//std::cout << "HCal Cluster" << std::endl;
 		reco::PFClusterRef clusterref = elements[iEle].clusterRef();
 		/*for(reco::PFClusterRef::const_iterator itt=clusterref.begin(); itt!=clusterref.end(); ++itt){
 		  std::cout << (*itt) << std::endl;
 		  }*/
 		reco::PFCluster cluster = *clusterref;
+		
 		std::vector<std::pair<DetId,float>> hitsAndFracs = cluster.hitsAndFractions();
+		//float sumFrac = 0;
 		int nHits = hitsAndFracs.size();
 		for(int iHit=0; iHit<nHits; iHit++){
+		  //std::cout << iHit << " " << hitsAndFracs[iHit].second << std::endl;
+		  //sumFrac += hitsAndFracs[iHit].second;
 		  //std::cout << hitsAndFracs[iHit].first << ": " << hitsAndFracs[iHit].second << std::endl;
 		  HcalDetId hDet(hitsAndFracs[iHit].first.rawId());
-		  std::cout << "detector: " << hitsAndFracs[iHit].first.det() << " " << hitsAndFracs[iHit].first.subdetId() << " " << hitsAndFracs[iHit].first.rawId() << " " << hDet << " " << hitsAndFracs[iHit].second << std::endl;
+		  //edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>::const_iterator
 
+		  //HBHERecHitCollection::const_iterator itRecCol=HBHERecHits->find(hitsAndFracs[iHit].first);
+		  //		  if(itRecCol != HBHERecHits->end()) std::cout << "Found" << std::endl;
+		  
+		  //std::cout << "detector: " << hitsAndFracs[iHit].first.det() << " " << hitsAndFracs[iHit].first.subdetId() << " " << hitsAndFracs[iHit].first.rawId() << " " << hDet << " " << hitsAndFracs[iHit].second << std::endl;
+
+		  int etaPhiPF = hitsAndFracs[iHit].first.rawId() & 0x1FFF;
 		  for(edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>::const_iterator ithb=hbhereco->begin(); ithb!=hbhereco->end(); ++ithb){
-		    if((*ithb).id() == hitsAndFracs[iHit].first.rawId()){
-		      std::cout << "hit matches " << (*ithb).id() << std::endl;
+		    // if((*ithb).id() == hitsAndFracs[iHit].first.rawId()){
+		    //if((*ithb).id().rawId() == hDet.rawId()){
+		    int etaPhiRecHit = (*ithb).id().rawId() & 0x1FFF;
+		    if(etaPhiPF == etaPhiRecHit){
+		      std::cout << "hit matches " << (*ithb).id() << " " << (*ithb).id().ieta() << " " << (*ithb).energy()*hitsAndFracs[iHit].second << std::endl;
+
+		      tpfjet_twr_ieta_[tpfjet_ntwrs_] = (*ithb).id().ieta();
+		      tpfjet_twr_hade_[tpfjet_ntwrs_] = (*ithb).energy()*hitsAndFracs[iHit].second;
+
+		      ++tpfjet_ntwrs_;
+		      
+		      std::cout << hitsAndFracs[iHit].first.rawId() <<  " ";
+		      for(int ijk=31; ijk>=0; ijk--){
+			int x = (hitsAndFracs[iHit].first.rawId() >> ijk) & 0x1;
+			std::cout << x;
+		      }
+		      std::cout << " " <<  hDet << std::endl;
+		      std::cout << (*ithb).id().rawId() << " ";
+		      for(int ijk=31; ijk>=0; ijk--){
+			int x = ((*ithb).id().rawId() >> ijk) & 0x1;
+			std::cout << x;
+		      }
+		      std::cout << " " << (*it).id() << std::endl;
+
+		      int  tmpxor = hitsAndFracs[iHit].first.rawId() ^ (*ithb).id().rawId();
+		      std::cout << "           ";
+		      for(int ijk=31; ijk>=0; ijk--){
+			int x = (tmpxor >> ijk) & 0x1;
+			std::cout << x;
+		      }
+		      std::cout << std::endl;
+		      
+		      
+		      
 		    }
 		    //std::cout << (*ithb).id() << ": " << (*it).energy() << std::endl;
 		    //std::cout << (*it).energy() << std::endl;
 		  }
 		}
+		//std::cout << "sum of fracs " << sumFrac << std::endl;
+
+
+		/*
+		
+		std::vector< reco::PFRecHitFraction > hitsandFracs=cluster.recHitFractions();
+		std::cout<<"hitsandFracs"<<hitsandFracs.size()<<std::endl;
+		for(std::vector<reco::PFRecHitFraction>::const_iterator itRef = hitsandFracs.begin(); itRef!=hitsandFracs.end(); ++itRef){//; iRecRef<hitsandFracs.size(); iRecRef++){
+		  //		  std::cout<<"hitsandFracs E "<< hitsandFracs[iRecRef].fraction() << std::endl;
+		  //if(!hitsandFracs[iRecRef].recHitRef().isNull())std::cout<<"NOT NULL "<<"energy "<<hitsandFracs[iRecRef].recHitRef()->detId().rawId()<<std::endl;
+		  // std::cout<<"hitsandFracs E "<< hitsandFracs[iRecRef].recHitRef << std::endl;
+		  const reco::PFRecHitRef& RefPFRecHit = itRef->recHitRef();
+
+		  std::cout << "energy: " << RefPFRecHit->energy() << std::endl;
+
+		  
+		}
+		*/
+		
 	      }
 	    }
 	    /*else{
@@ -453,6 +524,12 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
       ppfjet_p_     = pf_probe.jet()->p();
       ppfjet_eta_   = pf_probe.jet()->eta();
       ppfjet_phi_   = pf_probe.jet()->phi();
+      ppfjet_photonE_   = pf_probe.jet()->photonEnergy();
+      ppfjet_photonN_   = pf_probe.jet()->photonMultiplicity();
+      ppfjet_electronE_ = pf_probe.jet()->electronEnergy();
+      ppfjet_electronN_ = pf_probe.jet()->electronMultiplicity();
+      ppfjet_muonE_     = pf_probe.jet()->muonEnergy();
+      ppfjet_muonN_     = pf_probe.jet()->muonMultiplicity();
       //ppfjet_emf_   = pf_probe.jet()->emEnergyFraction();
       ppfjet_scale_ = pf_probe.scale();
       //ppfjet_EBE_   = pf_probe.jet()->emEnergyInEB();
@@ -483,7 +560,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
       ppfjet_gendr_ = 99999.;
       ppfjet_genpt_ = 0;
       ppfjet_genp_  = 0;
-      for(reco::GenJetCollection::const_iterator it=genjets->begin(); it!=genjets->end(); ++it) {
+      /*~~~for(reco::GenJetCollection::const_iterator it=genjets->begin(); it!=genjets->end(); ++it) {
 	const reco::GenJet* jet=&(*it);
 	double dr=deltaR(jet, pf_probe.jet());
 	if(dr<ppfjet_gendr_) {
@@ -497,7 +574,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	  tpfjet_genpt_ = jet->pt();
 	  tpfjet_genp_ = jet->p();
 	}
-      }
+	}*/
       
       // fill dijet variables
       pf_dijet_deta_=std::fabs(std::fabs(pf_tag.jet()->eta())-std::fabs(pf_probe.jet()->eta()));
@@ -508,17 +585,36 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
       pf_tree_->Fill();
     }
     
-    std::cout << "RecHits " << hbhereco->size() << " " << hfreco->size() << " " << horeco->size() << std::endl;
+    //std::cout << "RecHits " << hbhereco->size() << " " << hfreco->size() << " " << horeco->size() << std::endl;
     //edm::Handle<edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>> hbreco;
     for(edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>::const_iterator it=hbhereco->begin(); it!=hbhereco->end(); ++it){
-      std::cout << (*it).id().rawId() << " " << (*it).id() << ": " << (*it).energy() << std::endl;
+      //DetId tmpdetid((*it).id().rawId());
+      // std::cout << (*it).id().rawId() << " " << tmpdetid.rawId() << " " << (*it).id() << ": " << (*it).energy() << std::endl;
       //std::cout << (*it).energy() << std::endl;
+      std::cout << (*it).id().rawId() << " " << (*it).id() << " ";
+      for(int ijk=31; ijk>=0; ijk--){
+	int x = ((*it).id().rawId() >> ijk) & 0x1;
+	std::cout << x;
+      }
+      std::cout << std::endl;
     }
     for(edm::SortedCollection<HFRecHit,edm::StrictWeakOrdering<HFRecHit>>::const_iterator it=hfreco->begin(); it!=hfreco->end(); ++it){
-      std::cout << (*it).id().rawId() << " " << (*it).id() << ": " << (*it).energy() << std::endl;
+      // std::cout << (*it).id().rawId() << " " << (*it).id() << ": " << (*it).energy() << std::endl;
+      std::cout << (*it).id().rawId() << " " << (*it).id() << " ";
+      for(int ijk=31; ijk>=0; ijk--){
+	int x = ((*it).id().rawId() >> ijk) & 0x1;
+	std::cout << x;
+      }
+      std::cout << std::endl;
     }
     for(edm::SortedCollection<HORecHit,edm::StrictWeakOrdering<HORecHit>>::const_iterator it=horeco->begin(); it!=horeco->end(); ++it){
       std::cout << (*it).id().rawId() << " " << (*it).id() << ": " << (*it).energy() << std::endl;
+      std::cout << (*it).id().rawId() << " " << (*it).id() << " ";
+      for(int ijk=31; ijk>=0; ijk--){
+	int x = ((*it).id().rawId() >> ijk) & 0x1;
+	std::cout << x;
+      }
+      std::cout << std::endl;
     }
   }
   
@@ -583,6 +679,60 @@ void CalcRespCorrDiJets::beginJob()
     hPassSelPF_ = new TH1D("hPassSelectionPF", "Selection Pass Failures PFJets",200,-0.5,199.5);
 
     pf_tree_ = new TTree("pf_dijettree", "tree for dijet balancing using PFJets");
+
+    pf_tree_->Branch("tpfjet_pt",&tpfjet_pt_, "tpfjet_pt/F");
+    pf_tree_->Branch("tpfjet_p",&tpfjet_p_, "tpfjet_p/F");
+    pf_tree_->Branch("tpfjet_eta",&tpfjet_eta_, "tpfjet_eta/F");
+    pf_tree_->Branch("tpfjet_phi",&tpfjet_phi_, "tpfjet_phi/F");
+    //pf_tree_->Branch("tpfjet_emf",&tpfjet_emf_, "tpfjet_emf/F");
+    pf_tree_->Branch("tpfjet_scale",&tpfjet_scale_, "tpfjet_scale/F");
+    pf_tree_->Branch("tpfjet_genpt",&tpfjet_genpt_, "tpfjet_genpt/F");
+    pf_tree_->Branch("tpfjet_genp",&tpfjet_genp_, "tpfjet_genp/F");
+    pf_tree_->Branch("tpfjet_gendr",&tpfjet_gendr_, "tpfjet_gendr/F");
+    //pf_tree_->Branch("tpfjet_EBE",&tpfjet_EBE_, "tpfjet_EBE/F");
+    //pf_tree_->Branch("tpfjet_EEE",&tpfjet_EEE_, "tpfjet_EEE/F");
+    //pf_tree_->Branch("tpfjet_HBE",&tpfjet_HBE_, "tpfjet_HBE/F");
+    //pf_tree_->Branch("tpfjet_HEE",&tpfjet_HEE_, "tpfjet_HEE/F");
+    //pf_tree_->Branch("tpfjet_HFE",&tpfjet_HFE_, "tpfjet_HFE/F");
+    pf_tree_->Branch("tpfjet_photonE",&tpfjet_photonE_, "tpfjet_photonE/F");
+    pf_tree_->Branch("tpfjet_photonN",&tpfjet_photonN_, "tpfjet_photonN/I");
+    pf_tree_->Branch("tpfjet_electronE",&tpfjet_electronE_, "tpfjet_electronE/F");
+    pf_tree_->Branch("tpfjet_electronN",&tpfjet_electronN_, "tpfjet_electronN/I");
+    pf_tree_->Branch("tpfjet_muonE",&tpfjet_muonE_, "tpfjet_muonE/F");
+    pf_tree_->Branch("tpfjet_muonN",&tpfjet_muonN_, "tpfjet_muonN/I");
+    //pf_tree_->Branch("tpfjet_ntwrs",&tpfjet_ntwrs_, "tpfjet_ntwrs/I");
+    //pf_tree_->Branch("tpfjet_twr_ieta",tpfjet_twr_ieta_, "tpfjet_twr_ieta[tpfjet_ntwrs]/I");
+    //pf_tree_->Branch("tpfjet_twr_eme",tpfjet_twr_eme_, "tpfjet_twr_eme[tpfjet_ntwrs]/F");
+    //pf_tree_->Branch("tpfjet_twr_hade",tpfjet_twr_hade_, "tpfjet_twr_hade[tpfjet_ntwrs]/F");
+    pf_tree_->Branch("ppfjet_pt",&ppfjet_pt_, "ppfjet_pt/F");
+    pf_tree_->Branch("ppfjet_p",&ppfjet_p_, "ppfjet_p/F");
+    pf_tree_->Branch("ppfjet_eta",&ppfjet_eta_, "ppfjet_eta/F");
+    pf_tree_->Branch("ppfjet_phi",&ppfjet_phi_, "ppfjet_phi/F");
+    //pf_tree_->Branch("ppfjet_emf",&ppfjet_emf_, "ppfjet_emf/F");
+    pf_tree_->Branch("ppfjet_scale",&ppfjet_scale_, "ppfjet_scale/F");
+    pf_tree_->Branch("ppfjet_genpt",&ppfjet_genpt_, "ppfjet_genpt/F");
+    pf_tree_->Branch("ppfjet_genp",&ppfjet_genp_, "ppfjet_genp/F");
+    pf_tree_->Branch("ppfjet_gendr",&ppfjet_gendr_, "ppfjet_gendr/F");
+    //pf_tree_->Branch("ppfjet_EBE",&ppfjet_EBE_, "ppfjet_EBE/F");
+    //pf_tree_->Branch("ppfjet_EEE",&ppfjet_EEE_, "ppfjet_EEE/F");
+    //pf_tree_->Branch("ppfjet_HBE",&ppfjet_HBE_, "ppfjet_HBE/F");
+    //pf_tree_->Branch("ppfjet_HEE",&ppfjet_HEE_, "ppfjet_HEE/F");
+    //pf_tree_->Branch("ppfjet_HFE",&ppfjet_HFE_, "ppfjet_HFE/F");
+    pf_tree_->Branch("ppfjet_photonE",&ppfjet_photonE_, "ppfjet_photonE/F");
+    pf_tree_->Branch("ppfjet_photonN",&ppfjet_photonN_, "ppfjet_photonN/I");
+    pf_tree_->Branch("ppfjet_electronE",&ppfjet_electronE_, "ppfjet_electronE/F");
+    pf_tree_->Branch("ppfjet_electronN",&ppfjet_electronN_, "ppfjet_electronN/I");
+    pf_tree_->Branch("ppfjet_muonE",&ppfjet_muonE_, "ppfjet_muonE/F");
+    pf_tree_->Branch("ppfjet_muonN",&ppfjet_muonN_, "ppfjet_muonN/I");
+    //pf_tree_->Branch("ppfjet_ntwrs",&ppfjet_ntwrs_, "ppfjet_ntwrs/I");
+    //pf_tree_->Branch("ppfjet_twr_ieta",ppfjet_twr_ieta_, "ppfjet_twr_ieta[ppfjet_ntwrs]/I");
+    //pf_tree_->Branch("ppfjet_twr_eme",ppfjet_twr_eme_, "ppfjet_twr_eme[ppfjet_ntwrs]/F");
+    //pf_tree_->Branch("ppfjet_twr_hade",ppfjet_twr_hade_, "ppfjet_twr_hade[ppfjet_ntwrs]/F");
+    pf_tree_->Branch("pf_dijet_deta",&pf_dijet_deta_, "pf_dijet_deta/F");
+    pf_tree_->Branch("pf_dijet_dphi",&pf_dijet_dphi_, "pf_dijet_dphi/F");
+    pf_tree_->Branch("pf_dijet_balance",&pf_dijet_balance_, "pf_dijet_balance/F");
+    pf_tree_->Branch("pf_thirdjet_px",&pf_thirdjet_px_, "pf_thirdjet_px/F");
+    pf_tree_->Branch("pf_thirdjet_py",&pf_thirdjet_py_, "pf_thirdjet_py/F");
   }
 
   return;

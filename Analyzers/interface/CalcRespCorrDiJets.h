@@ -31,7 +31,10 @@
 #include "DataFormats/ParticleFlowReco/interface/PFBlockFwd.h"
 #include "DataFormats/ParticleFlowReco/interface/PFBlock.h"
 #include "DataFormats/ParticleFlowReco/interface/PFCluster.h"
+#include "DataFormats/ParticleFlowReco/interface/PFRecHit.h"
+#include "DataFormats/ParticleFlowReco/interface/PFRecHitFwd.h"
 #include "DataFormats/HcalDetId/interface/HcalDetId.h"
+
 
 // forward declarations
 class TH1D;
@@ -140,15 +143,19 @@ class CalcRespCorrDiJets : public edm::EDAnalyzer {
   float pcalojet_twr_eme_[100], pcalojet_twr_hade_[100];
   float calo_dijet_deta_, calo_dijet_dphi_, calo_dijet_balance_;
   float calo_thirdjet_px_, calo_thirdjet_py_;
-  float tpfjet_pt_, tpfjet_p_, tpfjet_eta_, tpfjet_phi_, tpfjet_emf_, tpfjet_scale_;
+  float tpfjet_pt_, tpfjet_p_, tpfjet_eta_, tpfjet_phi_, tpfjet_scale_;
   float tpfjet_gendr_, tpfjet_genpt_, tpfjet_genp_;
   float tpfjet_EBE_, tpfjet_EEE_, tpfjet_HBE_, tpfjet_HEE_, tpfjet_HFE_;
+  float tpfjet_photonE_, tpfjet_electronE_, tpfjet_muonE_;
+  int tpfjet_photonN_, tpfjet_electronN_, tpfjet_muonN_;
   int tpfjet_ntwrs_;
   int tpfjet_twr_ieta_[100];
   float tpfjet_twr_eme_[100], tpfjet_twr_hade_[100];
-  float ppfjet_pt_, ppfjet_p_, ppfjet_eta_, ppfjet_phi_, ppfjet_emf_, ppfjet_scale_;
+  float ppfjet_pt_, ppfjet_p_, ppfjet_eta_, ppfjet_phi_, ppfjet_scale_;
   float ppfjet_gendr_, ppfjet_genpt_, ppfjet_genp_;
   float ppfjet_EBE_, ppfjet_EEE_, ppfjet_HBE_, ppfjet_HEE_, ppfjet_HFE_;
+  float ppfjet_photonE_, ppfjet_electronE_, ppfjet_muonE_;
+  int ppfjet_photonN_, ppfjet_electronN_, ppfjet_muonN_;
   int ppfjet_ntwrs_;
   int ppfjet_twr_ieta_[100];
   float ppfjet_twr_eme_[100], ppfjet_twr_hade_[100];
