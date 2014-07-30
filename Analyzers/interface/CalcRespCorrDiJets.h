@@ -146,19 +146,19 @@ class CalcRespCorrDiJets : public edm::EDAnalyzer {
   float tpfjet_pt_, tpfjet_p_, tpfjet_eta_, tpfjet_phi_, tpfjet_scale_;
   float tpfjet_gendr_, tpfjet_genpt_, tpfjet_genp_;
   float tpfjet_EBE_, tpfjet_EEE_, tpfjet_HBE_, tpfjet_HEE_, tpfjet_HFE_;
-  float tpfjet_photonE_, tpfjet_electronE_, tpfjet_muonE_;
-  int tpfjet_photonN_, tpfjet_electronN_, tpfjet_muonN_;
+  float tpfjet_photonE_, tpfjet_electronE_, tpfjet_muonE_, tpfjet_HFEME_;
+  int tpfjet_photonN_, tpfjet_electronN_, tpfjet_muonN_, tpfjet_HFEMN_;
   int tpfjet_ntwrs_;
-  int tpfjet_twr_ieta_[100];
-  float tpfjet_twr_eme_[100], tpfjet_twr_hade_[100];
+  int tpfjet_twr_ieta_[1000];
+  float tpfjet_twr_eme_[1000], tpfjet_twr_hade_[1000], tpfjet_twr_frac_[1000];
   float ppfjet_pt_, ppfjet_p_, ppfjet_eta_, ppfjet_phi_, ppfjet_scale_;
   float ppfjet_gendr_, ppfjet_genpt_, ppfjet_genp_;
   float ppfjet_EBE_, ppfjet_EEE_, ppfjet_HBE_, ppfjet_HEE_, ppfjet_HFE_;
-  float ppfjet_photonE_, ppfjet_electronE_, ppfjet_muonE_;
-  int ppfjet_photonN_, ppfjet_electronN_, ppfjet_muonN_;
+  float ppfjet_photonE_, ppfjet_electronE_, ppfjet_muonE_, ppfjet_HFEME_;
+  int ppfjet_photonN_, ppfjet_electronN_, ppfjet_muonN_, ppfjet_HFEMN_;
   int ppfjet_ntwrs_;
-  int ppfjet_twr_ieta_[100];
-  float ppfjet_twr_eme_[100], ppfjet_twr_hade_[100];
+  int ppfjet_twr_ieta_[1000];
+  float ppfjet_twr_eme_[1000], ppfjet_twr_hade_[1000], ppfjet_twr_frac_[1000];
   float pf_dijet_deta_, pf_dijet_dphi_, pf_dijet_balance_;
   float pf_thirdjet_px_, pf_thirdjet_py_;
 
