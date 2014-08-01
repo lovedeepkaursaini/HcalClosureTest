@@ -284,6 +284,8 @@ void DijetRespCorrData::doFit(TArrayD& respcorr, TArrayD& respcorre)
   // set the number of parameters to be the number of towers
   TMinuit *gMinuit=new TMinuit(NUMTOWERS);
   gMinuit->SetPrintLevel(fPrintLevel);
+  //std::cout << "========================= " << gMinuit->GetMaxIterations() << std::endl;
+  //gMinuit->SetMaxIterations(1000);
   gMinuit->SetErrorDef(0.5); // for a log likelihood
   gMinuit->SetFCN(FCN);
   gMinuit->SetObjectFit(this);
