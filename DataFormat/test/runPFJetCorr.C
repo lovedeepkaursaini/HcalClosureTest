@@ -3,12 +3,12 @@ void runPFJetCorr()
   gSystem->Load("../../../../lib/slc5_amd64_gcc462/libHcalClosureTestDataFormat.so");
 
   TChain* tree = new TChain("pf_dijettree");
-  TString input = "/uscms_data/d3/dgsheffi/HCal/Trees/Pion_Pt-50_1_noHF.root";
+  TString input = "/uscms_data/d3/dgsheffi/HCal/Trees/Pion_Pt-50_noHF.root";
   //TString input = "/uscms_data/d3/dgsheffi/HCal/Trees/Pion_Pt-50_*_fullRecHits.root";
   tree->Add(input);
 
   //TString output = "/uscms_data/d3/dgsheffi/HCal/pfJetCorr.root";
-  TString output = "/uscms_data/d3/dgsheffi/HCal/pfJetCorr_noHF.root";
+  TString output = "/uscms_data/d3/dgsheffi/HCal/pfJetCorr_noHF_freeHF.root";
 
   DijetRespCorrData data;
 
@@ -81,58 +81,36 @@ void runPFJetCorr()
     
     // Fill datum
 
-    bool isNeg = false;
-    
+    float sumt = 0;
     datum.SetTagEta(tjet_eta_);
     datum.SetTagPhi(tjet_phi_);
-    //cout << "Hcal " << tjet_ntwrs_ << " " << pjet_ntwrs_ << endl;
-    for(int i=0; i<tjet_ntwrs_ && i<100; i++){
-      if(tjet_twr_frac_[i] > 1.0){
-	//cerr << tjet_twr_ieta_[i] << endl;
-	datum.AddTagHcalE(tjet_twr_hade_[i]*0.5,tjet_twr_ieta_[i]);
-	cout << "tag > 1" << endl;
-	isNeg = true;
-      }
-      else{
+    for(int i=0; i<tjet_ntwrs_; i++){
+      if(tjet_twr_hade_[i] > 0.0){
 	datum.AddTagHcalE(tjet_twr_hade_[i]*tjet_twr_frac_[i],tjet_twr_ieta_[i]);
+	sumt += tjet_twr_hade_[i]*tjet_twr_frac_[i];
       }
-      if(tjet_twr_hade_[i]*tjet_twr_frac_[i] < 0.0){
-	cout << "tag < 0 " << tjet_twr_hade_[i] << " " << tjet_twr_frac_[i] << endl;
-	isNeg = true;
-      }
-      //cout << "tag " << tjet_twr_ieta_[i] << ": " << tjet_twr_hade_[i] << endl;
-      //cout << i << endl;
     }
     datum.SetTagEcalE(tjet_unkown_E_ + tjet_electron_E_ + tjet_muon_E_ + tjet_photon_E_);
 
-    //cout << "probe" << endl;
+    float sump = 0;
     datum.SetProbeEta(pjet_eta_);
     datum.SetProbePhi(pjet_phi_);
-    for(int i=0; i<pjet_ntwrs_ && i<100; i++){
-      if(pjet_twr_frac_[i] > 1.0){
-	datum.AddProbeHcalE(pjet_twr_hade_[i]*0.5,pjet_twr_ieta_[i]);
-	cout << "probe > 1" << endl;
-	isNeg = true;
-      }
-      else{
+    for(int i=0; i<pjet_ntwrs_; i++){
+      if(pjet_twr_hade_[i] > 0.0){
 	datum.AddProbeHcalE(pjet_twr_hade_[i]*pjet_twr_frac_[i],pjet_twr_ieta_[i]);
+	sump += pjet_twr_hade_[i]*pjet_twr_frac_[i];
       }
-      if(pjet_twr_hade_[i]*pjet_twr_frac_[i] < 0.0){
-	cout << "probe < 0 " << pjet_twr_hade_[i] << " " << pjet_twr_frac_[i]<< endl;
-	isNeg = true;
-      }
-      //cout << "probe " << pjet_twr_ieta_[i] << ": " << pjet_twr_hade_[i] << endl;
-      //cout << i << endl;
     }
     datum.SetProbeEcalE(pjet_unkown_E_ + pjet_electron_E_ + pjet_muon_E_ + pjet_photon_E_);
 
     datum.SetThirdJetPx(thirdjet_px_);
     datum.SetThirdJetPy(thirdjet_py_);
 
-    if(isNeg){
+    if(sumt == 0 || sump == 0){
       fails++;
       continue;
     }
+    
 
     data.push_back(datum);
   }
@@ -140,7 +118,7 @@ void runPFJetCorr()
   cout << data.GetSize() << " data" << endl;
   
   cout << "Passes: " << nEvents - fails << " Fails: " << fails << endl;
-  return;
+  //return;
   
   TH1D* hist = data.doFit("hcorr","Response Corrections");
   hist->GetXaxis()->SetTitle("ieta");

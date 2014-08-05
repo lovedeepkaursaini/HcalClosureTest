@@ -34,6 +34,7 @@
 #include "DataFormats/ParticleFlowReco/interface/PFRecHit.h"
 #include "DataFormats/ParticleFlowReco/interface/PFRecHitFwd.h"
 #include "DataFormats/HcalDetId/interface/HcalDetId.h"
+#include "DataFormats/TrackReco/interface/TrackFwd.h"
 
 
 // forward declarations
@@ -158,6 +159,7 @@ class CalcRespCorrDiJets : public edm::EDAnalyzer {
   float tpfjet_HFEM_E_, tpfjet_HFEM_px_, tpfjet_HFEM_py_, tpfjet_HFEM_pz_;
   int tpfjet_unkown_n_, tpfjet_chHad_n_, tpfjet_electron_n_, tpfjet_muon_n_;
   int tpfjet_photon_n_, tpfjet_Had0_n_, tpfjet_HFHad_n_, tpfjet_HFEM_n_;
+  float tpfjet_chHad_EcalE_, tpfjet_HFHad_EcalE_;
   int tpfjet_ntwrs_;
   int tpfjet_twr_ieta_[1000];
   float tpfjet_twr_eme_[1000], tpfjet_twr_hade_[1000], tpfjet_twr_frac_[1000];
@@ -174,11 +176,16 @@ class CalcRespCorrDiJets : public edm::EDAnalyzer {
   float ppfjet_HFEM_E_, ppfjet_HFEM_px_, ppfjet_HFEM_py_, ppfjet_HFEM_pz_;
   int ppfjet_unkown_n_, ppfjet_chHad_n_, ppfjet_electron_n_, ppfjet_muon_n_;
   int ppfjet_photon_n_, ppfjet_Had0_n_, ppfjet_HFHad_n_, ppfjet_HFEM_n_;
+  float ppfjet_chHad_EcalE_, ppfjet_HFHad_EcalE_;
   int ppfjet_ntwrs_;
   int ppfjet_twr_ieta_[1000];
   float ppfjet_twr_eme_[1000], ppfjet_twr_hade_[1000], ppfjet_twr_frac_[1000];
   float pf_dijet_deta_, pf_dijet_dphi_, pf_dijet_balance_;
   float pf_thirdjet_px_, pf_thirdjet_py_;
+
+  float hfieta[13];
+  //float hfieta[13] = {2.964, 3.139, 3.314, 3.489, 3.664, 3.839, 4.013, 4.191, 4.363, 4.538, 4.716, 4.889, 5.191};
+  int maxhfiphi;
 
   // helper functions
   double deltaR(const reco::Jet* j1, const reco::Jet* j2);

@@ -299,11 +299,11 @@ void DijetRespCorrData::doFit(TArrayD& respcorr, TArrayD& respcorre)
     if(ieta>=-maxIetaFixed && ieta<=maxIetaFixed) gMinuit->FixParameter(i);
 
     // override the HF
-    if(ieta<=-30 || ieta>=30) {
+    /*if(ieta<=-30 || ieta>=30) {
       gMinuit->DefineParameter(i, oss.str().c_str(), 1.0, fParStep, fParMin, fParMax);
       //gMinuit->DefineParameter(i, oss.str().c_str(), 1.3, fParStep, fParMin, fParMax);
       gMinuit->FixParameter(i);
-    }
+      }*/
   }
 
   // Minimize
