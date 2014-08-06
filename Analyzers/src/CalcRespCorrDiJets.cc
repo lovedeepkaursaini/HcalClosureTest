@@ -1,5 +1,5 @@
 //
-// CalcRespCorr.cc
+// CalcRespCorrDiJets.cc
 //
 //   description: Calculation of dijet response corrections
 //
@@ -379,28 +379,26 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
       }
 
       // Reset particle variables
-      tpfjet_unkown_E_ = tpfjet_unkown_px_ = tpfjet_unkown_py_ = tpfjet_unkown_pz_ = 0.0;
-      tpfjet_chHad_E_ = tpfjet_chHad_px_ = tpfjet_chHad_py_ = tpfjet_chHad_pz_ = 0.0;
-      tpfjet_electron_E_ = tpfjet_electron_px_ = tpfjet_electron_py_ = tpfjet_electron_pz_ = 0.0;
-      tpfjet_muon_E_ = tpfjet_muon_px_ = tpfjet_muon_py_ = tpfjet_muon_pz_ = 0.0;
-      tpfjet_photon_E_ = tpfjet_photon_px_ = tpfjet_photon_py_ = tpfjet_photon_pz_ = 0.0;
-      tpfjet_Had0_E_ = tpfjet_Had0_px_ = tpfjet_Had0_py_ = tpfjet_Had0_pz_ = 0.0;
-      tpfjet_HFHad_E_ = tpfjet_HFHad_px_ = tpfjet_HFHad_py_ = tpfjet_HFHad_pz_ = 0.0;
-      tpfjet_HFEM_E_ = tpfjet_HFEM_px_ = tpfjet_HFEM_py_ = tpfjet_HFEM_pz_ = 0.0;
+      tpfjet_unkown_E_ = tpfjet_unkown_px_ = tpfjet_unkown_py_ = tpfjet_unkown_pz_ = tpfjet_unkown_EcalE_ = 0.0;
+      tpfjet_chHad_E_ = tpfjet_chHad_px_ = tpfjet_chHad_py_ = tpfjet_chHad_pz_ = tpfjet_chHad_EcalE_ = 0.0;
+      tpfjet_electron_E_ = tpfjet_electron_px_ = tpfjet_electron_py_ = tpfjet_electron_pz_ = tpfjet_electron_EcalE_ = 0.0;
+      tpfjet_muon_E_ = tpfjet_muon_px_ = tpfjet_muon_py_ = tpfjet_muon_pz_ = tpfjet_muon_EcalE_ = 0.0;
+      tpfjet_photon_E_ = tpfjet_photon_px_ = tpfjet_photon_py_ = tpfjet_photon_pz_ = tpfjet_photon_EcalE_ = 0.0;
+      tpfjet_Had0_E_ = tpfjet_Had0_px_ = tpfjet_Had0_py_ = tpfjet_Had0_pz_ = tpfjet_Had0_EcalE_ = 0.0;
+      tpfjet_HFHad_E_ = tpfjet_HFHad_px_ = tpfjet_HFHad_py_ = tpfjet_HFHad_pz_ = tpfjet_HFHad_EcalE_ = 0.0;
+      tpfjet_HFEM_E_ = tpfjet_HFEM_px_ = tpfjet_HFEM_py_ = tpfjet_HFEM_pz_ = tpfjet_HFEM_EcalE_ = 0.0;
       tpfjet_unkown_n_ = tpfjet_chHad_n_ = tpfjet_electron_n_ = tpfjet_muon_n_ = 0;
       tpfjet_photon_n_ = tpfjet_Had0_n_ = tpfjet_HFHad_n_ = tpfjet_HFEM_n_ = 0;
-      tpfjet_chHad_EcalE_ = tpfjet_HFHad_EcalE_ = 0.0;
-      ppfjet_unkown_E_ = ppfjet_unkown_px_ = ppfjet_unkown_py_ = ppfjet_unkown_pz_ = 0.0;
-      ppfjet_chHad_E_ = ppfjet_chHad_px_ = ppfjet_chHad_py_ = ppfjet_chHad_pz_ = 0.0;
-      ppfjet_electron_E_ = ppfjet_electron_px_ = ppfjet_electron_py_ = ppfjet_electron_pz_ = 0.0;
-      ppfjet_muon_E_ = ppfjet_muon_px_ = ppfjet_muon_py_ = ppfjet_muon_pz_ = 0.0;
-      ppfjet_photon_E_ = ppfjet_photon_px_ = ppfjet_photon_py_ = ppfjet_photon_pz_ = 0.0;
-      ppfjet_Had0_E_ = ppfjet_Had0_px_ = ppfjet_Had0_py_ = ppfjet_Had0_pz_ = 0.0;
-      ppfjet_HFHad_E_ = ppfjet_HFHad_px_ = ppfjet_HFHad_py_ = ppfjet_HFHad_pz_ = 0.0;
-      ppfjet_HFEM_E_ = ppfjet_HFEM_px_ = ppfjet_HFEM_py_ = ppfjet_HFEM_pz_ = 0.0;
+      ppfjet_unkown_E_ = ppfjet_unkown_px_ = ppfjet_unkown_py_ = ppfjet_unkown_pz_ = ppfjet_unkown_EcalE_ = 0.0;
+      ppfjet_chHad_E_ = ppfjet_chHad_px_ = ppfjet_chHad_py_ = ppfjet_chHad_pz_ = ppfjet_chHad_EcalE_ = 0.0;
+      ppfjet_electron_E_ = ppfjet_electron_px_ = ppfjet_electron_py_ = ppfjet_electron_pz_ = ppfjet_electron_EcalE_ = 0.0;
+      ppfjet_muon_E_ = ppfjet_muon_px_ = ppfjet_muon_py_ = ppfjet_muon_pz_ = ppfjet_muon_EcalE_ = 0.0;
+      ppfjet_photon_E_ = ppfjet_photon_px_ = ppfjet_photon_py_ = ppfjet_photon_pz_ = ppfjet_photon_EcalE_ = 0.0;
+      ppfjet_Had0_E_ = ppfjet_Had0_px_ = ppfjet_Had0_py_ = ppfjet_Had0_pz_ = ppfjet_Had0_EcalE_ = 0.0;
+      ppfjet_HFHad_E_ = ppfjet_HFHad_px_ = ppfjet_HFHad_py_ = ppfjet_HFHad_pz_ = ppfjet_HFHad_EcalE_ = 0.0;
+      ppfjet_HFEM_E_ = ppfjet_HFEM_px_ = ppfjet_HFEM_py_ = ppfjet_HFEM_pz_ = ppfjet_HFEM_EcalE_ = 0.0;
       ppfjet_unkown_n_ = ppfjet_chHad_n_ = ppfjet_electron_n_ = ppfjet_muon_n_ = 0;
       ppfjet_photon_n_ = ppfjet_Had0_n_ = ppfjet_HFHad_n_ = ppfjet_HFEM_n_ = 0;
-      ppfjet_chHad_EcalE_ = ppfjet_HFHad_EcalE_ = 0.0;
       
       
       // fill tag jet variables
@@ -418,6 +416,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
       //tpfjet_HFEMN_     = pf_tag.jet()->HFEMMultiplicity();
       tpfjet_scale_ = pf_tag.scale();
       tpfjet_ntwrs_=0;
+      tpfjet_ncandtracks_=0;
 
       //std::cout << pf_tag.jet()->print() << std::endl;
       //bool isMatchedt = false;
@@ -430,6 +429,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	std::cout << "do PFCandidatePtr loop" << std::endl;
       }
       for(std::vector<reco::PFCandidatePtr>::const_iterator it=tagconst.begin(); it!=tagconst.end(); ++it){
+	bool hasTrack = false;
 	//std::cout << (*it) << std::endl;
 	reco::PFCandidate::ParticleType candidateType = (*it)->particleId();
 	if(candidateType == 0){
@@ -437,16 +437,78 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	  tpfjet_unkown_px_ += (*it)->px();
 	  tpfjet_unkown_py_ += (*it)->py();
 	  tpfjet_unkown_pz_ += (*it)->pz();
+	  tpfjet_unkown_EcalE_ += (*it)->ecalEnergy();
 	  tpfjet_unkown_n_++;
 	  continue;
 	}
-	if(candidateType == 1){
+	else if(candidateType == 1){
 	  tpfjet_chHad_E_ += (*it)->energy();
 	  tpfjet_chHad_px_ += (*it)->px();
 	  tpfjet_chHad_py_ += (*it)->py();
 	  tpfjet_chHad_pz_ += (*it)->pz();
 	  tpfjet_chHad_EcalE_ += (*it)->ecalEnergy();
 	  tpfjet_chHad_n_++;
+
+	  reco::TrackRef trackRef = (*it)->trackRef();
+	  if(trackRef.isNonnull()){
+	    //reco::TrackCollection tracks = *trackRef;
+	    reco::Track track = *trackRef;
+	    tpfjet_candtrack_p_[tpfjet_ncandtracks_] = track.p();
+	    tpfjet_candtrack_EcalE_[tpfjet_ncandtracks_] = (*it)->ecalEnergy();
+	    //tpfjet_candtrack_m_[tpfjet_ncandtracks_] = track.
+	    hasTrack = true;
+	    tpfjet_ncandtracks_++;
+	    //float track_p = track.p();
+	    //float track_E = sqrt(track_p*track_p + 0.13957*0.13957);
+	    //float track_E_m = sqrt(track_p*track_p + (*it)->mass()*(*it)->mass());
+	    //std::cout << "Candidate E: " << (*it)->energy() << " Track E: " << track_E << " Candidate mass: " << (*it)->mass() << " Track E with candidate mass: " << track_E_m << std::endl;
+	  }
+	  //else{
+	  //std::cout << "NULL" << std::endl;
+	  //}
+	}
+	else if(candidateType == 2){
+	  tpfjet_electron_E_ += (*it)->energy();
+	  tpfjet_electron_px_ += (*it)->px();
+	  tpfjet_electron_py_ += (*it)->py();
+	  tpfjet_electron_pz_ += (*it)->pz();
+	  tpfjet_electron_EcalE_ += (*it)->ecalEnergy();
+	  tpfjet_electron_n_++;
+	  continue;
+	}
+	else if(candidateType == 3){
+	  tpfjet_muon_E_ += (*it)->energy();
+	  tpfjet_muon_px_ += (*it)->px();
+	  tpfjet_muon_py_ += (*it)->py();
+	  tpfjet_muon_pz_ += (*it)->pz();
+	  tpfjet_muon_EcalE_ += (*it)->ecalEnergy();
+	  tpfjet_muon_n_++;
+	  continue;
+	}
+	else if(candidateType == 4){
+	  tpfjet_photon_E_ += (*it)->energy();
+	  tpfjet_photon_px_ += (*it)->px();
+	  tpfjet_photon_py_ += (*it)->py();
+	  tpfjet_photon_pz_ += (*it)->pz();
+	  tpfjet_photon_EcalE_ += (*it)->ecalEnergy();
+	  tpfjet_photon_n_++;
+	  continue;
+	}
+	else if(candidateType == 5){
+	  tpfjet_Had0_E_ += (*it)->energy();
+	  tpfjet_Had0_px_ += (*it)->px();
+	  tpfjet_Had0_py_ += (*it)->py();
+	  tpfjet_Had0_pz_ += (*it)->pz();
+	  tpfjet_Had0_EcalE_ += (*it)->ecalEnergy();
+	  tpfjet_Had0_n_++;
+	}
+	else if(candidateType == 6){
+	  tpfjet_HFHad_E_ += (*it)->energy();
+	  tpfjet_HFHad_px_ += (*it)->px();
+	  tpfjet_HFHad_py_ += (*it)->py();
+	  tpfjet_HFHad_pz_ += (*it)->pz();
+	  tpfjet_HFHad_EcalE_ += (*it)->ecalEnergy();
+	  tpfjet_HFHad_n_++;
 
 	  /*reco::TrackRef trackRef = (*it)->trackRef();
 	  if(trackRef.isNonnull()){
@@ -458,66 +520,15 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	    std::cout << "Candidate E: " << (*it)->energy() << " Track E: " << track_E << " Candidate mass: " << (*it)->mass() << " Track E with candidate mass: " << track_E_m << std::endl;
 	  }
 	  else{
-	    std::cout << "NULL" << std::endl;
-	  }*/
-	}
-	if(candidateType == 2){
-	  tpfjet_electron_E_ += (*it)->energy();
-	  tpfjet_electron_px_ += (*it)->px();
-	  tpfjet_electron_py_ += (*it)->py();
-	  tpfjet_electron_pz_ += (*it)->pz();
-	  tpfjet_electron_n_++;
-	  continue;
-	}
-	if(candidateType == 3){
-	  tpfjet_muon_E_ += (*it)->energy();
-	  tpfjet_muon_px_ += (*it)->px();
-	  tpfjet_muon_py_ += (*it)->py();
-	  tpfjet_muon_pz_ += (*it)->pz();
-	  tpfjet_muon_n_++;
-	  continue;
-	}
-	if(candidateType == 4){
-	  tpfjet_photon_E_ += (*it)->energy();
-	  tpfjet_photon_px_ += (*it)->px();
-	  tpfjet_photon_py_ += (*it)->py();
-	  tpfjet_photon_pz_ += (*it)->pz();
-	  tpfjet_photon_n_++;
-	  continue;
-	}
-	if(candidateType == 5){
-	  tpfjet_Had0_E_ += (*it)->energy();
-	  tpfjet_Had0_px_ += (*it)->px();
-	  tpfjet_Had0_py_ += (*it)->py();
-	  tpfjet_Had0_pz_ += (*it)->pz();
-	  tpfjet_Had0_n_++;
-	}
-	if(candidateType == 6){
-	  tpfjet_HFHad_E_ += (*it)->energy();
-	  tpfjet_HFHad_px_ += (*it)->px();
-	  tpfjet_HFHad_py_ += (*it)->py();
-	  tpfjet_HFHad_pz_ += (*it)->pz();
-	  tpfjet_HFHad_EcalE_ += (*it)->ecalEnergy();
-	  tpfjet_HFHad_n_++;
-
-	  reco::TrackRef trackRef = (*it)->trackRef();
-	  if(trackRef.isNonnull()){
-	    //reco::TrackCollection tracks = *trackRef;
-	    reco::Track track = *trackRef;
-	    float track_p = track.p();
-	    float track_E = sqrt(track_p*track_p + 0.13957*0.13957);
-	    float track_E_m = sqrt(track_p*track_p + (*it)->mass()*(*it)->mass());
-	    std::cout << "Candidate E: " << (*it)->energy() << " Track E: " << track_E << " Candidate mass: " << (*it)->mass() << " Track E with candidate mass: " << track_E_m << std::endl;
-	  }
-	  else{
 	    //std::cout << "NULL" << std::endl;
-	  }
+	    }*/
 	}
-	if(candidateType == 7){
+	else if(candidateType == 7){
 	  tpfjet_HFEM_E_ += (*it)->energy();
 	  tpfjet_HFEM_px_ += (*it)->px();
 	  tpfjet_HFEM_py_ += (*it)->py();
 	  tpfjet_HFEM_pz_ += (*it)->pz();
+	  tpfjet_HFEM_EcalE_ += (*it)->ecalEnergy();
 	  tpfjet_HFEM_n_++;
 	}
 	
@@ -621,6 +632,12 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 			//std::cout << tmpieta << std::endl;
 			tpfjet_twr_hade_[tpfjet_ntwrs_] = (*ith).energy();
 			tpfjet_twr_frac_[tpfjet_ntwrs_] = hitsAndFracs[iHit].second;
+			if(hasTrack){
+			  tpfjet_twr_candtrackind_[tpfjet_ntwrs_] = tpfjet_ncandtracks_ - 1;
+			}
+			else{
+			  tpfjet_twr_candtrackind_[tpfjet_ntwrs_] = -1;
+			}
 			++tpfjet_ntwrs_;
 		      }
 		    }
@@ -636,6 +653,12 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 			tpfjet_twr_ieta_[tpfjet_ntwrs_] = (*ith).id().ieta();
 			tpfjet_twr_hade_[tpfjet_ntwrs_] = (*ith).energy();
 			tpfjet_twr_frac_[tpfjet_ntwrs_] = hitsAndFracs[iHit].second;
+			if(hasTrack){
+			  tpfjet_twr_candtrackind_[tpfjet_ntwrs_] = tpfjet_ncandtracks_ - 1;
+			}
+			else{
+			  tpfjet_twr_candtrackind_[tpfjet_ntwrs_] = -1;
+			}
 			++tpfjet_ntwrs_;
 		      }
 		    }
@@ -651,6 +674,12 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 			tpfjet_twr_ieta_[tpfjet_ntwrs_] = (*ith).id().ieta();
 			tpfjet_twr_hade_[tpfjet_ntwrs_] = (*ith).energy();
 			tpfjet_twr_frac_[tpfjet_ntwrs_] = hitsAndFracs[iHit].second;
+			if(hasTrack){
+			  tpfjet_twr_candtrackind_[tpfjet_ntwrs_] = tpfjet_ncandtracks_ - 1;
+			}
+			else{
+			  tpfjet_twr_candtrackind_[tpfjet_ntwrs_] = -1;
+			}
 			++tpfjet_ntwrs_;
 		      }
 		    }
@@ -749,6 +778,12 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 			tpfjet_twr_ieta_[tpfjet_ntwrs_] = (*ith).id().ieta();
 			tpfjet_twr_hade_[tpfjet_ntwrs_] = (*ith).energy();
 			tpfjet_twr_frac_[tpfjet_ntwrs_] = hitsAndFracs[iHit].second;
+			if(hasTrack){
+			  tpfjet_twr_candtrackind_[tpfjet_ntwrs_] = tpfjet_ncandtracks_ - 1;
+			}
+			else{
+			  tpfjet_twr_candtrackind_[tpfjet_ntwrs_] = -1;
+			}
 			++tpfjet_ntwrs_;
 		      }
 		    }
@@ -762,6 +797,12 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 			tpfjet_twr_ieta_[tpfjet_ntwrs_] = (*ith).id().ieta();
 			tpfjet_twr_hade_[tpfjet_ntwrs_] = (*ith).energy();
 			tpfjet_twr_frac_[tpfjet_ntwrs_] = hitsAndFracs[iHit].second;
+			if(hasTrack){
+			  tpfjet_twr_candtrackind_[tpfjet_ntwrs_] = tpfjet_ncandtracks_ - 1;
+			}
+			else{
+			  tpfjet_twr_candtrackind_[tpfjet_ntwrs_] = -1;
+			}
 			++tpfjet_ntwrs_;
 		      }
 		    }
@@ -775,6 +816,12 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 			tpfjet_twr_ieta_[tpfjet_ntwrs_] = (*ith).id().ieta();
 			tpfjet_twr_hade_[tpfjet_ntwrs_] = (*ith).energy();
 			tpfjet_twr_frac_[tpfjet_ntwrs_] = hitsAndFracs[iHit].second;
+			if(hasTrack){
+			  tpfjet_twr_candtrackind_[tpfjet_ntwrs_] = tpfjet_ncandtracks_ - 1;
+			}
+			else{
+			  tpfjet_twr_candtrackind_[tpfjet_ntwrs_] = -1;
+			}
 			++tpfjet_ntwrs_;
 		      }
 		    }
@@ -804,18 +851,21 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
       //ppfjet_HFEMN_     = pf_probe.jet()->HFEMMultiplicity();
       ppfjet_scale_ = pf_probe.scale();
       ppfjet_ntwrs_=0;
+      ppfjet_ncandtracks_=0;
 
       //bool isMatchedp = false;
 
       // Get PF constituents and fill HCAL towers
       std::vector<reco::PFCandidatePtr> probeconst=pf_probe.jet()->getPFConstituents();
       for(std::vector<reco::PFCandidatePtr>::const_iterator it=probeconst.begin(); it!=probeconst.end(); ++it){
+	bool hasTrack = false;
 	reco::PFCandidate::ParticleType candidateType = (*it)->particleId();
 	if(candidateType == 0){
 	  ppfjet_unkown_E_ += (*it)->energy();
 	  ppfjet_unkown_px_ += (*it)->px();
 	  ppfjet_unkown_py_ += (*it)->py();
 	  ppfjet_unkown_pz_ += (*it)->pz();
+	  ppfjet_unkown_EcalE_ += (*it)->ecalEnergy();
 	  ppfjet_unkown_n_++;
 	  continue;
 	}
@@ -826,12 +876,22 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	  ppfjet_chHad_pz_ += (*it)->pz();
 	  ppfjet_chHad_EcalE_ += (*it)->ecalEnergy();
 	  ppfjet_chHad_n_++;
+
+	  reco::TrackRef trackRef = (*it)->trackRef();
+	  if(trackRef.isNonnull()){
+	    reco::Track track = *trackRef;
+	    ppfjet_candtrack_p_[ppfjet_ncandtracks_] = track.p();
+	    ppfjet_candtrack_EcalE_[tpfjet_ncandtracks_] = (*it)->ecalEnergy();
+	    hasTrack = true;
+	    ppfjet_ncandtracks_++;
+	  }
 	}
 	if(candidateType == 2){
 	  ppfjet_electron_E_ += (*it)->energy();
 	  ppfjet_electron_px_ += (*it)->px();
 	  ppfjet_electron_py_ += (*it)->py();
 	  ppfjet_electron_pz_ += (*it)->pz();
+	  ppfjet_electron_EcalE_ += (*it)->ecalEnergy();
 	  ppfjet_electron_n_++;
 	  continue;
 	}
@@ -840,6 +900,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	  ppfjet_muon_px_ += (*it)->px();
 	  ppfjet_muon_py_ += (*it)->py();
 	  ppfjet_muon_pz_ += (*it)->pz();
+	  ppfjet_muon_EcalE_ += (*it)->ecalEnergy();
 	  ppfjet_muon_n_++;
 	  continue;
 	}
@@ -848,6 +909,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	  ppfjet_photon_px_ += (*it)->px();
 	  ppfjet_photon_py_ += (*it)->py();
 	  ppfjet_photon_pz_ += (*it)->pz();
+	  ppfjet_photon_EcalE_ += (*it)->ecalEnergy();
 	  ppfjet_photon_n_++;
 	  continue;
 	}
@@ -856,6 +918,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	  ppfjet_Had0_px_ += (*it)->px();
 	  ppfjet_Had0_py_ += (*it)->py();
 	  ppfjet_Had0_pz_ += (*it)->pz();
+	  ppfjet_Had0_EcalE_ += (*it)->ecalEnergy();
 	  ppfjet_Had0_n_++;
 	}
 	if(candidateType == 6){
@@ -871,6 +934,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	  ppfjet_HFEM_px_ += (*it)->px();
 	  ppfjet_HFEM_py_ += (*it)->py();
 	  ppfjet_HFEM_pz_ += (*it)->pz();
+	  ppfjet_HFEM_EcalE_ += (*it)->ecalEnergy();
 	  ppfjet_HFEM_n_++;
 	}
 	
@@ -912,6 +976,12 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 			//std::cout << ppfjet_twr_ieta_[ppfjet_ntwrs_] << std::endl;
 			ppfjet_twr_hade_[ppfjet_ntwrs_] = (*ith).energy();
 			ppfjet_twr_frac_[ppfjet_ntwrs_] = hitsAndFracs[iHit].second;
+			if(hasTrack){
+			  ppfjet_twr_candtrackind_[ppfjet_ntwrs_] = ppfjet_ncandtracks_ - 1;
+			}
+			else{
+			  ppfjet_twr_candtrackind_[ppfjet_ntwrs_] = -1;
+			}
 			++ppfjet_ntwrs_;
 		      }
 		    }
@@ -928,6 +998,12 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 			//std::cout << ppfjet_twr_ieta_[ppfjet_ntwrs_] << std::endl;
 			ppfjet_twr_hade_[ppfjet_ntwrs_] = (*ith).energy();
 			ppfjet_twr_frac_[ppfjet_ntwrs_] = hitsAndFracs[iHit].second;
+			if(hasTrack){
+			  ppfjet_twr_candtrackind_[ppfjet_ntwrs_] = ppfjet_ncandtracks_ - 1;
+			}
+			else{
+			  ppfjet_twr_candtrackind_[ppfjet_ntwrs_] = -1;
+			}
 			++ppfjet_ntwrs_;
 		      }
 		    }
@@ -944,6 +1020,12 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 			//std::cout << ppfjet_twr_ieta_[ppfjet_ntwrs_] << std::endl;
 			ppfjet_twr_hade_[ppfjet_ntwrs_] = (*ith).energy();
 			ppfjet_twr_frac_[ppfjet_ntwrs_] = hitsAndFracs[iHit].second;
+			if(hasTrack){
+			  ppfjet_twr_candtrackind_[ppfjet_ntwrs_] = ppfjet_ncandtracks_ - 1;
+			}
+			else{
+			  ppfjet_twr_candtrackind_[ppfjet_ntwrs_] = -1;
+			}
 			++ppfjet_ntwrs_;
 		      }
 		    }
@@ -1062,6 +1144,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	}
       }
       
+      //std::cout << "tag tracks: " << tpfjet_ncandtracks_ << std::endl;
       pf_tree_->Fill();
     }
   }
@@ -1170,6 +1253,14 @@ void CalcRespCorrDiJets::beginJob()
     pf_tree_->Branch("tpfjet_Had0_pz",&tpfjet_Had0_pz_, "tpfjet_Had0_pz/F");
     pf_tree_->Branch("tpfjet_HFHad_pz",&tpfjet_HFHad_pz_, "tpfjet_HFHad_pz/F");
     pf_tree_->Branch("tpfjet_HFEM_pz",&tpfjet_HFEM_pz_, "tpfjet_HFEM_pz/F");
+    pf_tree_->Branch("tpfjet_unkown_EcalE",&tpfjet_unkown_EcalE_, "tpfjet_unkown_EcalE/F");
+    pf_tree_->Branch("tpfjet_chHad_EcalE",&tpfjet_chHad_EcalE_, "tpfjet_chHad_EcalE/F");
+    pf_tree_->Branch("tpfjet_electron_EcalE",&tpfjet_electron_EcalE_, "tpfjet_electron_EcalE/F");
+    pf_tree_->Branch("tpfjet_muon_EcalE",&tpfjet_muon_EcalE_, "tpfjet_muon_EcalE/F");
+    pf_tree_->Branch("tpfjet_photon_EcalE",&tpfjet_photon_EcalE_, "tpfjet_photon_EcalE/F");
+    pf_tree_->Branch("tpfjet_Had0_EcalE",&tpfjet_Had0_EcalE_, "tpfjet_Had0_EcalE/F");
+    pf_tree_->Branch("tpfjet_HFHad_EcalE",&tpfjet_HFHad_EcalE_, "tpfjet_HFHad_EcalE/F");
+    pf_tree_->Branch("tpfjet_HFEM_EcalE",&tpfjet_HFEM_EcalE_, "tpfjet_HFEM_EcalE/F");
     pf_tree_->Branch("tpfjet_unkown_n",&tpfjet_unkown_n_, "tpfjet_unkown_n/I");
     pf_tree_->Branch("tpfjet_chHad_n",&tpfjet_chHad_n_, "tpfjet_chHad_n/I");
     pf_tree_->Branch("tpfjet_electron_n",&tpfjet_electron_n_, "tpfjet_electron_n/I");
@@ -1182,6 +1273,10 @@ void CalcRespCorrDiJets::beginJob()
     pf_tree_->Branch("tpfjet_twr_ieta",tpfjet_twr_ieta_, "tpfjet_twr_ieta[tpfjet_ntwrs]/I");
     pf_tree_->Branch("tpfjet_twr_hade",tpfjet_twr_hade_, "tpfjet_twr_hade[tpfjet_ntwrs]/F");
     pf_tree_->Branch("tpfjet_twr_frac",tpfjet_twr_frac_, "tpfjet_twr_frac[tpfjet_ntwrs]/F");
+    pf_tree_->Branch("tpfjet_twr_candtrackind",tpfjet_twr_candtrackind_, "tpfjet_twr_candtrackind[tpfjet_ntwrs]/I");
+    pf_tree_->Branch("tpfjet_ncandtracks",&tpfjet_ncandtracks_, "tpfjet_ncandtracks/I");
+    pf_tree_->Branch("tpfjet_candtrack_p",tpfjet_candtrack_p_, "tpfjet_candtrack_p[tpfjet_ncandtracks]/F");
+    pf_tree_->Branch("tpfjet_candtrack_EcalE",tpfjet_candtrack_EcalE_, "tpfjet_candtrack_EcalE[tpfjet_ncandtracks]/F");
     pf_tree_->Branch("ppfjet_pt",&ppfjet_pt_, "ppfjet_pt/F");
     pf_tree_->Branch("ppfjet_p",&ppfjet_p_, "ppfjet_p/F");
     pf_tree_->Branch("ppfjet_eta",&ppfjet_eta_, "ppfjet_eta/F");
@@ -1222,6 +1317,14 @@ void CalcRespCorrDiJets::beginJob()
     pf_tree_->Branch("ppfjet_Had0_pz",&ppfjet_Had0_pz_, "ppfjet_Had0_pz/F");
     pf_tree_->Branch("ppfjet_HFHad_pz",&ppfjet_HFHad_pz_, "ppfjet_HFHad_pz/F");
     pf_tree_->Branch("ppfjet_HFEM_pz",&ppfjet_HFEM_pz_, "ppfjet_HFEM_pz/F");
+    pf_tree_->Branch("ppfjet_unkown_EcalE",&ppfjet_unkown_EcalE_, "ppfjet_unkown_EcalE/F");
+    pf_tree_->Branch("ppfjet_chHad_EcalE",&ppfjet_chHad_EcalE_, "ppfjet_chHad_EcalE/F");
+    pf_tree_->Branch("ppfjet_electron_EcalE",&ppfjet_electron_EcalE_, "ppfjet_electron_EcalE/F");
+    pf_tree_->Branch("ppfjet_muon_EcalE",&ppfjet_muon_EcalE_, "ppfjet_muon_EcalE/F");
+    pf_tree_->Branch("ppfjet_photon_EcalE",&ppfjet_photon_EcalE_, "ppfjet_photon_EcalE/F");
+    pf_tree_->Branch("ppfjet_Had0_EcalE",&ppfjet_Had0_EcalE_, "ppfjet_Had0_EcalE/F");
+    pf_tree_->Branch("ppfjet_HFHad_EcalE",&ppfjet_HFHad_EcalE_, "ppfjet_HFHad_EcalE/F");
+    pf_tree_->Branch("ppfjet_HFEM_EcalE",&ppfjet_HFEM_EcalE_, "ppfjet_HFEM_EcalE/F");
     pf_tree_->Branch("ppfjet_unkown_n",&ppfjet_unkown_n_, "ppfjet_unkown_n/I");
     pf_tree_->Branch("ppfjet_chHad_n",&ppfjet_chHad_n_, "ppfjet_chHad_n/I");
     pf_tree_->Branch("ppfjet_electron_n",&ppfjet_electron_n_, "ppfjet_electron_n/I");
@@ -1234,6 +1337,10 @@ void CalcRespCorrDiJets::beginJob()
     pf_tree_->Branch("ppfjet_twr_ieta",ppfjet_twr_ieta_, "ppfjet_twr_ieta[ppfjet_ntwrs]/I");
     pf_tree_->Branch("ppfjet_twr_hade",ppfjet_twr_hade_, "ppfjet_twr_hade[ppfjet_ntwrs]/F");
     pf_tree_->Branch("ppfjet_twr_frac",ppfjet_twr_frac_, "ppfjet_twr_frac[ppfjet_ntwrs]/F");
+    pf_tree_->Branch("ppfjet_twr_candtrackind",ppfjet_twr_candtrackind_, "ppfjet_twr_candtrackind[ppfjet_ntwrs]/I");
+    pf_tree_->Branch("ppfjet_ncandtracks",&ppfjet_ncandtracks_, "ppfjet_ncandtracks/I");
+    pf_tree_->Branch("ppfjet_candtrack_p",ppfjet_candtrack_p_, "ppfjet_candtrack_p[ppfjet_ncandtracks]/F");
+    pf_tree_->Branch("ppfjet_candtrack_EcalE",ppfjet_candtrack_EcalE_, "ppfjet_candtrack_EcalE[ppfjet_ncandtracks]/F");
     pf_tree_->Branch("pf_dijet_deta",&pf_dijet_deta_, "pf_dijet_deta/F");
     pf_tree_->Branch("pf_dijet_dphi",&pf_dijet_dphi_, "pf_dijet_dphi/F");
     pf_tree_->Branch("pf_dijet_balance",&pf_dijet_balance_, "pf_dijet_balance/F");
