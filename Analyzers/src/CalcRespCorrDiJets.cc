@@ -62,13 +62,6 @@ CalcRespCorrDiJets::~CalcRespCorrDiJets()
 void
 CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evSetup)
 { 
-  /*~~~edm::Handle<reco::GenJetCollection> genjets;
-  iEvent.getByLabel(genJetCollName_,genjets);
-  if(!genjets.isValid()) {
-    throw edm::Exception(edm::errors::ProductNotFound)
-      << " could not find GenJetCollection named " << genJetCollName_ << ".\n";
-    return;
-    }*/
   edm::Handle<std::vector<reco::GenJet>> genjets;
   iEvent.getByLabel(genJetCollName_,genjets);
   if(!genjets.isValid()) {
@@ -76,13 +69,6 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
       << " could not find GenJet vector named " << genJetCollName_ << ".\n";
     return;
   }
-
-  unsigned int testEvent = 600000;
-  if(iEvent.id().event() == testEvent){
-    std::cout << "Event " << iEvent.id().event() << std::endl;
-  }
-  
-  //std::cout << "Event " << iEvent.id().event() << std::endl;
 
   if(doCaloJets_){
     edm::Handle<reco::CaloJetCollection> calojets;
@@ -243,21 +229,6 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	  tcalojet_genp_ = jet->p();
 	}
       }
-      /*~~~for(reco::GenJetCollection::const_iterator it=genjets->begin(); it!=genjets->end(); ++it) {
-	const reco::GenJet* jet=&(*it);
-	double dr=deltaR(jet, calo_probe.jet());
-	if(dr<pcalojet_gendr_) {
-	  pcalojet_gendr_ = dr;
-	  pcalojet_genpt_ = jet->pt();
-	  pcalojet_genp_ = jet->p();
-	}
-	dr=deltaR(jet, calo_tag.jet());
-	if(dr<tcalojet_gendr_) {
-	  tcalojet_gendr_ = dr;
-	  tcalojet_genpt_ = jet->pt();
-	  tcalojet_genp_ = jet->p();
-	}
-	}*/
       
       // fill dijet variables
       calo_dijet_deta_=std::fabs(std::fabs(calo_tag.jet()->eta())-std::fabs(calo_probe.jet()->eta()));
@@ -406,31 +377,18 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
       tpfjet_p_     = pf_tag.jet()->p();
       tpfjet_eta_   = pf_tag.jet()->eta();
       tpfjet_phi_   = pf_tag.jet()->phi();
-      //tpfjet_photonE_   = pf_tag.jet()->photonEnergy();
-      //tpfjet_photonN_   = pf_tag.jet()->photonMultiplicity();
-      //tpfjet_electronE_ = pf_tag.jet()->electronEnergy();
-      //tpfjet_electronN_ = pf_tag.jet()->electronMultiplicity();
-      //tpfjet_muonE_     = pf_tag.jet()->muonEnergy();
-      //tpfjet_muonN_     = pf_tag.jet()->muonMultiplicity();
-      //tpfjet_HFEME_     = pf_tag.jet()->HFEMEnergy();
-      //tpfjet_HFEMN_     = pf_tag.jet()->HFEMMultiplicity();
       tpfjet_scale_ = pf_tag.scale();
       tpfjet_ntwrs_=0;
       tpfjet_ncandtracks_=0;
 
       //std::cout << pf_tag.jet()->print() << std::endl;
-      //bool isMatchedt = false;
       int types = 0;
       int ntypes = 0;
       
       // Get PF constituents and fill HCAL towers
       std::vector<reco::PFCandidatePtr> tagconst=pf_tag.jet()->getPFConstituents();
-      if(iEvent.id().event() == testEvent){
-	std::cout << "do PFCandidatePtr loop" << std::endl;
-      }
       for(std::vector<reco::PFCandidatePtr>::const_iterator it=tagconst.begin(); it!=tagconst.end(); ++it){
 	bool hasTrack = false;
-	//std::cout << (*it) << std::endl;
 	reco::PFCandidate::ParticleType candidateType = (*it)->particleId();
 	if(candidateType == 0){
 	  tpfjet_unkown_E_ += (*it)->energy();
@@ -451,21 +409,12 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 
 	  reco::TrackRef trackRef = (*it)->trackRef();
 	  if(trackRef.isNonnull()){
-	    //reco::TrackCollection tracks = *trackRef;
 	    reco::Track track = *trackRef;
 	    tpfjet_candtrack_p_[tpfjet_ncandtracks_] = track.p();
 	    tpfjet_candtrack_EcalE_[tpfjet_ncandtracks_] = (*it)->ecalEnergy();
-	    //tpfjet_candtrack_m_[tpfjet_ncandtracks_] = track.
 	    hasTrack = true;
 	    tpfjet_ncandtracks_++;
-	    //float track_p = track.p();
-	    //float track_E = sqrt(track_p*track_p + 0.13957*0.13957);
-	    //float track_E_m = sqrt(track_p*track_p + (*it)->mass()*(*it)->mass());
-	    //std::cout << "Candidate E: " << (*it)->energy() << " Track E: " << track_E << " Candidate mass: " << (*it)->mass() << " Track E with candidate mass: " << track_E_m << std::endl;
 	  }
-	  //else{
-	  //std::cout << "NULL" << std::endl;
-	  //}
 	}
 	else if(candidateType == 2){
 	  tpfjet_electron_E_ += (*it)->energy();
@@ -509,19 +458,6 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	  tpfjet_HFHad_pz_ += (*it)->pz();
 	  tpfjet_HFHad_EcalE_ += (*it)->ecalEnergy();
 	  tpfjet_HFHad_n_++;
-
-	  /*reco::TrackRef trackRef = (*it)->trackRef();
-	  if(trackRef.isNonnull()){
-	    //reco::TrackCollection tracks = *trackRef;
-	    reco::Track track = *trackRef;
-	    float track_p = track.p();
-	    float track_E = sqrt(track_p*track_p + 0.13957*0.13957);
-	    float track_E_m = sqrt(track_p*track_p + (*it)->mass()*(*it)->mass());
-	    std::cout << "Candidate E: " << (*it)->energy() << " Track E: " << track_E << " Candidate mass: " << (*it)->mass() << " Track E with candidate mass: " << track_E_m << std::endl;
-	  }
-	  else{
-	    //std::cout << "NULL" << std::endl;
-	    }*/
 	}
 	else if(candidateType == 7){
 	  tpfjet_HFEM_E_ += (*it)->energy();
@@ -532,104 +468,34 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	  tpfjet_HFEM_n_++;
 	}
 	
-	//std::cout << candidateType << ": " << (*it)->energy() << " " << (*it)->px() << " " << (*it)->py() << " " << (*it)->pz() << " m= " << (*it)->mass() << " m2= " << (*it)->massSqr() << " " << sqrt((*it)->energy()*(*it)->energy() - (*it)->px()*(*it)->px() - (*it)->py()*(*it)->py() - (*it)->pz()*(*it)->pz()) << std::endl;
-	
 	int maxElement=(*it)->elementsInBlocks().size();
-	if(iEvent.id().event() == testEvent){
-	  std::cout << "do e loop" << std::endl;
-	}
 	for(int e=0; e<maxElement; ++e){
 	  reco::PFBlockRef blockRef = (*it)->elementsInBlocks()[e].first;
 	  const edm::OwnVector<reco::PFBlockElement>& elements = blockRef->elements();
-	  if(iEvent.id().event() == testEvent){
-	    std::cout << "do iEle loop" << std::endl;
-	  }
 	  for(unsigned iEle=0; iEle<elements.size(); iEle++) {
 	    reco::PFClusterRef tmpclusterref = elements[iEle].clusterRef();
 	    if(elements[iEle].index() == (*it)->elementsInBlocks()[e].second){
-	      if(iEvent.id().event() == testEvent){
-		std::cout << "passed event == testEvent" << std::endl;
-		std::cout << "=====Type " << elements[iEle].type() << std::endl;
-	      }
-
-	      ////////////////////////////////////////
-	      //
-	      // This is the section with the matching issues.
-	      // I'm not sure exactly what these PFBlockElement types are
-	      // because type HO will give clusters with ieta > 15.
-	      // And there's the question of what rechits to use for
-	      // PFBlockElement types HFHAD and HFEM.
-	      //
-	      ////////////////////////////////////////
-
 	      if(elements[iEle].type() == reco::PFBlockElement::HCAL){
 		types |= 0x1;
 		ntypes++;
 		reco::PFClusterRef clusterref = elements[iEle].clusterRef();
 		reco::PFCluster cluster = *clusterref;
 
-		//	std::vector<reco::PFRecHitFraction> pfRecHits = cluster.recHitFractions();
-
-		//int NpfRecHit = pfRecHits.size();
-		//for(int jkl; jkl<NpfRecHit; jkl++){
-		/*
-		for(std::vector<reco::PFRecHitFraction>::const_iterator itRecHits=pfRecHits.begin(); itRecHits!=pfRecHits.end(); ++itRecHits){
-		  //reco::PFRecHitRef pfRecHitRef = (*itRecHits).recHitRef();
-		  //reco::PFRecHit pfRecHit = *pfRecHitRef;
-		  std::cerr << itRecHits->recHitRef()->layer() << std::endl;
-		}
-		*/
 		std::vector<std::pair<DetId,float>> hitsAndFracs = cluster.hitsAndFractions();
-		if(iEvent.id().event() == testEvent){
-		  std::cout << "Tag hits" << std::endl;
-		}
 		int nHits = hitsAndFracs.size();
 		for(int iHit=0; iHit<nHits; iHit++){
 		  HcalDetId hDet(hitsAndFracs[iHit].first.rawId());
 		  int etaPhiPF = hitsAndFracs[iHit].first.rawId() & 0x3FFF;
 
-		  /*int tmpzside = ((hitsAndFracs[iHit].first.rawId() >> 13) & 0x1) ? 1 : -1;
+		  int tmpzside = ((hitsAndFracs[iHit].first.rawId() >> 13) & 0x1) ? 1 : -1;
 		  int tmpieta = ((hitsAndFracs[iHit].first.rawId() >> 7) & 0x3F);
-		  if(tmpieta == 29){
-		    std::cout << iEvent.id().event() << ": " << tmpzside*tmpieta << std::endl;
-		  }
-		  else if(tmpieta > 29){
-		    std::cout << iEvent.id().event() << ": " << tmpzside*tmpieta << " ==================" << std::endl;
-		  }*/
-
-		  if(iEvent.id().event() == testEvent){
-		    std::cout << hitsAndFracs[iHit].first.rawId() <<  " ";
-		    for(int ijk=31; ijk>=0; ijk--){
-		      int x = (hitsAndFracs[iHit].first.rawId() >> ijk) & 0x1;
-		      std::cout << x;
-		    }
-		    std::cout << " " << (hitsAndFracs[iHit].first.rawId() >> 28) << " " << ((hitsAndFracs[iHit].first.rawId() >> 25) & 0x7) << " " << hDet << " " << etaPhiPF <<std::endl;
-		  }
+		  h_ietaHCAL_->Fill(tmpzside*tmpieta);
 
 		  for(edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>::const_iterator ith=hbhereco->begin(); ith!=hbhereco->end(); ++ith){
 		    int etaPhiRecHit = (*ith).id().rawId() & 0x3FFF;
-		    /*if(etaPhiPF == 3587){
-		      std::cout << "   +++ " << etaPhiPF << " " << etaPhiRecHit << std::endl;
-		      if(etaPhiRecHit == 3587){
-			std::cout << "     -----" << etaPhiPF << " " << etaPhiRecHit << " ";
-			if(etaPhiPF == etaPhiRecHit){
-			  std::cout << "1";
-			}else{
-			  std::cout << "0";
-			}
-			std::cout << std::endl;
-		      }
-		      }*/
 		    if(etaPhiPF == etaPhiRecHit){
-		      //std::cout << "    +-----" << etaPhiPF << " " << etaPhiRecHit << " " << std::endl;
-		      //isMatchedt = true;
-		      //std::cout<<"Matches Rechit SD "<<(*ith).subdetId()<<std::endl;
-		      //if((*ith).energy() > 0.0 && hitsAndFracs[iHit].second > 0.0){
-		      //std::cout << "HBHE phi=" << (*it)->phi() << " iphi=" << (hitsAndFracs[iHit].first.rawId() & 0x3F) << std::endl;
 		      if(true){
 			tpfjet_twr_ieta_[tpfjet_ntwrs_] = (*ith).id().ieta();
-			//int tmpieta = (*ith).id().ieta();
-			//std::cout << tmpieta << std::endl;
 			tpfjet_twr_hade_[tpfjet_ntwrs_] = (*ith).energy();
 			tpfjet_twr_frac_[tpfjet_ntwrs_] = hitsAndFracs[iHit].second;
 			if(hasTrack){
@@ -646,9 +512,6 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  for(edm::SortedCollection<HFRecHit,edm::StrictWeakOrdering<HFRecHit>>::const_iterator ith=hfreco->begin(); ith!=hfreco->end(); ++ith){
 		    int etaPhiRecHit = (*ith).id().rawId() & 0x3FFF;
 		    if(etaPhiPF == etaPhiRecHit){
-		      //isMatchedt = true;
-		      //std::cout << "HF" << std::endl;
-		      //if((*ith).energy() > 0.0 && hitsAndFracs[iHit].second > 0.0){
 		      if(true){
 			tpfjet_twr_ieta_[tpfjet_ntwrs_] = (*ith).id().ieta();
 			tpfjet_twr_hade_[tpfjet_ntwrs_] = (*ith).energy();
@@ -667,9 +530,6 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  for(edm::SortedCollection<HORecHit,edm::StrictWeakOrdering<HORecHit>>::const_iterator ith=horeco->begin(); ith!=horeco->end(); ++ith){
 		    int etaPhiRecHit = (*ith).id().rawId() & 0x3FFF;
 		    if(etaPhiPF == etaPhiRecHit){
-		      //isMatchedt = true;
-		      //std::cout << "HO" << std::endl;
-		      //if((*ith).energy() > 0.0 && hitsAndFracs[iHit].second > 0.0){
 		      if(true){
 			tpfjet_twr_ieta_[tpfjet_ntwrs_] = (*ith).id().ieta();
 			tpfjet_twr_hade_[tpfjet_ntwrs_] = (*ith).energy();
@@ -682,22 +542,16 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 			}
 			++tpfjet_ntwrs_;
 		      }
-		    }
-		    
-		    /*int tmpzside = ((hitsAndFracs[iHit].first.rawId() >> 13) & 0x1) ? 1 : -1;
-		    int tmpieta = ((hitsAndFracs[iHit].first.rawId() >> 7) & 0x3F);
-		    if(tmpieta > 15){
-		      std::cout << iEvent.id().event() << ": " << tmpzside*tmpieta << " " << hitsAndFracs[iHit].first.rawId() << std::endl;
-		      }*/
+		    }		    
 		  }
 		} // Loop over hits
 	      } // Test if element is from HCAL
 	      else if(elements[iEle].type() == reco::PFBlockElement::HFHAD){
 		types |= 0x2;
 		ntypes++;
-		//reco::PFClusterRef clusterref = elements[iEle].clusterRef();
-		//reco::PFCluster cluster = *clusterref;
-
+		
+		h_etaHFHAD_->Fill((*it)->eta());
+		
 		/*int candieta = 63;
 		if(fabs((*it)->eta()) > hfieta[0]){
 		  for(int itieta = 1; itieta<13; itieta++){
@@ -737,14 +591,12 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		    }
 		  }
 		  }*/
-
-		//std::cout << "HF phi=" << (*it)->phi() << " iphi=" << 
 	      }
 	      else if(elements[iEle].type() == reco::PFBlockElement::HFEM){
 		types |= 0x4;
 		ntypes++;
 		reco::PFClusterRef clusterref = elements[iEle].clusterRef();
-		//reco::PFCluster cluster = *clusterref;
+		h_etaHFEM_->Fill((*it)->eta());
 	      }
 	      else if(elements[iEle].type() == reco::PFBlockElement::HO){
 		types |= 0x8;
@@ -753,27 +605,18 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		reco::PFCluster cluster = *clusterref;
 
 		std::vector<std::pair<DetId,float>> hitsAndFracs = cluster.hitsAndFractions();
-		if(iEvent.id().event() == testEvent){
-		  std::cout << "HO Tag hits" << std::endl;
-		}
 		int nHits = hitsAndFracs.size();
 		for(int iHit=0; iHit<nHits; iHit++){
 		  HcalDetId hDet(hitsAndFracs[iHit].first.rawId());
 		  int etaPhiPF = hitsAndFracs[iHit].first.rawId() & 0x3FFF;
 
-		  if(iEvent.id().event() == testEvent){
-		    std::cout << hitsAndFracs[iHit].first.rawId() <<  " ";
-		    for(int ijk=31; ijk>=0; ijk--){
-		      int x = (hitsAndFracs[iHit].first.rawId() >> ijk) & 0x1;
-		      std::cout << x;
-		    }
-		    std::cout << " " << (hitsAndFracs[iHit].first.rawId() >> 28) << " " << ((hitsAndFracs[iHit].first.rawId() >> 25) & 0x7) << " " << hDet << " " << etaPhiPF <<std::endl;
-		  }
+		  int tmpzside = ((hitsAndFracs[iHit].first.rawId() >> 13) & 0x1) ? 1 : -1;
+		  int tmpieta = ((hitsAndFracs[iHit].first.rawId() >> 7) & 0x3F);
+		  h_ietaHO_->Fill(tmpzside*tmpieta);
 
 		  for(edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>::const_iterator ith=hbhereco->begin(); ith!=hbhereco->end(); ++ith){
 		    int etaPhiRecHit = (*ith).id().rawId() & 0x3FFF;
 		    if(etaPhiPF == etaPhiRecHit){
-		      //isMatchedt = true;
 		      if(true){
 			tpfjet_twr_ieta_[tpfjet_ntwrs_] = (*ith).id().ieta();
 			tpfjet_twr_hade_[tpfjet_ntwrs_] = (*ith).energy();
@@ -792,7 +635,6 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  for(edm::SortedCollection<HFRecHit,edm::StrictWeakOrdering<HFRecHit>>::const_iterator ith=hfreco->begin(); ith!=hfreco->end(); ++ith){
 		    int etaPhiRecHit = (*ith).id().rawId() & 0x3FFF;
 		    if(etaPhiPF == etaPhiRecHit){
-		      //isMatchedt = true;
 		      if(true){
 			tpfjet_twr_ieta_[tpfjet_ntwrs_] = (*ith).id().ieta();
 			tpfjet_twr_hade_[tpfjet_ntwrs_] = (*ith).energy();
@@ -811,7 +653,6 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  for(edm::SortedCollection<HORecHit,edm::StrictWeakOrdering<HORecHit>>::const_iterator ith=horeco->begin(); ith!=horeco->end(); ++ith){
 		    int etaPhiRecHit = (*ith).id().rawId() & 0x3FFF;
 		    if(etaPhiPF == etaPhiRecHit){
-		      //isMatchedt = true;
 		      if(true){
 			tpfjet_twr_ieta_[tpfjet_ntwrs_] = (*ith).id().ieta();
 			tpfjet_twr_hade_[tpfjet_ntwrs_] = (*ith).energy();
@@ -841,14 +682,6 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
       ppfjet_p_     = pf_probe.jet()->p();
       ppfjet_eta_   = pf_probe.jet()->eta();
       ppfjet_phi_   = pf_probe.jet()->phi();
-      //ppfjet_photonE_   = pf_probe.jet()->photonEnergy();
-      //ppfjet_photonN_   = pf_probe.jet()->photonMultiplicity();
-      //ppfjet_electronE_ = pf_probe.jet()->electronEnergy();
-      //ppfjet_electronN_ = pf_probe.jet()->electronMultiplicity();
-      //ppfjet_muonE_     = pf_probe.jet()->muonEnergy();
-      //ppfjet_muonN_     = pf_probe.jet()->muonMultiplicity();
-      //ppfjet_HFEME_     = pf_probe.jet()->HFEMEnergy();
-      //ppfjet_HFEMN_     = pf_probe.jet()->HFEMMultiplicity();
       ppfjet_scale_ = pf_probe.scale();
       ppfjet_ntwrs_=0;
       ppfjet_ncandtracks_=0;
@@ -949,31 +782,20 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		reco::PFCluster cluster = *clusterref;
 		
 		std::vector<std::pair<DetId,float>> hitsAndFracs = cluster.hitsAndFractions();
-		if(iEvent.id().event() == testEvent){
-		  std::cout << "Probe hits" << std::endl;
-		}
 		int nHits = hitsAndFracs.size();
 		for(int iHit=0; iHit<nHits; iHit++){
 		  HcalDetId hDet(hitsAndFracs[iHit].first.rawId());
 		  int etaPhiPF = hitsAndFracs[iHit].first.rawId() & 0x3FFF;
-		  
-		  if(iEvent.id().event() == testEvent){
-		    std::cout << hitsAndFracs[iHit].first.rawId() <<  " ";
-		    for(int ijk=31; ijk>=0; ijk--){
-		      int x = (hitsAndFracs[iHit].first.rawId() >> ijk) & 0x1;
-		      std::cout << x;
-		    }
-		    std::cout << " " << (hitsAndFracs[iHit].first.rawId() >> 28) << " " << ((hitsAndFracs[iHit].first.rawId() >> 25) & 0x7) << " " << hDet << " " << etaPhiPF << std::endl;
-		  }
 
+		  //int tmpzside = ((hitsAndFracs[iHit].first.rawId() >> 13) & 0x1) ? 1 : -1;
+		  //int tmpieta = ((hitsAndFracs[iHit].first.rawId() >> 7) & 0x3F);
+		  //h_ietaHCAL_->Fill(tmpzside*tmpieta);
+		  
 		  for(edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>::const_iterator ith=hbhereco->begin(); ith!=hbhereco->end(); ++ith){
 		    int etaPhiRecHit = (*ith).id().rawId() & 0x3FFF;
 		    if(etaPhiPF == etaPhiRecHit){
-		      //isMatchedp = true;
-		      //if((*ith).energy() > 0.0 && hitsAndFracs[iHit].second > 0.0){
 		      if(true){
 			ppfjet_twr_ieta_[ppfjet_ntwrs_] = (*ith).id().ieta();
-			//std::cout << ppfjet_twr_ieta_[ppfjet_ntwrs_] << std::endl;
 			ppfjet_twr_hade_[ppfjet_ntwrs_] = (*ith).energy();
 			ppfjet_twr_frac_[ppfjet_ntwrs_] = hitsAndFracs[iHit].second;
 			if(hasTrack){
@@ -990,12 +812,8 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  for(edm::SortedCollection<HFRecHit,edm::StrictWeakOrdering<HFRecHit>>::const_iterator ith=hfreco->begin(); ith!=hfreco->end(); ++ith){
 		    int etaPhiRecHit = (*ith).id().rawId() & 0x3FFF;
 		    if(etaPhiPF == etaPhiRecHit){
-		      //isMatchedp = true;
-		      //if((*ith).energy() > 0.0 && hitsAndFracs[iHit].second > 0.0){
 		      if(true){
 			ppfjet_twr_ieta_[ppfjet_ntwrs_] = (*ith).id().ieta();
-			//int tmpieta = (*ith).id().ieta();
-			//std::cout << ppfjet_twr_ieta_[ppfjet_ntwrs_] << std::endl;
 			ppfjet_twr_hade_[ppfjet_ntwrs_] = (*ith).energy();
 			ppfjet_twr_frac_[ppfjet_ntwrs_] = hitsAndFracs[iHit].second;
 			if(hasTrack){
@@ -1012,12 +830,8 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  for(edm::SortedCollection<HORecHit,edm::StrictWeakOrdering<HORecHit>>::const_iterator ith=horeco->begin(); ith!=horeco->end(); ++ith){
 		    int etaPhiRecHit = (*ith).id().rawId() & 0x3FFF;
 		    if(etaPhiPF == etaPhiRecHit){
-		      //isMatchedp = true;
-		      //if((*ith).energy() > 0.0 && hitsAndFracs[iHit].second > 0.0){
 		      if(true){
 			ppfjet_twr_ieta_[ppfjet_ntwrs_] = (*ith).id().ieta();
-			//int tmpieta = (*ith).id().ieta();
-			//std::cout << ppfjet_twr_ieta_[ppfjet_ntwrs_] << std::endl;
 			ppfjet_twr_hade_[ppfjet_ntwrs_] = (*ith).energy();
 			ppfjet_twr_frac_[ppfjet_ntwrs_] = hitsAndFracs[iHit].second;
 			if(hasTrack){
@@ -1032,12 +846,42 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  }
 		} // Loop over hits
 	      } // Test if element is from HCAL
+	      else if(elements[iEle].type() == reco::PFBlockElement::HFHAD){
+		types |= 0x2;
+		ntypes++;
+		
+		h_etaHFHAD_->Fill((*it)->eta());
+		
+	      }
+	      else if(elements[iEle].type() == reco::PFBlockElement::HFEM){
+		types |= 0x4;
+		ntypes++;
+		reco::PFClusterRef clusterref = elements[iEle].clusterRef();
+		h_etaHFEM_->Fill((*it)->eta());
+	      }
+	      else if(elements[iEle].type() == reco::PFBlockElement::HO){
+		types |= 0x8;
+		ntypes++;
+		reco::PFClusterRef clusterref = elements[iEle].clusterRef();
+		reco::PFCluster cluster = *clusterref;
+
+		std::vector<std::pair<DetId,float>> hitsAndFracs = cluster.hitsAndFractions();
+		int nHits = hitsAndFracs.size();
+		for(int iHit=0; iHit<nHits; iHit++){
+		  HcalDetId hDet(hitsAndFracs[iHit].first.rawId());
+		  int etaPhiPF = hitsAndFracs[iHit].first.rawId() & 0x3FFF;
+
+		  int tmpzside = ((hitsAndFracs[iHit].first.rawId() >> 13) & 0x1) ? 1 : -1;
+		  int tmpieta = ((hitsAndFracs[iHit].first.rawId() >> 7) & 0x3F);
+		  h_ietaHO_->Fill(tmpzside*tmpieta);
+
+		  
+		} // Loop over hits
+	      } // Test if element is from HO
 	    } // Test for right element index
 	  } // Loop over elements
 	} // Loop over elements in blocks
       } // Loop over PF constitutents
-
-      //std::cout << "Matched " << isMatchedt << " " << isMatchedp << std::endl;
       
       // fill genjet tag/probe variables
       tpfjet_gendr_ = 99999.;
@@ -1061,90 +905,13 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	  tpfjet_genp_ = jet->p();
 	}
       }
-      /*~~~for(reco::GenJetCollection::const_iterator it=genjets->begin(); it!=genjets->end(); ++it) {
-	const reco::GenJet* jet=&(*it);
-	double dr=deltaR(jet, pf_probe.jet());
-	if(dr<ppfjet_gendr_) {
-	  ppfjet_gendr_ = dr;
-	  ppfjet_genpt_ = jet->pt();
-	  ppfjet_genp_ = jet->p();
-	}
-	dr=deltaR(jet, pf_tag.jet());
-	if(dr<tpfjet_gendr_) {
-	  tpfjet_gendr_ = dr;
-	  tpfjet_genpt_ = jet->pt();
-	  tpfjet_genp_ = jet->p();
-	}
-	}*/
       
       // fill dijet variables
       pf_dijet_deta_=std::fabs(std::fabs(pf_tag.jet()->eta())-std::fabs(pf_probe.jet()->eta()));
       pf_dijet_dphi_=pf_tag.jet()->phi()-pf_probe.jet()->phi();
       if(pf_dijet_dphi_>3.1415) pf_dijet_dphi_ = 6.2832-pf_dijet_dphi_;
       pf_dijet_balance_ = (tpfjet_pt_-ppfjet_pt_)/(tpfjet_pt_+ppfjet_pt_);
-
-      if(iEvent.id().event() == testEvent){
-	std::cout << "RecHits" << std::endl;
-	std::cout << "HBHE" << std::endl;
-	for(edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>::const_iterator it=hbhereco->begin(); it!=hbhereco->end(); ++it){
-	  std::cout << (*it).id().rawId() <<  " ";
-	  for(int ijk=31; ijk>=0; ijk--){
-	    int x = ((*it).id().rawId() >> ijk) & 0x1;
-	    std::cout << x;
-	  }
-	  std::cout << " " << ((*it).id().rawId() >> 28) << " " << (((*it).id().rawId() >> 25) & 0x7) << " " << (*it).id() << " " << ((*it).id().rawId() & 0x3FFF) << std::endl;
-	}
-	std::cout << "HF" << std::endl;
-	for(edm::SortedCollection<HFRecHit,edm::StrictWeakOrdering<HFRecHit>>::const_iterator it=hfreco->begin(); it!=hfreco->end(); ++it){
-	  std::cout << (*it).id().rawId() <<  " ";
-	  for(int ijk=31; ijk>=0; ijk--){
-	    int x = ((*it).id().rawId() >> ijk) & 0x1;
-	    std::cout << x;
-	  }
-	  std::cout << " " << ((*it).id().rawId() >> 28) << " " << (((*it).id().rawId() >> 25) & 0x7) << " " << (*it).id() << " " << ((*it).id().rawId() & 0x3FFF) << std::endl;
-	}
-	std::cout << "HO" << std::endl;
-	for(edm::SortedCollection<HORecHit,edm::StrictWeakOrdering<HORecHit>>::const_iterator it=horeco->begin(); it!=horeco->end(); ++it){
-	  std::cout << (*it).id().rawId() <<  " ";
-	  for(int ijk=31; ijk>=0; ijk--){
-	    int x = ((*it).id().rawId() >> ijk) & 0x1;
-	    std::cout << x;
-	  }
-	  std::cout << " " << ((*it).id().rawId() >> 28) << " " << (((*it).id().rawId() >> 25) & 0x7) << " " << (*it).id() << " " << ((*it).id().rawId() & 0x3FFF) << std::endl;
-	}
-      }
-
-
-      /*std::cout << "towerMaker" << std::endl;
-      for(edm::SortedCollection<CaloTower,edm::StrictWeakOrdering<CaloTower>>::const_iterator it=towerMaker->begin(); it!=towerMaker->end(); ++it){
-	std::cout << (*it).id() << " " << (*it).constituentsSize() << std::endl;
-	std::vector<DetId> caloTowerConstituents = (*it).constituents();
-	for(unsigned int i=0; i<(*it).constituentsSize(); i++){
-	  if((caloTowerConstituents[i].rawId() >> 28) == 4){
-	    std::cout << caloTowerConstituents[i].rawId() << " ";
-	    for(int ijk=31; ijk>=0; ijk--){
-	      int x = (caloTowerConstituents[i].rawId() >> ijk) & 0x1;
-	      std::cout << x;
-	    }
-	    int tmpzside = ((caloTowerConstituents[i].rawId() >> 13) & 0x1) ? 1 : -1;
-	    int tmpieta = ((caloTowerConstituents[i].rawId() >> 7) & 0x3F);
-	    std::cout << " " << (caloTowerConstituents[i].rawId() >> 28) << " " << ((caloTowerConstituents[i].rawId() >> 25) & 0x7) << " " << (caloTowerConstituents[i].rawId() & 0x3FFF) << " (" << tmpzside*tmpieta << "," << (caloTowerConstituents[i].rawId() & 0x7F) << ")" << std::endl; 
-	  }
-	}
-	}*/
-
-
-      for(edm::SortedCollection<HFRecHit,edm::StrictWeakOrdering<HFRecHit>>::const_iterator it=hfreco->begin(); it!=hfreco->end(); ++it){
-	int tmpiphi = ((*it).id().rawId() & 0x7F);
-	if(tmpiphi % 2 == 0){
-	  std::cout << "HF iphi " << tmpiphi << std::endl;
-	}
-	if(tmpiphi > maxhfiphi){
-	  maxhfiphi = tmpiphi;
-	}
-      }
       
-      //std::cout << "tag tracks: " << tpfjet_ncandtracks_ << std::endl;
       pf_tree_->Fill();
     }
   }
@@ -1209,6 +976,10 @@ void CalcRespCorrDiJets::beginJob()
   if(doPFJets_){
     h_types_ = new TH1D("h_types","h_types",16,0,16);
     h_ntypes_ = new TH1D("h_ntypes","h_ntypes",50,0,50);
+    h_ietaHCAL_ = new TH1D("h_ietaHCAL","h_ietaHCAL",83,-41.5,41.5);
+    h_etaHFHAD_ = new TH1D("h_etaHFHAD","h_etaHFHAD",100,-5.5,5.5);
+    h_etaHFEM_ = new TH1D("h_etaHFEM","h_etaHFEM",100,-5.5,5.5);
+    h_ietaHO_ = new TH1D("h_ietaHO","h_ietaHO",83,-41.5,41.5);
     hPassSelPF_ = new TH1D("hPassSelectionPF", "Selection Pass Failures PFJets",200,-0.5,199.5);
 
     pf_tree_ = new TTree("pf_dijettree", "tree for dijet balancing using PFJets");
@@ -1377,11 +1148,15 @@ CalcRespCorrDiJets::endJob() {
     calo_tree_->Write();
   }
   if(doPFJets_){
+    h_types_->Write();
+    h_ntypes_->Write();
+    h_ietaHCAL_->Write();
+    h_etaHFHAD_->Write();
+    h_etaHFEM_->Write();
+    h_ietaHO_->Write();
     hPassSelPF_->Write();
     pf_tree_->Write();
   }
-  h_types_->Write();
-  h_ntypes_->Write();
   rootfile_->Close();
 
   std::cout << "maxhfiphi " << maxhfiphi << std::endl;

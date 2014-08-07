@@ -130,6 +130,10 @@ class CalcRespCorrDiJets : public edm::EDAnalyzer {
   TH1D* hPassSelPF_;
   TH1D* h_types_;
   TH1D* h_ntypes_;
+  TH1D* h_ietaHCAL_;
+  TH1D* h_etaHFHAD_;
+  TH1D* h_etaHFEM_;
+  TH1D* h_ietaHO_;
   TTree* calo_tree_;
   TTree* pf_tree_;
   float tcalojet_pt_, tcalojet_p_, tcalojet_eta_, tcalojet_phi_, tcalojet_emf_, tcalojet_scale_;
