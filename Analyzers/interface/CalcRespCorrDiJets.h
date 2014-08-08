@@ -8,6 +8,8 @@
 //
 //    author: J.P. Chou, Brown
 //
+//    updated: David G. Sheffield, Rutgers
+//
 //
 
 // system include files
@@ -195,6 +197,8 @@ class CalcRespCorrDiJets : public edm::EDAnalyzer {
 
   // helper functions
   double deltaR(const reco::Jet* j1, const reco::Jet* j2);
+  int getEtaPhi(const DetId id);
+  int getEtaPhi(const HcalDetId id);
 
   struct CaloJetCorretPairComp {
     inline bool operator() ( const CaloJetCorretPair& a, const CaloJetCorretPair& b) {
