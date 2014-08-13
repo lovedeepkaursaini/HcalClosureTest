@@ -124,6 +124,7 @@ class CalcRespCorrDiJets : public edm::EDAnalyzer {
   double maxJetEMF_;             // maximum EMF of the tag and probe jets
   bool doCaloJets_;              // use CaloJets
   bool doPFJets_;                // use PFJets
+  bool doGenJets_;               // use GenJets
 
   // root file/histograms
   TFile* rootfile_;
@@ -140,6 +141,9 @@ class CalcRespCorrDiJets : public edm::EDAnalyzer {
   TH1D* h_HFEM_n_;
   TH1D* h_HFHAD_type_;
   TH1D* h_HFEM_type_;
+  TH1D* h_HBHE_n_;
+  TH1D* h_HF_n_;
+  TH1D* h_HO_n_;
   TTree* calo_tree_;
   TTree* pf_tree_;
   float tcalojet_pt_, tcalojet_p_, tcalojet_eta_, tcalojet_phi_, tcalojet_emf_, tcalojet_scale_;
@@ -168,8 +172,8 @@ class CalcRespCorrDiJets : public edm::EDAnalyzer {
   float tpfjet_had_E_[1000], tpfjet_had_px_[1000], tpfjet_had_py_[1000], tpfjet_had_pz_[1000], tpfjet_had_EcalE_[1000], tpfjet_had_emf_[1000];
   int tpfjet_had_id_[1000];
   int tpfjet_ntwrs_;
-  int tpfjet_twr_ieta_[1000], tpfjet_twr_candtrackind_[1000], tpfjet_twr_hadind_[1000];
-  float tpfjet_twr_eme_[1000], tpfjet_twr_hade_[1000], tpfjet_twr_frac_[1000];
+  int tpfjet_twr_ieta_[5000], tpfjet_twr_candtrackind_[5000], tpfjet_twr_hadind_[5000];
+  float tpfjet_twr_eme_[5000], tpfjet_twr_hade_[5000], tpfjet_twr_frac_[5000];
   int tpfjet_ncandtracks_;
   float tpfjet_candtrack_px_[1000], tpfjet_candtrack_py_[1000], tpfjet_candtrack_pz_[1000], tpfjet_candtrack_EcalE_[1000];
   float ppfjet_pt_, ppfjet_p_, ppfjet_eta_, ppfjet_phi_, ppfjet_scale_;
@@ -184,8 +188,8 @@ class CalcRespCorrDiJets : public edm::EDAnalyzer {
   float ppfjet_had_E_[1000], ppfjet_had_px_[1000], ppfjet_had_py_[1000], ppfjet_had_pz_[1000], ppfjet_had_EcalE_[1000], ppfjet_had_emf_[1000];
   int ppfjet_had_id_[1000];
   int ppfjet_ntwrs_;
-  int ppfjet_twr_ieta_[1000], ppfjet_twr_candtrackind_[1000], ppfjet_twr_hadind_[1000];
-  float ppfjet_twr_eme_[1000], ppfjet_twr_hade_[1000], ppfjet_twr_frac_[1000];
+  int ppfjet_twr_ieta_[5000], ppfjet_twr_candtrackind_[5000], ppfjet_twr_hadind_[5000];
+  float ppfjet_twr_eme_[5000], ppfjet_twr_hade_[5000], ppfjet_twr_frac_[5000];
   int ppfjet_ncandtracks_;
   float ppfjet_candtrack_px_[1000], ppfjet_candtrack_py_[1000], ppfjet_candtrack_pz_[1000], ppfjet_candtrack_EcalE_[1000];
   float pf_dijet_deta_, pf_dijet_dphi_, pf_dijet_balance_;

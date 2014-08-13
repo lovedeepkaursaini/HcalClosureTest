@@ -48,6 +48,7 @@ CalcRespCorrDiJets::CalcRespCorrDiJets(const edm::ParameterSet& iConfig)
   maxJetEMF_         = iConfig.getParameter<double>("maxJetEMF");
   doCaloJets_        = iConfig.getParameter<bool>("doCaloJets");
   doPFJets_          = iConfig.getParameter<bool>("doPFJets");
+  doGenJets_         = iConfig.getParameter<bool>("doGenJets");
   debug_             = iConfig.getUntrackedParameter<bool>("debug", false);
 }
 
@@ -63,13 +64,15 @@ CalcRespCorrDiJets::~CalcRespCorrDiJets()
 void
 CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evSetup)
 { 
-  // Get GenJets
   edm::Handle<std::vector<reco::GenJet>> genjets;
-  iEvent.getByLabel(genJetCollName_,genjets);
-  if(!genjets.isValid()) {
-    throw edm::Exception(edm::errors::ProductNotFound)
-      << " could not find GenJet vector named " << genJetCollName_ << ".\n";
-    return;
+  if(doGenJets_){
+    // Get GenJets
+    iEvent.getByLabel(genJetCollName_,genjets);
+    if(!genjets.isValid()) {
+      throw edm::Exception(edm::errors::ProductNotFound)
+	<< " could not find GenJet vector named " << genJetCollName_ << ".\n";
+      return;
+    }
   }
 
   // Run over CaloJets
@@ -212,26 +215,28 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	++pcalojet_ntwrs_;
       }
       
-      // fill genjet tag/probe variables
-      tcalojet_gendr_ = 99999.;
-      tcalojet_genpt_ = 0;
-      tcalojet_genp_  = 0;
-      pcalojet_gendr_ = 99999.;
-      pcalojet_genpt_ = 0;
-      pcalojet_genp_  = 0;
-      for(std::vector<reco::GenJet>::const_iterator it=genjets->begin(); it!=genjets->end(); ++it){
-	const reco::GenJet* jet=&(*it);
-	double dr=deltaR(jet, calo_probe.jet());
-	if(dr<pcalojet_gendr_) {
-	  pcalojet_gendr_ = dr;
-	  pcalojet_genpt_ = jet->pt();
-	  pcalojet_genp_ = jet->p();
-	}
-	dr=deltaR(jet, calo_tag.jet());
-	if(dr<tcalojet_gendr_) {
-	  tcalojet_gendr_ = dr;
-	  tcalojet_genpt_ = jet->pt();
-	  tcalojet_genp_ = jet->p();
+      if(doGenJets_){
+	// fill genjet tag/probe variables
+	tcalojet_gendr_ = 99999.;
+	tcalojet_genpt_ = 0;
+	tcalojet_genp_  = 0;
+	pcalojet_gendr_ = 99999.;
+	pcalojet_genpt_ = 0;
+	pcalojet_genp_  = 0;
+	for(std::vector<reco::GenJet>::const_iterator it=genjets->begin(); it!=genjets->end(); ++it){
+	  const reco::GenJet* jet=&(*it);
+	  double dr=deltaR(jet, calo_probe.jet());
+	  if(dr<pcalojet_gendr_) {
+	    pcalojet_gendr_ = dr;
+	    pcalojet_genpt_ = jet->pt();
+	    pcalojet_genp_ = jet->p();
+	  }
+	  dr=deltaR(jet, calo_tag.jet());
+	  if(dr<tcalojet_gendr_) {
+	    tcalojet_gendr_ = dr;
+	    tcalojet_genpt_ = jet->pt();
+	    tcalojet_genp_ = jet->p();
+	  }
 	}
       }
       
@@ -258,8 +263,8 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 
     // Get RecHits in HB and HE
     edm::Handle<edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>> hbhereco;
-    //iEvent.getByLabel(RecHitLabelName_,hbheRecHitInstance_,hbhereco);
-    iEvent.getByLabel(hbheRecHitInstance_,hbhereco);
+    iEvent.getByLabel(RecHitLabelName_,hbheRecHitInstance_,hbhereco);
+    //iEvent.getByLabel(hbheRecHitInstance_,hbhereco);
     if(!hbhereco.isValid()) {
       throw edm::Exception(edm::errors::ProductNotFound)
 	<< " could not find HBHERecHit named " << RecHitLabelName_ << ":" << hbheRecHitInstance_ << ".\n";
@@ -268,8 +273,8 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
     
     // Get RecHits in HF
     edm::Handle<edm::SortedCollection<HFRecHit,edm::StrictWeakOrdering<HFRecHit>>> hfreco;
-    //iEvent.getByLabel(RecHitLabelName_,hfRecHitInstance_,hfreco);
-    iEvent.getByLabel(hfRecHitInstance_,hfreco);
+    iEvent.getByLabel(RecHitLabelName_,hfRecHitInstance_,hfreco);
+    //iEvent.getByLabel(hfRecHitInstance_,hfreco);
     if(!hfreco.isValid()) {
       throw edm::Exception(edm::errors::ProductNotFound)
 	<< " could not find HFRecHit named " << RecHitLabelName_ << ":" << hfRecHitInstance_ << ".\n";
@@ -278,13 +283,29 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 
     // Get RecHits in HO
     edm::Handle<edm::SortedCollection<HORecHit,edm::StrictWeakOrdering<HORecHit>>> horeco;
-    //iEvent.getByLabel(RecHitLabelName_,hoRecHitInstance_,horeco);
-    iEvent.getByLabel(hoRecHitInstance_,horeco);
+    iEvent.getByLabel(RecHitLabelName_,hoRecHitInstance_,horeco);
+    //iEvent.getByLabel(hoRecHitInstance_,horeco);
     if(!horeco.isValid()) {
       throw edm::Exception(edm::errors::ProductNotFound)
 	<< " could not find HORecHit named " << RecHitLabelName_ << ":" << hoRecHitInstance_ << ".\n";
       return;
     }
+    
+    int HBHE_n = 0;
+    for(edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>::const_iterator ith=hbhereco->begin(); ith!=hbhereco->end(); ++ith){
+      HBHE_n++;
+    }
+    int HF_n = 0;
+    for(edm::SortedCollection<HFRecHit,edm::StrictWeakOrdering<HFRecHit>>::const_iterator ith=hfreco->begin(); ith!=hfreco->end(); ++ith){
+      HF_n++;
+    }
+    int HO_n = 0;
+    for(edm::SortedCollection<HORecHit,edm::StrictWeakOrdering<HORecHit>>::const_iterator ith=horeco->begin(); ith!=horeco->end(); ++ith){
+      HO_n++;
+    }
+    h_HBHE_n_->Fill(HBHE_n);
+    h_HF_n_->Fill(HF_n);
+    h_HO_n_->Fill(HO_n);
     
     // Get jet corrections
     const JetCorrector* correctorPF = JetCorrector::getJetCorrector(pfJetCorrName_,evSetup);
@@ -472,7 +493,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	  tpfjet_had_n_++;
 	  break;
 	}
-		
+	
 	float HFHAD_E = 0;
 	float HFEM_E = 0;
 	int HFHAD_n_ = 0;
@@ -519,6 +540,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 			  tpfjet_twr_candtrackind_[tpfjet_ntwrs_] = -1;
 			}
 			++tpfjet_ntwrs_;
+			if(debug_ && tpfjet_ntwrs_ == 5000) std::cout << "tpfjet_ntwrs_ " << tpfjet_ntwrs_ << std::endl; //debug
 		      }
 		    } // Test if ieta,iphi matches
 		  } // Loop over rechits
@@ -532,14 +554,16 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		
 		h_etaHFHAD_->Fill((*it)->eta());
 		
-		int candieta = 63;
+		int candabsieta = 63;
+		int candieta;
 		if(fabs((*it)->eta()) > hfieta[0]){
 		  for(int itieta = 1; itieta<14; itieta++){
 		    if(fabs((*it)->eta()) < hfieta[itieta]){
-		      candieta = itieta + 28;
-		      if((*it)->eta() > 0.0){
-			candieta |= 0x40;
-		      }
+		      candabsieta = itieta + 28;
+		      candieta = candabsieta | (((*it)->eta() > 0.0) ? 0x40 : 0x0);
+		      /*if((*it)->eta() > 0.0){
+			candieta = candabsieta | 0x40;
+			}*/
 		      break;
 		    }
 		  }
@@ -550,11 +574,21 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  if(candiphi % 2 == 0){
 		    candiphi++;
 		  }
+		  if(candabsieta >= 40){
+		    if(candiphi % 4 == 1){
+		      candiphi += 2;
+		    }
+		  }
 		}
 		else{
 		  candiphi = floor((*it)->phi()/0.087);
 		  if(candiphi % 2 ==0){
 		    candiphi++;
+		  }
+		  if(candabsieta >= 40){
+		    if(candiphi % 4 == 1){
+		      candiphi += 2;
+		    }
 		  }
 		}
 
@@ -570,6 +604,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		      //tpfjet_twr_frac_[tpfjet_ntwrs_] = hitsAndFracs[iHit].second;
 		      tpfjet_twr_hadind_[tpfjet_ntwrs_] = tpfjet_had_n_ - 1;
 		      ++tpfjet_ntwrs_;
+		      if(debug_ && tpfjet_ntwrs_ == 5000) std::cout << "tpfjet_ntwrs_ " << tpfjet_ntwrs_ << std::endl; //debug
 		      HFHAD_E += (*ith).energy();
 		      //std::cout << "candidate energy: " << (*it)->energy() << " RecHit energy: " << (*ith).energy() << std::endl;
 		    }
@@ -584,14 +619,19 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 
 		h_etaHFEM_->Fill((*it)->eta());
 
-		int candieta = 63;
+		int candabsieta = 63;
+		int candieta;
 		if(fabs((*it)->eta()) > hfieta[0]){
 		  for(int itieta = 1; itieta<14; itieta++){
 		    if(fabs((*it)->eta()) < hfieta[itieta]){
-		      candieta = itieta + 28;
-		      if((*it)->eta() > 0.0){
-			candieta |= 0x40;
+		      candabsieta = itieta + 28;
+		      candieta = candabsieta | (((*it)->eta() > 0.0) ? 0x40 : 0x0);
+		      /*if((*it)->eta() > 0.0){
+			candieta = candabsieta | 0x40;
 		      }
+		      else{
+			candieta = candabsieta;
+			}*/
 		      break;
 		    }
 		  }
@@ -602,11 +642,21 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  if(candiphi % 2 == 0){
 		    candiphi++;
 		  }
+		  if(candabsieta >= 40){
+		    if(candiphi % 4 == 1){
+		      candiphi += 2;
+		    }
+		  }
 		}
 		else{
 		  candiphi = floor((*it)->phi()/0.087);
-		  if(candiphi % 2 ==0){
+		  if(candiphi % 2 == 0){
 		    candiphi++;
+		  }
+		  if(candabsieta >= 40){
+		    if(candiphi % 4 == 1){
+		      candiphi += 2;
+		    }
 		  }
 		}
 
@@ -622,6 +672,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		      //tpfjet_twr_frac_[tpfjet_ntwrs_] = hitsAndFracs[iHit].second;
 		      tpfjet_twr_hadind_[tpfjet_ntwrs_] = tpfjet_had_n_ - 1;
 		      ++tpfjet_ntwrs_;
+		      if(debug_ && tpfjet_ntwrs_ == 5000) std::cout << "tpfjet_ntwrs_ " << tpfjet_ntwrs_ << std::endl; //debug
 		      HFEM_E += (*ith).energy();
 		      //std::cout << "candidate energy: " << (*it)->energy() << " RecHit energy: " << (*ith).energy() << std::endl;
 		    }
@@ -660,6 +711,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 			  tpfjet_twr_candtrackind_[tpfjet_ntwrs_] = -1;
 			}
 			++tpfjet_ntwrs_;
+			if(debug_ && tpfjet_ntwrs_ == 5000) std::cout << "tpfjet_ntwrs_ " << tpfjet_ntwrs_ << std::endl; //debug
 		      }
 		    } // Test if ieta,iphi match
 		  } // Loop over rechits
@@ -687,7 +739,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 
       h_types_->Fill(types);
       h_ntypes_->Fill(ntypes);
-      
+
       // fill probe jet variables
       ppfjet_pt_    = pf_probe.jet()->pt();
       ppfjet_p_     = pf_probe.jet()->p();
@@ -830,6 +882,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 			  ppfjet_twr_candtrackind_[ppfjet_ntwrs_] = -1;
 			}
 			++ppfjet_ntwrs_;
+			if(debug_ && ppfjet_ntwrs_ == 5000) std::cout << "ppfjet_ntwrs_ " << ppfjet_ntwrs_ << std::endl; //debug
 		      }
 		    } // Test if ieta,iphi matches
 		  } // Loop over rechits
@@ -843,14 +896,16 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		
 		h_etaHFHAD_->Fill((*it)->eta());
 
-		int candieta = 63;
+		int candabsieta = 63;
+		int candieta;
 		if(fabs((*it)->eta()) > hfieta[0]){
 		  for(int itieta = 1; itieta<14; itieta++){
 		    if(fabs((*it)->eta()) < hfieta[itieta]){
 		      candieta = itieta + 28;
-		      if((*it)->eta() > 0.0){
+		      candieta = candabsieta | (((*it)->eta() > 0.0) ? 0x40 : 0x0);
+		      /*if((*it)->eta() > 0.0){
 			candieta |= 0x40;
-		      }
+			}*/
 		      break;
 		    }
 		  }
@@ -861,11 +916,21 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  if(candiphi % 2 == 0){
 		    candiphi++;
 		  }
+		  if(candabsieta >= 40){
+		    if(candiphi % 4 == 1){
+		      candiphi += 2;
+		    }
+		  }
 		}
 		else{
 		  candiphi = floor((*it)->phi()/0.087);
-		  if(candiphi % 2 ==0){
+		  if(candiphi % 2 == 0){
 		    candiphi++;
+		  }
+		  if(candabsieta >= 40){
+		    if(candiphi % 4 == 1){
+		      candiphi += 2;
+		    }
 		  }
 		}
 
@@ -880,6 +945,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		      ppfjet_twr_hade_[ppfjet_ntwrs_] = (*ith).energy();
 		      ppfjet_twr_hadind_[ppfjet_ntwrs_] = ppfjet_had_n_ - 1;
 		      ++ppfjet_ntwrs_;
+		      if(debug_ && ppfjet_ntwrs_ == 5000) std::cout << "ppfjet_ntwrs_ " << ppfjet_ntwrs_ << std::endl; //debug
 		      HFHAD_E += (*ith).energy();
 		      //std::cout << "candidate energy: " << (*it)->energy() << " RecHit energy: " << (*ith).energy() << std::endl;
 		    }
@@ -894,14 +960,16 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 
 		h_etaHFEM_->Fill((*it)->eta());
 		
-		int candieta = 63;
+		int candabsieta = 63;
+		int candieta;
 		if(fabs((*it)->eta()) > hfieta[0]){
 		  for(int itieta = 1; itieta<14; itieta++){
 		    if(fabs((*it)->eta()) < hfieta[itieta]){
 		      candieta = itieta + 28;
-		      if((*it)->eta() > 0.0){
+		      candieta = candabsieta | (((*it)->eta() > 0.0) ? 0x40 : 0x0);
+		      /*if((*it)->eta() > 0.0){
 			candieta |= 0x40;
-		      }
+			}*/
 		      break;
 		    }
 		  }
@@ -912,11 +980,21 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  if(candiphi % 2 == 0){
 		    candiphi++;
 		  }
+		  if(candabsieta >= 40){
+		    if(candiphi % 4 == 1){
+		      candiphi += 2;
+		    }
+		  }
 		}
 		else{
 		  candiphi = floor((*it)->phi()/0.087);
 		  if(candiphi % 2 ==0){
 		    candiphi++;
+		  }
+		  if(candabsieta >= 40){
+		    if(candiphi % 4 == 1){
+		      candiphi += 2;
+		    }
 		  }
 		}
 
@@ -932,6 +1010,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		      //tpfjet_twr_frac_[tpfjet_ntwrs_] = hitsAndFracs[iHit].second;
 		      ppfjet_twr_hadind_[ppfjet_ntwrs_] = ppfjet_had_n_ - 1;
 		      ++ppfjet_ntwrs_;
+		      if(debug_ && ppfjet_ntwrs_ == 5000) std::cout << "ppfjet_ntwrs_ " << ppfjet_ntwrs_ << std::endl; //debug
 		      HFEM_E += (*ith).energy();
 		      //std::cout << "candidate energy: " << (*it)->energy() << " RecHit energy: " << (*ith).energy() << std::endl;
 		    }
@@ -970,6 +1049,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 			  ppfjet_twr_candtrackind_[ppfjet_ntwrs_] = -1;
 			}
 			++ppfjet_ntwrs_;
+			if(debug_ && ppfjet_ntwrs_ == 5000) std::cout << "ppfjet_ntwrs_ " << ppfjet_ntwrs_ << std::endl; //debug
 		      }
 		    } // Test if ieta,iphi match
 		  } // Loop over rechits
@@ -995,26 +1075,28 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	}
       } // Loop over PF constitutents
       
-      // fill genjet tag/probe variables
-      tpfjet_gendr_ = 99999.;
-      tpfjet_genpt_ = 0;
-      tpfjet_genp_  = 0;
-      ppfjet_gendr_ = 99999.;
-      ppfjet_genpt_ = 0;
-      ppfjet_genp_  = 0;
-      for(std::vector<reco::GenJet>::const_iterator it=genjets->begin(); it!=genjets->end(); ++it){
-	const reco::GenJet* jet=&(*it);
-	double dr=deltaR(jet, pf_probe.jet());
-	if(dr<ppfjet_gendr_) {
-	  ppfjet_gendr_ = dr;
-	  ppfjet_genpt_ = jet->pt();
-	  ppfjet_genp_ = jet->p();
-	}
-	dr=deltaR(jet, pf_tag.jet());
-	if(dr<tpfjet_gendr_) {
-	  tpfjet_gendr_ = dr;
-	  tpfjet_genpt_ = jet->pt();
-	  tpfjet_genp_ = jet->p();
+      if(doGenJets_){
+	// fill genjet tag/probe variables
+	tpfjet_gendr_ = 99999.;
+	tpfjet_genpt_ = 0;
+	tpfjet_genp_  = 0;
+	ppfjet_gendr_ = 99999.;
+	ppfjet_genpt_ = 0;
+	ppfjet_genp_  = 0;
+	for(std::vector<reco::GenJet>::const_iterator it=genjets->begin(); it!=genjets->end(); ++it){
+	  const reco::GenJet* jet=&(*it);
+	  double dr=deltaR(jet, pf_probe.jet());
+	  if(dr<ppfjet_gendr_) {
+	    ppfjet_gendr_ = dr;
+	    ppfjet_genpt_ = jet->pt();
+	    ppfjet_genp_ = jet->p();
+	  }
+	  dr=deltaR(jet, pf_tag.jet());
+	  if(dr<tpfjet_gendr_) {
+	    tpfjet_gendr_ = dr;
+	    tpfjet_genpt_ = jet->pt();
+	    tpfjet_genp_ = jet->p();
+	  }
 	}
       }
       
@@ -1055,9 +1137,11 @@ void CalcRespCorrDiJets::beginJob()
     calo_tree_->Branch("tcalojet_phi",&tcalojet_phi_, "tcalojet_phi/F");
     calo_tree_->Branch("tcalojet_emf",&tcalojet_emf_, "tcalojet_emf/F");
     calo_tree_->Branch("tcalojet_scale",&tcalojet_scale_, "tcalojet_scale/F");
-    calo_tree_->Branch("tcalojet_genpt",&tcalojet_genpt_, "tcalojet_genpt/F");
-    calo_tree_->Branch("tcalojet_genp",&tcalojet_genp_, "tcalojet_genp/F");
-    calo_tree_->Branch("tcalojet_gendr",&tcalojet_gendr_, "tcalojet_gendr/F");
+    if(doGenJets_){
+      calo_tree_->Branch("tcalojet_genpt",&tcalojet_genpt_, "tcalojet_genpt/F");
+      calo_tree_->Branch("tcalojet_genp",&tcalojet_genp_, "tcalojet_genp/F");
+      calo_tree_->Branch("tcalojet_gendr",&tcalojet_gendr_, "tcalojet_gendr/F");
+    }
     calo_tree_->Branch("tcalojet_EBE",&tcalojet_EBE_, "tcalojet_EBE/F");
     calo_tree_->Branch("tcalojet_EEE",&tcalojet_EEE_, "tcalojet_EEE/F");
     calo_tree_->Branch("tcalojet_HBE",&tcalojet_HBE_, "tcalojet_HBE/F");
@@ -1073,9 +1157,11 @@ void CalcRespCorrDiJets::beginJob()
     calo_tree_->Branch("pcalojet_phi",&pcalojet_phi_, "pcalojet_phi/F");
     calo_tree_->Branch("pcalojet_emf",&pcalojet_emf_, "pcalojet_emf/F");
     calo_tree_->Branch("pcalojet_scale",&pcalojet_scale_, "pcalojet_scale/F");
-    calo_tree_->Branch("pcalojet_genpt",&pcalojet_genpt_, "pcalojet_genpt/F");
-    calo_tree_->Branch("pcalojet_genp",&pcalojet_genp_, "pcalojet_genp/F");
-    calo_tree_->Branch("pcalojet_gendr",&pcalojet_gendr_, "pcalojet_gendr/F");
+    if(doGenJets_){
+      calo_tree_->Branch("pcalojet_genpt",&pcalojet_genpt_, "pcalojet_genpt/F");
+      calo_tree_->Branch("pcalojet_genp",&pcalojet_genp_, "pcalojet_genp/F");
+      calo_tree_->Branch("pcalojet_gendr",&pcalojet_gendr_, "pcalojet_gendr/F");
+    }
     calo_tree_->Branch("pcalojet_EBE",&pcalojet_EBE_, "pcalojet_EBE/F");
     calo_tree_->Branch("pcalojet_EEE",&pcalojet_EEE_, "pcalojet_EEE/F");
     calo_tree_->Branch("pcalojet_HBE",&pcalojet_HBE_, "pcalojet_HBE/F");
@@ -1103,6 +1189,9 @@ void CalcRespCorrDiJets::beginJob()
     h_HFEM_n_ = new TH1D("h_HFEM_n","h_HFEM_n",10,0,10);
     h_HFHAD_type_ = new TH1D("h_HFHAD_type","h_HFHAD_type",16,0,16);
     h_HFEM_type_ = new TH1D("h_HFEM_type","h_HFEM_type",16,0,16);
+    h_HBHE_n_ = new TH1D("h_HBHE_n","h_HBHE_n",200,0,5000);
+    h_HF_n_ = new TH1D("h_HF_n","h_HF_n",200,0,5000);
+    h_HO_n_ = new TH1D("h_HO_n","h_HO_n",200,0,5000);
     hPassSelPF_ = new TH1D("hPassSelectionPF", "Selection Pass Failures PFJets",200,-0.5,199.5);
 
     pf_tree_ = new TTree("pf_dijettree", "tree for dijet balancing using PFJets");
@@ -1112,9 +1201,11 @@ void CalcRespCorrDiJets::beginJob()
     pf_tree_->Branch("tpfjet_eta",&tpfjet_eta_, "tpfjet_eta/F");
     pf_tree_->Branch("tpfjet_phi",&tpfjet_phi_, "tpfjet_phi/F");
     pf_tree_->Branch("tpfjet_scale",&tpfjet_scale_, "tpfjet_scale/F");
-    pf_tree_->Branch("tpfjet_genpt",&tpfjet_genpt_, "tpfjet_genpt/F");
-    pf_tree_->Branch("tpfjet_genp",&tpfjet_genp_, "tpfjet_genp/F");
-    pf_tree_->Branch("tpfjet_gendr",&tpfjet_gendr_, "tpfjet_gendr/F");
+    if(doGenJets_){
+      pf_tree_->Branch("tpfjet_genpt",&tpfjet_genpt_, "tpfjet_genpt/F");
+      pf_tree_->Branch("tpfjet_genp",&tpfjet_genp_, "tpfjet_genp/F");
+      pf_tree_->Branch("tpfjet_gendr",&tpfjet_gendr_, "tpfjet_gendr/F");
+    }
     pf_tree_->Branch("tpfjet_unkown_E",&tpfjet_unkown_E_, "tpfjet_unkown_E/F");
     pf_tree_->Branch("tpfjet_electron_E",&tpfjet_electron_E_, "tpfjet_electron_E/F");
     pf_tree_->Branch("tpfjet_muon_E",&tpfjet_muon_E_, "tpfjet_muon_E/F");
@@ -1163,9 +1254,11 @@ void CalcRespCorrDiJets::beginJob()
     pf_tree_->Branch("ppfjet_eta",&ppfjet_eta_, "ppfjet_eta/F");
     pf_tree_->Branch("ppfjet_phi",&ppfjet_phi_, "ppfjet_phi/F");
     pf_tree_->Branch("ppfjet_scale",&ppfjet_scale_, "ppfjet_scale/F");
-    pf_tree_->Branch("ppfjet_genpt",&ppfjet_genpt_, "ppfjet_genpt/F");
-    pf_tree_->Branch("ppfjet_genp",&ppfjet_genp_, "ppfjet_genp/F");
-    pf_tree_->Branch("ppfjet_gendr",&ppfjet_gendr_, "ppfjet_gendr/F");
+    if(doGenJets_){
+      pf_tree_->Branch("ppfjet_genpt",&ppfjet_genpt_, "ppfjet_genpt/F");
+      pf_tree_->Branch("ppfjet_genp",&ppfjet_genp_, "ppfjet_genp/F");
+      pf_tree_->Branch("ppfjet_gendr",&ppfjet_gendr_, "ppfjet_gendr/F");
+    }
     pf_tree_->Branch("ppfjet_unkown_E",&ppfjet_unkown_E_, "ppfjet_unkown_E/F");
     pf_tree_->Branch("ppfjet_electron_E",&ppfjet_electron_E_, "ppfjet_electron_E/F");
     pf_tree_->Branch("ppfjet_muon_E",&ppfjet_muon_E_, "ppfjet_muon_E/F");
@@ -1256,12 +1349,15 @@ CalcRespCorrDiJets::endJob() {
     h_HFEM_n_->Write();
     h_HFHAD_type_->Write();
     h_HFEM_type_->Write();
+    h_HBHE_n_->Write();
+    h_HF_n_->Write();
+    h_HO_n_->Write();
     hPassSelPF_->Write();
     pf_tree_->Write();
   }
   rootfile_->Close();
 
-  std::cout << "maxhfiphi " << maxhfiphi << std::endl;
+  //std::cout << "maxhfiphi " << maxhfiphi << std::endl;
 }
 
 // helper function

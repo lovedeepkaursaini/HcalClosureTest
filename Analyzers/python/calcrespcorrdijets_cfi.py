@@ -23,5 +23,6 @@ calcrespcorrdijets = cms.EDAnalyzer(
     maxJetEMF        = cms.double(0.9),
     doCaloJets       = cms.bool(True),
     doPFJets         = cms.bool(True),
+    doGenJets        = cms.bool(True),
     debug            = cms.untracked.bool(False)
     )
