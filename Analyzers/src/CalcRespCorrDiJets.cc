@@ -390,6 +390,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
       // fill tag jet variables
       tpfjet_pt_    = pf_tag.jet()->pt();
       tpfjet_p_     = pf_tag.jet()->p();
+      tpfjet_E_     = pf_tag.jet()->energy();
       tpfjet_eta_   = pf_tag.jet()->eta();
       tpfjet_phi_   = pf_tag.jet()->phi();
       tpfjet_scale_ = pf_tag.scale();
@@ -555,12 +556,10 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		h_etaHFHAD_->Fill((*it)->eta());
 		
 		int candabsieta = 63;
-		int candieta;
 		if(fabs((*it)->eta()) > hfieta[0]){
 		  for(int itieta = 1; itieta<14; itieta++){
 		    if(fabs((*it)->eta()) < hfieta[itieta]){
 		      candabsieta = itieta + 28;
-		      candieta = candabsieta | (((*it)->eta() > 0.0) ? 0x40 : 0x0);
 		      /*if((*it)->eta() > 0.0){
 			candieta = candabsieta | 0x40;
 			}*/
@@ -568,6 +567,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		    }
 		  }
 		}
+		int candieta = candabsieta | (((*it)->eta() > 0.0) ? 0x40 : 0x0);
 		int candiphi;
 		if((*it)->phi() < 0.0){
 		  candiphi = floor((6.28319 - (*it)->phi())/0.087);
@@ -620,12 +620,10 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		h_etaHFEM_->Fill((*it)->eta());
 
 		int candabsieta = 63;
-		int candieta;
 		if(fabs((*it)->eta()) > hfieta[0]){
 		  for(int itieta = 1; itieta<14; itieta++){
 		    if(fabs((*it)->eta()) < hfieta[itieta]){
 		      candabsieta = itieta + 28;
-		      candieta = candabsieta | (((*it)->eta() > 0.0) ? 0x40 : 0x0);
 		      /*if((*it)->eta() > 0.0){
 			candieta = candabsieta | 0x40;
 		      }
@@ -636,6 +634,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		    }
 		  }
 		}
+		int candieta = candabsieta | (((*it)->eta() > 0.0) ? 0x40 : 0x0);
 		int candiphi;
 		if((*it)->phi() < 0.0){
 		  candiphi = floor((6.28319 - (*it)->phi())/0.087);
@@ -743,6 +742,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
       // fill probe jet variables
       ppfjet_pt_    = pf_probe.jet()->pt();
       ppfjet_p_     = pf_probe.jet()->p();
+      ppfjet_E_     = pf_probe.jet()->energy();
       ppfjet_eta_   = pf_probe.jet()->eta();
       ppfjet_phi_   = pf_probe.jet()->phi();
       ppfjet_scale_ = pf_probe.scale();
@@ -897,12 +897,10 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		h_etaHFHAD_->Fill((*it)->eta());
 
 		int candabsieta = 63;
-		int candieta;
 		if(fabs((*it)->eta()) > hfieta[0]){
 		  for(int itieta = 1; itieta<14; itieta++){
 		    if(fabs((*it)->eta()) < hfieta[itieta]){
-		      candieta = itieta + 28;
-		      candieta = candabsieta | (((*it)->eta() > 0.0) ? 0x40 : 0x0);
+		      candabsieta = itieta + 28;
 		      /*if((*it)->eta() > 0.0){
 			candieta |= 0x40;
 			}*/
@@ -910,6 +908,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		    }
 		  }
 		}
+		int candieta = candabsieta | (((*it)->eta() > 0.0) ? 0x40 : 0x0);
 		int candiphi;
 		if((*it)->phi() < 0.0){
 		  candiphi = floor((6.28319 - (*it)->phi())/0.087);
@@ -961,12 +960,10 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		h_etaHFEM_->Fill((*it)->eta());
 		
 		int candabsieta = 63;
-		int candieta;
 		if(fabs((*it)->eta()) > hfieta[0]){
 		  for(int itieta = 1; itieta<14; itieta++){
 		    if(fabs((*it)->eta()) < hfieta[itieta]){
-		      candieta = itieta + 28;
-		      candieta = candabsieta | (((*it)->eta() > 0.0) ? 0x40 : 0x0);
+		      candabsieta = itieta + 28;
 		      /*if((*it)->eta() > 0.0){
 			candieta |= 0x40;
 			}*/
@@ -974,6 +971,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		    }
 		  }
 		}
+		int candieta = candabsieta | (((*it)->eta() > 0.0) ? 0x40 : 0x0);
 		int candiphi;
 		if((*it)->phi() < 0.0){
 		  candiphi = floor((6.28319 - (*it)->phi())/0.087);
@@ -1198,6 +1196,7 @@ void CalcRespCorrDiJets::beginJob()
 
     pf_tree_->Branch("tpfjet_pt",&tpfjet_pt_, "tpfjet_pt/F");
     pf_tree_->Branch("tpfjet_p",&tpfjet_p_, "tpfjet_p/F");
+    pf_tree_->Branch("tpfjet_E",&tpfjet_E_, "tpfjet_E/F");
     pf_tree_->Branch("tpfjet_eta",&tpfjet_eta_, "tpfjet_eta/F");
     pf_tree_->Branch("tpfjet_phi",&tpfjet_phi_, "tpfjet_phi/F");
     pf_tree_->Branch("tpfjet_scale",&tpfjet_scale_, "tpfjet_scale/F");
@@ -1251,6 +1250,7 @@ void CalcRespCorrDiJets::beginJob()
     pf_tree_->Branch("tpfjet_candtrack_EcalE",tpfjet_candtrack_EcalE_, "tpfjet_candtrack_EcalE[tpfjet_ncandtracks]/F");
     pf_tree_->Branch("ppfjet_pt",&ppfjet_pt_, "ppfjet_pt/F");
     pf_tree_->Branch("ppfjet_p",&ppfjet_p_, "ppfjet_p/F");
+    pf_tree_->Branch("ppfjet_E",&ppfjet_E_, "ppfjet_E/F");
     pf_tree_->Branch("ppfjet_eta",&ppfjet_eta_, "ppfjet_eta/F");
     pf_tree_->Branch("ppfjet_phi",&ppfjet_phi_, "ppfjet_phi/F");
     pf_tree_->Branch("ppfjet_scale",&ppfjet_scale_, "ppfjet_scale/F");
