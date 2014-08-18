@@ -263,8 +263,8 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 
     // Get RecHits in HB and HE
     edm::Handle<edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>> hbhereco;
-    iEvent.getByLabel(RecHitLabelName_,hbheRecHitInstance_,hbhereco);
-    //iEvent.getByLabel(hbheRecHitInstance_,hbhereco);
+    //iEvent.getByLabel(RecHitLabelName_,hbheRecHitInstance_,hbhereco);
+    iEvent.getByLabel(hbheRecHitInstance_,hbhereco);
     if(!hbhereco.isValid()) {
       throw edm::Exception(edm::errors::ProductNotFound)
 	<< " could not find HBHERecHit named " << RecHitLabelName_ << ":" << hbheRecHitInstance_ << ".\n";
@@ -273,8 +273,8 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
     
     // Get RecHits in HF
     edm::Handle<edm::SortedCollection<HFRecHit,edm::StrictWeakOrdering<HFRecHit>>> hfreco;
-    iEvent.getByLabel(RecHitLabelName_,hfRecHitInstance_,hfreco);
-    //iEvent.getByLabel(hfRecHitInstance_,hfreco);
+    //iEvent.getByLabel(RecHitLabelName_,hfRecHitInstance_,hfreco);
+    iEvent.getByLabel(hfRecHitInstance_,hfreco);
     if(!hfreco.isValid()) {
       throw edm::Exception(edm::errors::ProductNotFound)
 	<< " could not find HFRecHit named " << RecHitLabelName_ << ":" << hfRecHitInstance_ << ".\n";
@@ -283,8 +283,8 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 
     // Get RecHits in HO
     edm::Handle<edm::SortedCollection<HORecHit,edm::StrictWeakOrdering<HORecHit>>> horeco;
-    iEvent.getByLabel(RecHitLabelName_,hoRecHitInstance_,horeco);
-    //iEvent.getByLabel(hoRecHitInstance_,horeco);
+    //iEvent.getByLabel(RecHitLabelName_,hoRecHitInstance_,horeco);
+    iEvent.getByLabel(hoRecHitInstance_,horeco);
     if(!horeco.isValid()) {
       throw edm::Exception(edm::errors::ProductNotFound)
 	<< " could not find HORecHit named " << RecHitLabelName_ << ":" << hoRecHitInstance_ << ".\n";
@@ -385,7 +385,17 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
       ppfjet_muon_E_ = ppfjet_muon_px_ = ppfjet_muon_py_ = ppfjet_muon_pz_ = ppfjet_muon_EcalE_ = 0.0;
       ppfjet_photon_E_ = ppfjet_photon_px_ = ppfjet_photon_py_ = ppfjet_photon_pz_ = ppfjet_photon_EcalE_ = 0.0;
       ppfjet_unkown_n_ = ppfjet_electron_n_ = ppfjet_muon_n_ = ppfjet_photon_n_ = 0;
-      ppfjet_had_n_ = 0;      
+      ppfjet_had_n_ = 0;
+      tpfjet_twr_ieta_.clear();
+      tpfjet_twr_candtrackind_.clear();
+      tpfjet_twr_hadind_.clear();
+      tpfjet_twr_hade_.clear();
+      tpfjet_twr_frac_.clear();
+      ppfjet_twr_ieta_.clear();
+      ppfjet_twr_candtrackind_.clear();
+      ppfjet_twr_hadind_.clear();
+      ppfjet_twr_hade_.clear();
+      ppfjet_twr_frac_.clear();
       
       // fill tag jet variables
       tpfjet_pt_    = pf_tag.jet()->pt();
@@ -530,15 +540,21 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		    int etaPhiRecHit = getEtaPhi((*ith).id());
 		    if(etaPhiPF == etaPhiRecHit){
 		      if(true){
-			tpfjet_twr_ieta_[tpfjet_ntwrs_] = (*ith).id().ieta();
-			tpfjet_twr_hade_[tpfjet_ntwrs_] = (*ith).energy();
-			tpfjet_twr_frac_[tpfjet_ntwrs_] = hitsAndFracs[iHit].second;
-			tpfjet_twr_hadind_[tpfjet_ntwrs_] = tpfjet_had_n_ - 1;
+			//tpfjet_twr_ieta_[tpfjet_ntwrs_] = (*ith).id().ieta();
+			tpfjet_twr_ieta_.push_back((*ith).id().ieta());
+			//tpfjet_twr_hade_[tpfjet_ntwrs_] = (*ith).energy();
+			tpfjet_twr_hade_.push_back((*ith).energy());
+			//tpfjet_twr_frac_[tpfjet_ntwrs_] = hitsAndFracs[iHit].second;
+			tpfjet_twr_frac_.push_back(hitsAndFracs[iHit].second);
+			//tpfjet_twr_hadind_[tpfjet_ntwrs_] = tpfjet_had_n_ - 1;
+			tpfjet_twr_hadind_.push_back(tpfjet_had_n_ - 1);
 			if(hasTrack){
-			  tpfjet_twr_candtrackind_[tpfjet_ntwrs_] = tpfjet_ncandtracks_ - 1;
+			  //tpfjet_twr_candtrackind_[tpfjet_ntwrs_] = tpfjet_ncandtracks_ - 1;
+			  tpfjet_twr_candtrackind_.push_back(tpfjet_ncandtracks_ - 1);
 			}
 			else{
-			  tpfjet_twr_candtrackind_[tpfjet_ntwrs_] = -1;
+			  //tpfjet_twr_candtrackind_[tpfjet_ntwrs_] = -1;
+			  tpfjet_twr_candtrackind_.push_back(-1);
 			}
 			++tpfjet_ntwrs_;
 			if(debug_ && tpfjet_ntwrs_ == 5000) std::cout << "tpfjet_ntwrs_ " << tpfjet_ntwrs_ << std::endl; //debug
@@ -599,10 +615,14 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  int etaPhiRecHit = (*ith).id().rawId() & 0x3FFF;
 		  if(etaPhiPF == etaPhiRecHit){
 		    if(true){
-		      tpfjet_twr_ieta_[tpfjet_ntwrs_] = (*ith).id().ieta();
-		      tpfjet_twr_hade_[tpfjet_ntwrs_] = (*ith).energy();
+		      //tpfjet_twr_ieta_[tpfjet_ntwrs_] = (*ith).id().ieta();
+		      tpfjet_twr_ieta_.push_back((*ith).id().ieta());
+		      //tpfjet_twr_hade_[tpfjet_ntwrs_] = (*ith).energy();
+		      tpfjet_twr_hade_.push_back((*ith).energy());
 		      //tpfjet_twr_frac_[tpfjet_ntwrs_] = hitsAndFracs[iHit].second;
-		      tpfjet_twr_hadind_[tpfjet_ntwrs_] = tpfjet_had_n_ - 1;
+		      tpfjet_twr_frac_.push_back(1.0);
+		      //tpfjet_twr_hadind_[tpfjet_ntwrs_] = tpfjet_had_n_ - 1;
+		      tpfjet_twr_hadind_.push_back(tpfjet_had_n_ - 1);
 		      ++tpfjet_ntwrs_;
 		      if(debug_ && tpfjet_ntwrs_ == 5000) std::cout << "tpfjet_ntwrs_ " << tpfjet_ntwrs_ << std::endl; //debug
 		      HFHAD_E += (*ith).energy();
@@ -666,10 +686,14 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  int etaPhiRecHit = (*ith).id().rawId() & 0x3FFF;
 		  if(etaPhiPF == etaPhiRecHit){
 		    if(true){
-		      tpfjet_twr_ieta_[tpfjet_ntwrs_] = (*ith).id().ieta();
-		      tpfjet_twr_hade_[tpfjet_ntwrs_] = (*ith).energy();
+		      //tpfjet_twr_ieta_[tpfjet_ntwrs_] = (*ith).id().ieta();
+		      tpfjet_twr_ieta_.push_back((*ith).id().ieta());
+		      //tpfjet_twr_hade_[tpfjet_ntwrs_] = (*ith).energy();
+		      tpfjet_twr_hade_.push_back((*ith).energy());
 		      //tpfjet_twr_frac_[tpfjet_ntwrs_] = hitsAndFracs[iHit].second;
-		      tpfjet_twr_hadind_[tpfjet_ntwrs_] = tpfjet_had_n_ - 1;
+		      tpfjet_twr_frac_.push_back(1.0);
+		      //tpfjet_twr_hadind_[tpfjet_ntwrs_] = tpfjet_had_n_ - 1;
+		      tpfjet_twr_hadind_.push_back(tpfjet_had_n_ - 1);
 		      ++tpfjet_ntwrs_;
 		      if(debug_ && tpfjet_ntwrs_ == 5000) std::cout << "tpfjet_ntwrs_ " << tpfjet_ntwrs_ << std::endl; //debug
 		      HFEM_E += (*ith).energy();
@@ -699,15 +723,21 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		    int etaPhiRecHit = getEtaPhi((*ith).id());
 		    if(etaPhiPF == etaPhiRecHit){
 		      if(true){
-			tpfjet_twr_ieta_[tpfjet_ntwrs_] = (*ith).id().ieta();
-			tpfjet_twr_hade_[tpfjet_ntwrs_] = (*ith).energy();
-			tpfjet_twr_frac_[tpfjet_ntwrs_] = hitsAndFracs[iHit].second;
-			tpfjet_twr_hadind_[tpfjet_ntwrs_] = tpfjet_had_n_ - 1;
+			//tpfjet_twr_ieta_[tpfjet_ntwrs_] = (*ith).id().ieta();
+			tpfjet_twr_ieta_.push_back((*ith).id().ieta());
+			//tpfjet_twr_hade_[tpfjet_ntwrs_] = (*ith).energy();
+			tpfjet_twr_hade_.push_back((*ith).energy());
+			//tpfjet_twr_frac_[tpfjet_ntwrs_] = hitsAndFracs[iHit].second;
+			tpfjet_twr_frac_.push_back(hitsAndFracs[iHit].second);
+			//tpfjet_twr_hadind_[tpfjet_ntwrs_] = tpfjet_had_n_ - 1;
+			tpfjet_twr_hadind_.push_back(tpfjet_had_n_ - 1);
 			if(hasTrack){
-			  tpfjet_twr_candtrackind_[tpfjet_ntwrs_] = tpfjet_ncandtracks_ - 1;
+			  //tpfjet_twr_candtrackind_[tpfjet_ntwrs_] = tpfjet_ncandtracks_ - 1;
+			  tpfjet_twr_candtrackind_.push_back(tpfjet_ncandtracks_ - 1);
 			}
 			else{
-			  tpfjet_twr_candtrackind_[tpfjet_ntwrs_] = -1;
+			  //tpfjet_twr_candtrackind_[tpfjet_ntwrs_] = -1;
+			  tpfjet_twr_candtrackind_.push_back(-1);
 			}
 			++tpfjet_ntwrs_;
 			if(debug_ && tpfjet_ntwrs_ == 5000) std::cout << "tpfjet_ntwrs_ " << tpfjet_ntwrs_ << std::endl; //debug
@@ -871,15 +901,15 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		    int etaPhiRecHit = getEtaPhi((*ith).id());
 		    if(etaPhiPF == etaPhiRecHit){
 		      if(true){
-			ppfjet_twr_ieta_[ppfjet_ntwrs_] = (*ith).id().ieta();
-			ppfjet_twr_hade_[ppfjet_ntwrs_] = (*ith).energy();
-			ppfjet_twr_frac_[ppfjet_ntwrs_] = hitsAndFracs[iHit].second;
-			ppfjet_twr_hadind_[ppfjet_ntwrs_] = ppfjet_had_n_ - 1;
+			ppfjet_twr_ieta_.push_back((*ith).id().ieta());
+			ppfjet_twr_hade_.push_back((*ith).energy());
+			ppfjet_twr_frac_.push_back(hitsAndFracs[iHit].second);
+			ppfjet_twr_hadind_.push_back(ppfjet_had_n_ - 1);
 			if(hasTrack){
-			  ppfjet_twr_candtrackind_[ppfjet_ntwrs_] = ppfjet_ncandtracks_ - 1;
+			  ppfjet_twr_candtrackind_.push_back(ppfjet_ncandtracks_ - 1);
 			}
 			else{
-			  ppfjet_twr_candtrackind_[ppfjet_ntwrs_] = -1;
+			  ppfjet_twr_candtrackind_.push_back(-1);
 			}
 			++ppfjet_ntwrs_;
 			if(debug_ && ppfjet_ntwrs_ == 5000) std::cout << "ppfjet_ntwrs_ " << ppfjet_ntwrs_ << std::endl; //debug
@@ -940,9 +970,10 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  int etaPhiRecHit = (*ith).id().rawId() & 0x3FFF;
 		  if(etaPhiPF == etaPhiRecHit){
 		    if(true){
-		      ppfjet_twr_ieta_[ppfjet_ntwrs_] = (*ith).id().ieta();
-		      ppfjet_twr_hade_[ppfjet_ntwrs_] = (*ith).energy();
-		      ppfjet_twr_hadind_[ppfjet_ntwrs_] = ppfjet_had_n_ - 1;
+		      ppfjet_twr_ieta_.push_back((*ith).id().ieta());
+		      ppfjet_twr_hade_.push_back((*ith).energy());
+		      ppfjet_twr_frac_.push_back(1.0);
+		      ppfjet_twr_hadind_.push_back(ppfjet_had_n_ - 1);
 		      ++ppfjet_ntwrs_;
 		      if(debug_ && ppfjet_ntwrs_ == 5000) std::cout << "ppfjet_ntwrs_ " << ppfjet_ntwrs_ << std::endl; //debug
 		      HFHAD_E += (*ith).energy();
@@ -1003,10 +1034,11 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  int etaPhiRecHit = (*ith).id().rawId() & 0x3FFF;
 		  if(etaPhiPF == etaPhiRecHit){
 		    if(true){
-		      ppfjet_twr_ieta_[ppfjet_ntwrs_] = (*ith).id().ieta();
-		      ppfjet_twr_hade_[ppfjet_ntwrs_] = (*ith).energy();
-		      //tpfjet_twr_frac_[tpfjet_ntwrs_] = hitsAndFracs[iHit].second;
-		      ppfjet_twr_hadind_[ppfjet_ntwrs_] = ppfjet_had_n_ - 1;
+		      ppfjet_twr_ieta_.push_back((*ith).id().ieta());
+		      ppfjet_twr_hade_.push_back((*ith).energy());
+		      //ppfjet_twr_frac_[tpfjet_ntwrs_] = hitsAndFracs[iHit].second;
+		      ppfjet_twr_frac_.push_back(1.0);
+		      ppfjet_twr_hadind_.push_back(ppfjet_had_n_ - 1);
 		      ++ppfjet_ntwrs_;
 		      if(debug_ && ppfjet_ntwrs_ == 5000) std::cout << "ppfjet_ntwrs_ " << ppfjet_ntwrs_ << std::endl; //debug
 		      HFEM_E += (*ith).energy();
@@ -1036,10 +1068,10 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		    int etaPhiRecHit = getEtaPhi((*ith).id());
 		    if(etaPhiPF == etaPhiRecHit){
 		      if(true){
-			ppfjet_twr_ieta_[ppfjet_ntwrs_] = (*ith).id().ieta();
-			ppfjet_twr_hade_[ppfjet_ntwrs_] = (*ith).energy();
-			ppfjet_twr_frac_[ppfjet_ntwrs_] = hitsAndFracs[iHit].second;
-			ppfjet_twr_hadind_[ppfjet_ntwrs_] = ppfjet_had_n_ - 1;
+			ppfjet_twr_ieta_.push_back((*ith).id().ieta());
+			ppfjet_twr_hade_.push_back((*ith).energy());
+			ppfjet_twr_frac_.push_back(hitsAndFracs[iHit].second);
+			ppfjet_twr_hadind_.push_back(ppfjet_had_n_ - 1);
 			if(hasTrack){
 			  ppfjet_twr_candtrackind_[ppfjet_ntwrs_] = ppfjet_ncandtracks_ - 1;
 			}
@@ -1238,11 +1270,16 @@ void CalcRespCorrDiJets::beginJob()
     pf_tree_->Branch("tpfjet_had_emf",tpfjet_had_emf_, "tpfjet_had_emf[tpfjet_had_n]/F");
     pf_tree_->Branch("tpfjet_had_id",tpfjet_had_id_, "tpfjet_had_id[tpfjet_had_n]/F");
     pf_tree_->Branch("tpfjet_ntwrs",&tpfjet_ntwrs_, "tpfjet_ntwrs/I");
-    pf_tree_->Branch("tpfjet_twr_ieta",tpfjet_twr_ieta_, "tpfjet_twr_ieta[tpfjet_ntwrs]/I");
-    pf_tree_->Branch("tpfjet_twr_hade",tpfjet_twr_hade_, "tpfjet_twr_hade[tpfjet_ntwrs]/F");
-    pf_tree_->Branch("tpfjet_twr_frac",tpfjet_twr_frac_, "tpfjet_twr_frac[tpfjet_ntwrs]/F");
-    pf_tree_->Branch("tpfjet_twr_candtrackind",tpfjet_twr_candtrackind_, "tpfjet_twr_candtrackind[tpfjet_ntwrs]/I");
-    pf_tree_->Branch("tpfjet_twr_hadind",tpfjet_twr_hadind_, "tpfjet_twr_hadind[tpfjet_ntwrs]/I");
+    //pf_tree_->Branch("tpfjet_twr_ieta",tpfjet_twr_ieta_, "tpfjet_twr_ieta[tpfjet_ntwrs]/I");
+    pf_tree_->Branch("tpfjet_twr_ieta",&tpfjet_twr_ieta_);
+    //pf_tree_->Branch("tpfjet_twr_hade",tpfjet_twr_hade_, "tpfjet_twr_hade[tpfjet_ntwrs]/F");
+    pf_tree_->Branch("tpfjet_twr_hade",&tpfjet_twr_hade_);
+    //pf_tree_->Branch("tpfjet_twr_frac",tpfjet_twr_frac_, "tpfjet_twr_frac[tpfjet_ntwrs]/F");
+    pf_tree_->Branch("tpfjet_twr_frac",&tpfjet_twr_frac_);
+    //pf_tree_->Branch("tpfjet_twr_candtrackind",tpfjet_twr_candtrackind_, "tpfjet_twr_candtrackind[tpfjet_ntwrs]/I");
+    pf_tree_->Branch("tpfjet_twr_candtrackind",&tpfjet_twr_candtrackind_);
+    //pf_tree_->Branch("tpfjet_twr_hadind",tpfjet_twr_hadind_, "tpfjet_twr_hadind[tpfjet_ntwrs]/I");
+    pf_tree_->Branch("tpfjet_twr_hadind",&tpfjet_twr_hadind_);
     pf_tree_->Branch("tpfjet_ncandtracks",&tpfjet_ncandtracks_, "tpfjet_ncandtracks/I");
     pf_tree_->Branch("tpfjet_candtrack_px",tpfjet_candtrack_px_, "tpfjet_candtrack_px[tpfjet_ncandtracks]/F");
     pf_tree_->Branch("tpfjet_candtrack_py",tpfjet_candtrack_py_, "tpfjet_candtrack_py[tpfjet_ncandtracks]/F");
@@ -1292,11 +1329,16 @@ void CalcRespCorrDiJets::beginJob()
     pf_tree_->Branch("ppfjet_had_emf",ppfjet_had_emf_, "ppfjet_had_emf[ppfjet_had_n]/F");
     pf_tree_->Branch("ppfjet_had_id",ppfjet_had_id_, "ppfjet_had_id[ppfjet_had_n]/F");
     pf_tree_->Branch("ppfjet_ntwrs",&ppfjet_ntwrs_, "ppfjet_ntwrs/I");
-    pf_tree_->Branch("ppfjet_twr_ieta",ppfjet_twr_ieta_, "ppfjet_twr_ieta[ppfjet_ntwrs]/I");
-    pf_tree_->Branch("ppfjet_twr_hade",ppfjet_twr_hade_, "ppfjet_twr_hade[ppfjet_ntwrs]/F");
-    pf_tree_->Branch("ppfjet_twr_frac",ppfjet_twr_frac_, "ppfjet_twr_frac[ppfjet_ntwrs]/F");
-    pf_tree_->Branch("ppfjet_twr_candtrackind",ppfjet_twr_candtrackind_, "ppfjet_twr_candtrackind[ppfjet_ntwrs]/I");
-    pf_tree_->Branch("ppfjet_twr_hadind",ppfjet_twr_hadind_, "ppfjet_twr_hadind[ppfjet_ntwrs]/I");
+    //pf_tree_->Branch("ppfjet_twr_ieta",ppfjet_twr_ieta_, "ppfjet_twr_ieta[ppfjet_ntwrs]/I");
+    //pf_tree_->Branch("ppfjet_twr_hade",ppfjet_twr_hade_, "ppfjet_twr_hade[ppfjet_ntwrs]/F");
+    //pf_tree_->Branch("ppfjet_twr_frac",ppfjet_twr_frac_, "ppfjet_twr_frac[ppfjet_ntwrs]/F");
+    //pf_tree_->Branch("ppfjet_twr_candtrackind",ppfjet_twr_candtrackind_, "ppfjet_twr_candtrackind[ppfjet_ntwrs]/I");
+    //pf_tree_->Branch("ppfjet_twr_hadind",ppfjet_twr_hadind_, "ppfjet_twr_hadind[ppfjet_ntwrs]/I");
+    pf_tree_->Branch("ppfjet_twr_ieta",&ppfjet_twr_ieta_);
+    pf_tree_->Branch("ppfjet_twr_hade",&ppfjet_twr_hade_);
+    pf_tree_->Branch("ppfjet_twr_frac",&ppfjet_twr_frac_);
+    pf_tree_->Branch("ppfjet_twr_candtrackind",&ppfjet_twr_candtrackind_);
+    pf_tree_->Branch("ppfjet_twr_hadind",&ppfjet_twr_hadind_);
     pf_tree_->Branch("ppfjet_ncandtracks",&ppfjet_ncandtracks_, "ppfjet_ncandtracks/I");
     pf_tree_->Branch("ppfjet_candtrack_px",ppfjet_candtrack_px_, "ppfjet_candtrack_px[ppfjet_ncandtracks]/F");
     pf_tree_->Branch("ppfjet_candtrack_py",ppfjet_candtrack_py_, "ppfjet_candtrack_py[ppfjet_ncandtracks]/F");

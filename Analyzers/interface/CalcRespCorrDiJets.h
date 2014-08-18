@@ -172,8 +172,10 @@ class CalcRespCorrDiJets : public edm::EDAnalyzer {
   float tpfjet_had_E_[1000], tpfjet_had_px_[1000], tpfjet_had_py_[1000], tpfjet_had_pz_[1000], tpfjet_had_EcalE_[1000], tpfjet_had_emf_[1000];
   int tpfjet_had_id_[1000];
   int tpfjet_ntwrs_;
-  int tpfjet_twr_ieta_[5000], tpfjet_twr_candtrackind_[5000], tpfjet_twr_hadind_[5000];
-  float tpfjet_twr_eme_[5000], tpfjet_twr_hade_[5000], tpfjet_twr_frac_[5000];
+  std::vector<int> tpfjet_twr_ieta_, tpfjet_twr_candtrackind_, tpfjet_twr_hadind_;
+  //int tpfjet_twr_ieta_[10000], tpfjet_twr_candtrackind_[10000], tpfjet_twr_hadind_[10000];
+  std::vector<float> tpfjet_twr_hade_, tpfjet_twr_frac_;
+  //float tpfjet_twr_eme_[10000], tpfjet_twr_hade_[10000], tpfjet_twr_frac_[10000];
   int tpfjet_ncandtracks_;
   float tpfjet_candtrack_px_[1000], tpfjet_candtrack_py_[1000], tpfjet_candtrack_pz_[1000], tpfjet_candtrack_EcalE_[1000];
   float ppfjet_pt_, ppfjet_p_, ppfjet_E_, ppfjet_eta_, ppfjet_phi_, ppfjet_scale_;
@@ -188,8 +190,10 @@ class CalcRespCorrDiJets : public edm::EDAnalyzer {
   float ppfjet_had_E_[1000], ppfjet_had_px_[1000], ppfjet_had_py_[1000], ppfjet_had_pz_[1000], ppfjet_had_EcalE_[1000], ppfjet_had_emf_[1000];
   int ppfjet_had_id_[1000];
   int ppfjet_ntwrs_;
-  int ppfjet_twr_ieta_[5000], ppfjet_twr_candtrackind_[5000], ppfjet_twr_hadind_[5000];
-  float ppfjet_twr_eme_[5000], ppfjet_twr_hade_[5000], ppfjet_twr_frac_[5000];
+  std::vector<int> ppfjet_twr_ieta_, ppfjet_twr_candtrackind_, ppfjet_twr_hadind_;
+  //int ppfjet_twr_ieta_[10000], ppfjet_twr_candtrackind_[10000], ppfjet_twr_hadind_[10000];
+  std::vector<float> ppfjet_twr_hade_, ppfjet_twr_frac_;
+  //float ppfjet_twr_eme_[10000], ppfjet_twr_hade_[10000], ppfjet_twr_frac_[10000];
   int ppfjet_ncandtracks_;
   float ppfjet_candtrack_px_[1000], ppfjet_candtrack_py_[1000], ppfjet_candtrack_pz_[1000], ppfjet_candtrack_EcalE_[1000];
   float pf_dijet_deta_, pf_dijet_dphi_, pf_dijet_balance_;
