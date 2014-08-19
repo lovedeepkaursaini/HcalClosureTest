@@ -164,6 +164,7 @@ class CalcRespCorrDiJets : public edm::EDAnalyzer {
   float pcalojet_twr_eme_[100], pcalojet_twr_hade_[100];
   float calo_dijet_deta_, calo_dijet_dphi_, calo_dijet_balance_;
   float calo_thirdjet_px_, calo_thirdjet_py_;
+  
   float tpfjet_pt_, tpfjet_p_, tpfjet_E_, tpfjet_eta_, tpfjet_phi_, tpfjet_scale_;
   float tpfjet_gendr_, tpfjet_genpt_, tpfjet_genp_;
   float tpfjet_EBE_, tpfjet_EEE_, tpfjet_HBE_, tpfjet_HEE_, tpfjet_HFE_;
@@ -173,15 +174,13 @@ class CalcRespCorrDiJets : public edm::EDAnalyzer {
   float tpfjet_photon_E_, tpfjet_photon_px_, tpfjet_photon_py_, tpfjet_photon_pz_, tpfjet_photon_EcalE_;
   int tpfjet_unkown_n_, tpfjet_electron_n_, tpfjet_muon_n_, tpfjet_photon_n_;
   int tpfjet_had_n_;
-  float tpfjet_had_E_[1000], tpfjet_had_px_[1000], tpfjet_had_py_[1000], tpfjet_had_pz_[1000], tpfjet_had_EcalE_[1000], tpfjet_had_emf_[1000];
-  int tpfjet_had_id_[1000];
+  std::vector<float> tpfjet_had_E_, tpfjet_had_px_, tpfjet_had_py_, tpfjet_had_pz_, tpfjet_had_EcalE_, tpfjet_had_emf_;
+  std::vector<int> tpfjet_had_id_;
   int tpfjet_ntwrs_;
   std::vector<int> tpfjet_twr_ieta_, tpfjet_twr_candtrackind_, tpfjet_twr_hadind_;
-  //int tpfjet_twr_ieta_[10000], tpfjet_twr_candtrackind_[10000], tpfjet_twr_hadind_[10000];
   std::vector<float> tpfjet_twr_hade_, tpfjet_twr_frac_;
-  //float tpfjet_twr_eme_[10000], tpfjet_twr_hade_[10000], tpfjet_twr_frac_[10000];
   int tpfjet_ncandtracks_;
-  float tpfjet_candtrack_px_[1000], tpfjet_candtrack_py_[1000], tpfjet_candtrack_pz_[1000], tpfjet_candtrack_EcalE_[1000];
+  std::vector<float> tpfjet_candtrack_px_, tpfjet_candtrack_py_, tpfjet_candtrack_pz_, tpfjet_candtrack_EcalE_;
   float ppfjet_pt_, ppfjet_p_, ppfjet_E_, ppfjet_eta_, ppfjet_phi_, ppfjet_scale_;
   float ppfjet_gendr_, ppfjet_genpt_, ppfjet_genp_;
   float ppfjet_EBE_, ppfjet_EEE_, ppfjet_HBE_, ppfjet_HEE_, ppfjet_HFE_;
@@ -191,20 +190,15 @@ class CalcRespCorrDiJets : public edm::EDAnalyzer {
   float ppfjet_photon_E_, ppfjet_photon_px_, ppfjet_photon_py_, ppfjet_photon_pz_, ppfjet_photon_EcalE_;
   int ppfjet_unkown_n_, ppfjet_electron_n_, ppfjet_muon_n_, ppfjet_photon_n_;
   int ppfjet_had_n_;
-  float ppfjet_had_E_[1000], ppfjet_had_px_[1000], ppfjet_had_py_[1000], ppfjet_had_pz_[1000], ppfjet_had_EcalE_[1000], ppfjet_had_emf_[1000];
-  int ppfjet_had_id_[1000];
+  std::vector<float> ppfjet_had_E_, ppfjet_had_px_, ppfjet_had_py_, ppfjet_had_pz_, ppfjet_had_EcalE_, ppfjet_had_emf_;
+  std::vector<int> ppfjet_had_id_;
   int ppfjet_ntwrs_;
   std::vector<int> ppfjet_twr_ieta_, ppfjet_twr_candtrackind_, ppfjet_twr_hadind_;
-  //int ppfjet_twr_ieta_[10000], ppfjet_twr_candtrackind_[10000], ppfjet_twr_hadind_[10000];
   std::vector<float> ppfjet_twr_hade_, ppfjet_twr_frac_;
-  //float ppfjet_twr_eme_[10000], ppfjet_twr_hade_[10000], ppfjet_twr_frac_[10000];
   int ppfjet_ncandtracks_;
-  float ppfjet_candtrack_px_[1000], ppfjet_candtrack_py_[1000], ppfjet_candtrack_pz_[1000], ppfjet_candtrack_EcalE_[1000];
+  std::vector<float> ppfjet_candtrack_px_, ppfjet_candtrack_py_, ppfjet_candtrack_pz_, ppfjet_candtrack_EcalE_;
   float pf_dijet_deta_, pf_dijet_dphi_, pf_dijet_balance_;
   float pf_thirdjet_px_, pf_thirdjet_py_;
-
-  float hfieta[14];
-  int maxhfiphi;
 
   // helper functions
   double deltaR(const reco::Jet* j1, const reco::Jet* j2);
