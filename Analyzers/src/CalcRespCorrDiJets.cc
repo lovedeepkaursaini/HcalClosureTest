@@ -264,6 +264,8 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 
   // Run over PFJets
   if(doPFJets_){
+    pf_Run_ = iEvent.id().run();
+    pf_Lumi_ = iEvent.id().luminosityBlock();
     pf_Event_ = iEvent.id().event();
     
     // Get PFJets
@@ -408,6 +410,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
       tpfjet_had_emf_.clear();
       tpfjet_had_E_mctruth_.clear();
       tpfjet_had_id_.clear();
+      tpfjet_had_candtrackind_.clear();
       tpfjet_had_mcpdgId_.clear();
       tpfjet_twr_ieta_.clear();
       tpfjet_twr_candtrackind_.clear();
@@ -426,6 +429,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
       ppfjet_had_emf_.clear();
       ppfjet_had_E_mctruth_.clear();
       ppfjet_had_id_.clear();
+      ppfjet_had_candtrackind_.clear();
       ppfjet_had_mcpdgId_.clear();
       ppfjet_twr_ieta_.clear();
       ppfjet_twr_candtrackind_.clear();
@@ -505,8 +509,12 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	      tpfjet_candtrack_py_.push_back(track.py());
 	      tpfjet_candtrack_pz_.push_back(track.pz());
 	      tpfjet_candtrack_EcalE_.push_back((*it)->ecalEnergy());
+	      tpfjet_had_candtrackind_.push_back(tpfjet_ncandtracks_);
 	      hasTrack = true;
 	      tpfjet_ncandtracks_++;
+	    }
+	    else{
+	      tpfjet_had_candtrackind_.push_back(-2);
 	    }
 	  }
 	  break;
@@ -542,6 +550,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	    tpfjet_had_pz_.push_back((*it)->pz());
 	    tpfjet_had_EcalE_.push_back((*it)->ecalEnergy());
 	    tpfjet_had_id_.push_back(1);
+	    tpfjet_had_candtrackind_.push_back(-1);
 	    tpfjet_had_n_++;
 	    
 	    if(doGenJets_){
@@ -572,6 +581,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	    tpfjet_had_pz_.push_back((*it)->pz());
 	    tpfjet_had_EcalE_.push_back((*it)->ecalEnergy());
 	    tpfjet_had_id_.push_back(2);
+	    tpfjet_had_candtrackind_.push_back(-1);
 	    tpfjet_had_n_++;
 	    
 	    if(doGenJets_){
@@ -602,6 +612,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	    tpfjet_had_pz_.push_back((*it)->pz());
 	    tpfjet_had_EcalE_.push_back((*it)->ecalEnergy());
 	    tpfjet_had_id_.push_back(3);
+	    tpfjet_had_candtrackind_.push_back(-1);
 	    tpfjet_had_n_++;
 
 	    if(doGenJets_){
@@ -692,8 +703,27 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  if((*ith).id().depth() == 1) continue; // Remove long fibers
 		  const CaloCellGeometry *thisCell = hcalGeom->getGeometry((*ith).id().rawId());
 		  const CaloCellGeometry::CornersVec& cv = thisCell->getCorners();
-		  
+
 		  bool passMatch = false;
+		  /*if(cv[0].z() > 0){
+		    if((*it)->eta() < cv[4].eta() && (*it)->eta() > cv[2].eta()){
+		      if((*it)->phi() < cv[4].phi() && (*it)->phi() > cv[2].phi()) passMatch = true;
+		      else if(cv[4].phi() < cv[2].phi()){
+			if((*it)->phi() < cv[4].phi()) passMatch = true;
+			else if((*it)->phi() > cv[2].phi()) passMatch = true;
+		      }
+		    }
+		  }
+		  else{
+		    if((*it)->eta() < cv[0].eta() && (*it)->eta() > cv[6].eta()){
+		      if((*it)->phi() < cv[0].phi() && (*it)->phi() > cv[6].phi()) passMatch = true;
+		      else if(cv[0].phi() < cv[6].phi()){
+			if((*it)->phi() < cv[0].phi()) passMatch = true;
+			else if((*it)->phi() > cv[6].phi()) passMatch = true;
+		      }
+		    }
+		    }*/
+
 		  if((*it)->eta() < cv[0].eta() && (*it)->eta() > cv[2].eta()){
 		    if((*it)->phi() < cv[0].phi() && (*it)->phi() > cv[2].phi()) passMatch = true;
 		    else if(cv[0].phi() < cv[2].phi()){
@@ -731,8 +761,27 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  if((*ith).id().depth() == 2) continue; // Remove short fibers
 		  const CaloCellGeometry *thisCell = hcalGeom->getGeometry((*ith).id().rawId());
 		  const CaloCellGeometry::CornersVec& cv = thisCell->getCorners();
-		  
+
 		  bool passMatch = false;
+		  /*if(cv[0].z() > 0){
+		    if((*it)->eta() < cv[4].eta() && (*it)->eta() > cv[2].eta()){
+		      if((*it)->phi() < cv[4].phi() && (*it)->phi() > cv[2].phi()) passMatch = true;
+		      else if(cv[4].phi() < cv[2].phi()){
+			if((*it)->phi() < cv[4].phi()) passMatch = true;
+			else if((*it)->phi() > cv[2].phi()) passMatch = true;
+		      }
+		    }
+		  }
+		  else{
+		    if((*it)->eta() < cv[0].eta() && (*it)->eta() > cv[6].eta()){
+		      if((*it)->phi() < cv[0].phi() && (*it)->phi() > cv[6].phi()) passMatch = true;
+		      else if(cv[0].phi() < cv[6].phi()){
+			if((*it)->phi() < cv[0].phi()) passMatch = true;
+			else if((*it)->phi() > cv[6].phi()) passMatch = true;
+		      }
+		    }
+		    }*/
+
 		  if((*it)->eta() < cv[0].eta() && (*it)->eta() > cv[2].eta()){
 		    if((*it)->phi() < cv[0].phi() && (*it)->phi() > cv[2].phi()) passMatch = true;
 		    else if(cv[0].phi() < cv[2].phi()){
@@ -872,8 +921,12 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	      ppfjet_candtrack_py_.push_back(track.py());
 	      ppfjet_candtrack_pz_.push_back(track.pz());
 	      ppfjet_candtrack_EcalE_.push_back((*it)->ecalEnergy());
+	      ppfjet_had_candtrackind_.push_back(ppfjet_ncandtracks_);
 	      hasTrack = true;
 	      ppfjet_ncandtracks_++;
+	    }
+	    else{
+	      ppfjet_had_candtrackind_.push_back(-2);
 	    }
 	  }
 	  break;
@@ -909,6 +962,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	    ppfjet_had_pz_.push_back((*it)->pz());
 	    ppfjet_had_EcalE_.push_back((*it)->ecalEnergy());
 	    ppfjet_had_id_.push_back(1);
+	    ppfjet_had_candtrackind_.push_back(-1);
 	    ppfjet_had_n_++;
 
 	    if(doGenJets_){
@@ -939,6 +993,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	    ppfjet_had_pz_.push_back((*it)->pz());
 	    ppfjet_had_EcalE_.push_back((*it)->ecalEnergy());
 	    ppfjet_had_id_.push_back(2);
+	    ppfjet_had_candtrackind_.push_back(-1);
 	    ppfjet_had_n_++;
 	    
 	    if(doGenJets_){
@@ -969,6 +1024,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	    ppfjet_had_pz_.push_back((*it)->pz());
 	    ppfjet_had_EcalE_.push_back((*it)->ecalEnergy());
 	    ppfjet_had_id_.push_back(3);
+	    ppfjet_had_candtrackind_.push_back(-1);
 	    ppfjet_had_n_++;
 
 	    if(doGenJets_){
@@ -1055,6 +1111,24 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  const CaloCellGeometry::CornersVec& cv = thisCell->getCorners();
 		  
 		  bool passMatch = false;
+		  /*if(cv[0].z() > 0){
+		    if((*it)->eta() < cv[4].eta() && (*it)->eta() > cv[2].eta()){
+		      if((*it)->phi() < cv[4].phi() && (*it)->phi() > cv[2].phi()) passMatch = true;
+		      else if(cv[4].phi() < cv[2].phi()){
+			if((*it)->phi() < cv[4].phi()) passMatch = true;
+			else if((*it)->phi() > cv[2].phi()) passMatch = true;
+		      }
+		    }
+		  }
+		  else{
+		    if((*it)->eta() < cv[0].eta() && (*it)->eta() > cv[6].eta()){
+		      if((*it)->phi() < cv[0].phi() && (*it)->phi() > cv[6].phi()) passMatch = true;
+		      else if(cv[0].phi() < cv[6].phi()){
+			if((*it)->phi() < cv[0].phi()) passMatch = true;
+			else if((*it)->phi() > cv[6].phi()) passMatch = true;
+		      }
+		    }
+		    }*/
 		  if((*it)->eta() < cv[0].eta() && (*it)->eta() > cv[2].eta()){
 		    if((*it)->phi() < cv[0].phi() && (*it)->phi() > cv[2].phi()) passMatch = true;
 		    else if(cv[0].phi() < cv[2].phi()){
@@ -1094,6 +1168,24 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  const CaloCellGeometry::CornersVec& cv = thisCell->getCorners();
 		  
 		  bool passMatch = false;
+		  /*if(cv[0].z() > 0){
+		    if((*it)->eta() < cv[4].eta() && (*it)->eta() > cv[2].eta()){
+		      if((*it)->phi() < cv[4].phi() && (*it)->phi() > cv[2].phi()) passMatch = true;
+		      else if(cv[4].phi() < cv[2].phi()){
+			if((*it)->phi() < cv[4].phi()) passMatch = true;
+			else if((*it)->phi() > cv[2].phi()) passMatch = true;
+		      }
+		    }
+		  }
+		  else{
+		    if((*it)->eta() < cv[0].eta() && (*it)->eta() > cv[6].eta()){
+		      if((*it)->phi() < cv[0].phi() && (*it)->phi() > cv[6].phi()) passMatch = true;
+		      else if(cv[0].phi() < cv[6].phi()){
+			if((*it)->phi() < cv[0].phi()) passMatch = true;
+			else if((*it)->phi() > cv[6].phi()) passMatch = true;
+		      }
+		    }
+		    }*/
 		  if((*it)->eta() < cv[0].eta() && (*it)->eta() > cv[2].eta()){
 		    if((*it)->phi() < cv[0].phi() && (*it)->phi() > cv[2].phi()) passMatch = true;
 		    else if(cv[0].phi() < cv[2].phi()){
@@ -1304,6 +1396,7 @@ void CalcRespCorrDiJets::beginJob()
     if(doGenJets_){
       pf_tree_->Branch("tpfjet_genpt",&tpfjet_genpt_, "tpfjet_genpt/F");
       pf_tree_->Branch("tpfjet_genp",&tpfjet_genp_, "tpfjet_genp/F");
+      pf_tree_->Branch("tpfjet_genE",&tpfjet_genE_, "tpfjet_genE/F");
       pf_tree_->Branch("tpfjet_gendr",&tpfjet_gendr_, "tpfjet_gendr/F");
     }
     pf_tree_->Branch("tpfjet_unkown_E",&tpfjet_unkown_E_, "tpfjet_unkown_E/F");
@@ -1338,6 +1431,7 @@ void CalcRespCorrDiJets::beginJob()
     pf_tree_->Branch("tpfjet_had_EcalE",&tpfjet_had_EcalE_);
     pf_tree_->Branch("tpfjet_had_emf",&tpfjet_had_emf_);
     pf_tree_->Branch("tpfjet_had_id",&tpfjet_had_id_);
+    pf_tree_->Branch("tpfjet_had_candtrackind",&tpfjet_had_candtrackind_);
     if(doGenJets_){
       pf_tree_->Branch("tpfjet_had_E_mctruth",&tpfjet_had_E_mctruth_);
       pf_tree_->Branch("tpfjet_had_mcpdgId",&tpfjet_had_mcpdgId_);
@@ -1367,6 +1461,7 @@ void CalcRespCorrDiJets::beginJob()
     if(doGenJets_){
       pf_tree_->Branch("ppfjet_genpt",&ppfjet_genpt_, "ppfjet_genpt/F");
       pf_tree_->Branch("ppfjet_genp",&ppfjet_genp_, "ppfjet_genp/F");
+      pf_tree_->Branch("ppfjet_genE",&ppfjet_genE_, "ppfjet_genE/F");
       pf_tree_->Branch("ppfjet_gendr",&ppfjet_gendr_, "ppfjet_gendr/F");
     }
     pf_tree_->Branch("ppfjet_unkown_E",&ppfjet_unkown_E_, "ppfjet_unkown_E/F");
@@ -1401,6 +1496,7 @@ void CalcRespCorrDiJets::beginJob()
     pf_tree_->Branch("ppfjet_had_EcalE",&ppfjet_had_EcalE_);
     pf_tree_->Branch("ppfjet_had_emf",&ppfjet_had_emf_);
     pf_tree_->Branch("ppfjet_had_id",&ppfjet_had_id_);
+    pf_tree_->Branch("ppfjet_had_candtrackind",&ppfjet_had_candtrackind_);
     if(doGenJets_){
       pf_tree_->Branch("ppfjet_had_E_mctruth",&ppfjet_had_E_mctruth_);
       pf_tree_->Branch("ppfjet_had_mcpdgId",&ppfjet_had_mcpdgId_);
@@ -1426,6 +1522,8 @@ void CalcRespCorrDiJets::beginJob()
     pf_tree_->Branch("pf_dijet_balance",&pf_dijet_balance_, "pf_dijet_balance/F");
     pf_tree_->Branch("pf_thirdjet_px",&pf_thirdjet_px_, "pf_thirdjet_px/F");
     pf_tree_->Branch("pf_thirdjet_py",&pf_thirdjet_py_, "pf_thirdjet_py/F");
+    pf_tree_->Branch("pf_Run",&pf_Run_, "pf_Run/I");
+    pf_tree_->Branch("pf_Lumi",&pf_Lumi_, "pf_Lumi/I");
     pf_tree_->Branch("pf_Event",&pf_Event_, "pf_Event/I");
   }
 
