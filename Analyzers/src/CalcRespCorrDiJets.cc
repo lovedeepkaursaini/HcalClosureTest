@@ -25,6 +25,7 @@
 
 #include <vector>
 #include <set>
+#include <map>
 
 CalcRespCorrDiJets::CalcRespCorrDiJets(const edm::ParameterSet& iConfig)
 {
@@ -407,6 +408,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
       tpfjet_had_py_.clear();
       tpfjet_had_pz_.clear();
       tpfjet_had_EcalE_.clear();
+      tpfjet_had_rawHcalE_.clear();
       tpfjet_had_emf_.clear();
       tpfjet_had_E_mctruth_.clear();
       tpfjet_had_id_.clear();
@@ -426,6 +428,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
       ppfjet_had_py_.clear();
       ppfjet_had_pz_.clear();
       ppfjet_had_EcalE_.clear();
+      ppfjet_had_rawHcalE_.clear();
       ppfjet_had_emf_.clear();
       ppfjet_had_E_mctruth_.clear();
       ppfjet_had_id_.clear();
@@ -481,6 +484,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	    tpfjet_had_py_.push_back((*it)->py());
 	    tpfjet_had_pz_.push_back((*it)->pz());
 	    tpfjet_had_EcalE_.push_back((*it)->ecalEnergy());
+	    tpfjet_had_rawHcalE_.push_back((*it)->rawHcalEnergy());
 	    tpfjet_had_id_.push_back(0);
 	    tpfjet_had_n_++;
 
@@ -549,6 +553,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	    tpfjet_had_py_.push_back((*it)->py());
 	    tpfjet_had_pz_.push_back((*it)->pz());
 	    tpfjet_had_EcalE_.push_back((*it)->ecalEnergy());
+	    tpfjet_had_rawHcalE_.push_back((*it)->rawHcalEnergy());
 	    tpfjet_had_id_.push_back(1);
 	    tpfjet_had_candtrackind_.push_back(-1);
 	    tpfjet_had_n_++;
@@ -580,6 +585,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	    tpfjet_had_py_.push_back((*it)->py());
 	    tpfjet_had_pz_.push_back((*it)->pz());
 	    tpfjet_had_EcalE_.push_back((*it)->ecalEnergy());
+	    tpfjet_had_rawHcalE_.push_back((*it)->rawHcalEnergy());
 	    tpfjet_had_id_.push_back(2);
 	    tpfjet_had_candtrackind_.push_back(-1);
 	    tpfjet_had_n_++;
@@ -611,6 +617,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	    tpfjet_had_py_.push_back((*it)->py());
 	    tpfjet_had_pz_.push_back((*it)->pz());
 	    tpfjet_had_EcalE_.push_back((*it)->ecalEnergy());
+	    tpfjet_had_rawHcalE_.push_back((*it)->rawHcalEnergy());
 	    tpfjet_had_id_.push_back(3);
 	    tpfjet_had_candtrackind_.push_back(-1);
 	    tpfjet_had_n_++;
@@ -637,6 +644,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	  }
 	}
 	
+	std::map<int,int> twrietas;
 	float HFHAD_E = 0;
 	float HFEM_E = 0;
 	int HFHAD_n_ = 0;
@@ -672,6 +680,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		    if(etaPhiPF == etaPhiRecHit){
 		      if(true){
 			tpfjet_twr_ieta_.push_back((*ith).id().ieta());
+			if(hitsAndFracs[iHit].second > 0.05 && (*ith).energy() > 0.0) twrietas[(*ith).id().ieta()]++;
 			tpfjet_twr_hade_.push_back((*ith).energy());
 			tpfjet_twr_frac_.push_back(hitsAndFracs[iHit].second);
 			tpfjet_twr_hadind_.push_back(tpfjet_had_n_ - 1);
@@ -824,6 +833,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		    if(etaPhiPF == etaPhiRecHit){
 		      if(true){
 			tpfjet_twr_ieta_.push_back((*ith).id().ieta());
+			if(hitsAndFracs[iHit].second > 0.05 && (*ith).energy() > 0.0) twrietas[(*ith).id().ieta()]++;
 			tpfjet_twr_hade_.push_back((*ith).energy());
 			tpfjet_twr_frac_.push_back(hitsAndFracs[iHit].second);
 			tpfjet_twr_hadind_.push_back(tpfjet_had_n_ - 1);
@@ -844,6 +854,8 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	} // Loop over elements in blocks
 	h_HFHAD_n_->Fill(HFHAD_n_);
 	h_HFEM_n_->Fill(HFEM_n_);
+	h_twrietas_->Fill(twrietas.size());
+
 	switch(candidateType){
 	case reco::PFCandidate::h_HF:
 	  h_HFHAD_type_->Fill(HF_type_);
@@ -893,6 +905,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	    ppfjet_had_py_.push_back((*it)->py());
 	    ppfjet_had_pz_.push_back((*it)->pz());
 	    ppfjet_had_EcalE_.push_back((*it)->ecalEnergy());
+	    ppfjet_had_rawHcalE_.push_back((*it)->rawHcalEnergy());
 	    ppfjet_had_id_.push_back(0);
 	    ppfjet_had_n_++;
 
@@ -961,6 +974,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	    ppfjet_had_py_.push_back((*it)->py());
 	    ppfjet_had_pz_.push_back((*it)->pz());
 	    ppfjet_had_EcalE_.push_back((*it)->ecalEnergy());
+	    ppfjet_had_rawHcalE_.push_back((*it)->rawHcalEnergy());
 	    ppfjet_had_id_.push_back(1);
 	    ppfjet_had_candtrackind_.push_back(-1);
 	    ppfjet_had_n_++;
@@ -992,6 +1006,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	    ppfjet_had_py_.push_back((*it)->py());
 	    ppfjet_had_pz_.push_back((*it)->pz());
 	    ppfjet_had_EcalE_.push_back((*it)->ecalEnergy());
+	    ppfjet_had_rawHcalE_.push_back((*it)->rawHcalEnergy());
 	    ppfjet_had_id_.push_back(2);
 	    ppfjet_had_candtrackind_.push_back(-1);
 	    ppfjet_had_n_++;
@@ -1023,6 +1038,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	    ppfjet_had_py_.push_back((*it)->py());
 	    ppfjet_had_pz_.push_back((*it)->pz());
 	    ppfjet_had_EcalE_.push_back((*it)->ecalEnergy());
+	    ppfjet_had_rawHcalE_.push_back((*it)->rawHcalEnergy());
 	    ppfjet_had_id_.push_back(3);
 	    ppfjet_had_candtrackind_.push_back(-1);
 	    ppfjet_had_n_++;
@@ -1383,6 +1399,7 @@ void CalcRespCorrDiJets::beginJob()
     h_HBHE_n_ = new TH1D("h_HBHE_n","h_HBHE_n",200,0,5000);
     h_HF_n_ = new TH1D("h_HF_n","h_HF_n",200,0,5000);
     h_HO_n_ = new TH1D("h_HO_n","h_HO_n",200,0,5000);
+    h_twrietas_ = new TH1D("h_twrietas","h_twrietas",20,0,20);
     hPassSelPF_ = new TH1D("hPassSelectionPF", "Selection Pass Failures PFJets",200,-0.5,199.5);
 
     pf_tree_ = new TTree("pf_dijettree", "tree for dijet balancing using PFJets");
@@ -1429,6 +1446,7 @@ void CalcRespCorrDiJets::beginJob()
     pf_tree_->Branch("tpfjet_had_py",&tpfjet_had_py_);
     pf_tree_->Branch("tpfjet_had_pz",&tpfjet_had_pz_);
     pf_tree_->Branch("tpfjet_had_EcalE",&tpfjet_had_EcalE_);
+    pf_tree_->Branch("tpfjet_had_rawHcalE",&tpfjet_had_rawHcalE_);
     pf_tree_->Branch("tpfjet_had_emf",&tpfjet_had_emf_);
     pf_tree_->Branch("tpfjet_had_id",&tpfjet_had_id_);
     pf_tree_->Branch("tpfjet_had_candtrackind",&tpfjet_had_candtrackind_);
@@ -1494,6 +1512,7 @@ void CalcRespCorrDiJets::beginJob()
     pf_tree_->Branch("ppfjet_had_py",&ppfjet_had_py_);
     pf_tree_->Branch("ppfjet_had_pz",&ppfjet_had_pz_);
     pf_tree_->Branch("ppfjet_had_EcalE",&ppfjet_had_EcalE_);
+    pf_tree_->Branch("ppfjet_had_rawHcalE",&tpfjet_had_rawHcalE_);
     pf_tree_->Branch("ppfjet_had_emf",&ppfjet_had_emf_);
     pf_tree_->Branch("ppfjet_had_id",&ppfjet_had_id_);
     pf_tree_->Branch("ppfjet_had_candtrackind",&ppfjet_had_candtrackind_);
@@ -1553,6 +1572,7 @@ CalcRespCorrDiJets::endJob() {
     h_HBHE_n_->Write();
     h_HF_n_->Write();
     h_HO_n_->Write();
+    h_twrietas_->Write();
     hPassSelPF_->Write();
     pf_tree_->Write();
   }

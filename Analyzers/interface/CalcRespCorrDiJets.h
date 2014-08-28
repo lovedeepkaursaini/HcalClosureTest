@@ -150,6 +150,7 @@ class CalcRespCorrDiJets : public edm::EDAnalyzer {
   TH1D* h_HBHE_n_;
   TH1D* h_HF_n_;
   TH1D* h_HO_n_;
+  TH1D* h_twrietas_;
   TTree* calo_tree_;
   TTree* pf_tree_;
   
@@ -178,7 +179,7 @@ class CalcRespCorrDiJets : public edm::EDAnalyzer {
   float tpfjet_photon_E_, tpfjet_photon_px_, tpfjet_photon_py_, tpfjet_photon_pz_, tpfjet_photon_EcalE_;
   int tpfjet_unkown_n_, tpfjet_electron_n_, tpfjet_muon_n_, tpfjet_photon_n_;
   int tpfjet_had_n_;
-  std::vector<float> tpfjet_had_E_, tpfjet_had_px_, tpfjet_had_py_, tpfjet_had_pz_, tpfjet_had_EcalE_, tpfjet_had_emf_, tpfjet_had_E_mctruth_;
+  std::vector<float> tpfjet_had_E_, tpfjet_had_px_, tpfjet_had_py_, tpfjet_had_pz_, tpfjet_had_EcalE_, tpfjet_had_rawHcalE_, tpfjet_had_emf_, tpfjet_had_E_mctruth_;
   std::vector<int> tpfjet_had_id_, tpfjet_had_candtrackind_, tpfjet_had_mcpdgId_;
   int tpfjet_ntwrs_;
   std::vector<int> tpfjet_twr_ieta_, tpfjet_twr_candtrackind_, tpfjet_twr_hadind_;
@@ -194,7 +195,7 @@ class CalcRespCorrDiJets : public edm::EDAnalyzer {
   float ppfjet_photon_E_, ppfjet_photon_px_, ppfjet_photon_py_, ppfjet_photon_pz_, ppfjet_photon_EcalE_;
   int ppfjet_unkown_n_, ppfjet_electron_n_, ppfjet_muon_n_, ppfjet_photon_n_;
   int ppfjet_had_n_;
-  std::vector<float> ppfjet_had_E_, ppfjet_had_px_, ppfjet_had_py_, ppfjet_had_pz_, ppfjet_had_EcalE_, ppfjet_had_emf_, ppfjet_had_E_mctruth_;
+  std::vector<float> ppfjet_had_E_, ppfjet_had_px_, ppfjet_had_py_, ppfjet_had_pz_, ppfjet_had_EcalE_, ppfjet_had_rawHcalE_, ppfjet_had_emf_, ppfjet_had_E_mctruth_;
   std::vector<int> ppfjet_had_id_, ppfjet_had_candtrackind_, ppfjet_had_mcpdgId_;
   int ppfjet_ntwrs_;
   std::vector<int> ppfjet_twr_ieta_, ppfjet_twr_candtrackind_, ppfjet_twr_hadind_;
