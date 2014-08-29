@@ -1,7 +1,18 @@
 #include <vector>
 #include <map>
+/*#include <iostream>
+#include "TROOT.h"
+#include "TChain.h"
+#include "TString.h"
+#include "TH1D.h"
+#include "TH2D.h"
+#include "TFile.h"
+#include "TLorentzVector.h"
 
-/*double deltaR(const double px1, const double py1, const double pz1, const double px2, const double py2, const double pz2){
+using namespace std;
+
+
+double deltaR(const double px1, const double py1, const double pz1, const double px2, const double py2, const double pz2){
   TLorentzVector p1(px1,py1,pz1,0.0);
   TLorentzVector p2(px2,py2,pz2,0.0);
   double deta = p1.Eta() - p2.Eta();
@@ -17,9 +28,11 @@ void testRespCorrDiJetsTree()
 
   TChain* tree = new TChain("pf_dijettree");
   TString input = "/uscms_data/d3/dgsheffi/HCal/Trees/QCD_Pt-15to3000_0030487D5E5F.root";
+  //TString input = "/uscms_data/d3/dgsheffi/HCal/Trees/Pion_Pt-50.root";
   tree->Add(input);
 
   TString output = "/uscms_data/d3/dgsheffi/HCal/Trees/validation/QCD_Pt-15to3000_0030487D5E5F.root";
+  //TString output = "/uscms_data/d3/dgsheffi/HCal/Trees/validation/Pion_Pt-50.root";
 
   float tpfjet_pt_, tpfjet_p_, tpfjet_E_, tpfjet_eta_, tpfjet_phi_, tpfjet_scale_;
   float tpfjet_gendr_, tpfjet_genpt_, tpfjet_genp_, tpfjet_genE_;
@@ -35,6 +48,7 @@ void testRespCorrDiJetsTree()
   vector<float>* tpfjet_had_py_;
   vector<float>* tpfjet_had_pz_;
   vector<float>* tpfjet_had_EcalE_;
+  vector<float>* tpfjet_had_rawHcalE_;
   vector<float>* tpfjet_had_emf_;
   vector<float>* tpfjet_had_E_mctruth_;
   vector<int>* tpfjet_had_id_;
@@ -44,6 +58,7 @@ void testRespCorrDiJetsTree()
   vector<int>* tpfjet_twr_ieta_;
   vector<int>* tpfjet_twr_candtrackind_;
   vector<int>* tpfjet_twr_hadind_;
+  vector<int>* tpfjet_twr_elmttype_;
   vector<float>* tpfjet_twr_hade_;
   vector<float>* tpfjet_twr_frac_;
   int tpfjet_ncandtracks_;
@@ -65,6 +80,7 @@ void testRespCorrDiJetsTree()
   vector<float>* ppfjet_had_py_;
   vector<float>* ppfjet_had_pz_;
   vector<float>* ppfjet_had_EcalE_;
+  vector<float>* ppfjet_had_rawHcalE_;
   vector<float>* ppfjet_had_emf_;
   vector<float>* ppfjet_had_E_mctruth_;
   vector<int>* ppfjet_had_id_;
@@ -74,6 +90,7 @@ void testRespCorrDiJetsTree()
   vector<int>* ppfjet_twr_ieta_;
   vector<float>* ppfjet_twr_candtrackind_;
   vector<float>* ppfjet_twr_hadind_;
+  vector<float>* ppfjet_twr_elmttype_;
   vector<float>* ppfjet_twr_hade_;
   vector<float>* ppfjet_twr_frac_;
   int ppfjet_ncandtracks_;
@@ -126,6 +143,7 @@ void testRespCorrDiJetsTree()
   tree->SetBranchAddress("tpfjet_had_py",&tpfjet_had_py_);
   tree->SetBranchAddress("tpfjet_had_pz",&tpfjet_had_pz_);
   tree->SetBranchAddress("tpfjet_had_EcalE",&tpfjet_had_EcalE_);
+  tree->SetBranchAddress("tpfjet_had_rawHcalE",&tpfjet_had_rawHcalE_);
   tree->SetBranchAddress("tpfjet_had_emf",&tpfjet_had_emf_);
   tree->SetBranchAddress("tpfjet_had_id",&tpfjet_had_id_);
   tree->SetBranchAddress("tpfjet_had_candtrackind",&tpfjet_had_candtrackind_);
@@ -137,6 +155,7 @@ void testRespCorrDiJetsTree()
   tree->SetBranchAddress("tpfjet_twr_frac",&tpfjet_twr_frac_);
   tree->SetBranchAddress("tpfjet_twr_candtrackind",&tpfjet_twr_candtrackind_);
   tree->SetBranchAddress("tpfjet_twr_hadind",&tpfjet_twr_hadind_);
+  tree->SetBranchAddress("tpfjet_twr_elmttype",&tpfjet_twr_elmttype_);
   tree->SetBranchAddress("tpfjet_ncandtracks",&tpfjet_ncandtracks_);
   tree->SetBranchAddress("tpfjet_candtrack_px",&tpfjet_candtrack_px_);
   tree->SetBranchAddress("tpfjet_candtrack_py",&tpfjet_candtrack_py_);
@@ -182,6 +201,7 @@ void testRespCorrDiJetsTree()
   tree->SetBranchAddress("ppfjet_had_py",&ppfjet_had_py_);
   tree->SetBranchAddress("ppfjet_had_pz",&ppfjet_had_pz_);
   tree->SetBranchAddress("ppfjet_had_EcalE",&ppfjet_had_EcalE_);
+  tree->SetBranchAddress("ppfjet_had_rawHcalE",&ppfjet_had_rawHcalE_);
   tree->SetBranchAddress("ppfjet_had_emf",&ppfjet_had_emf_);
   tree->SetBranchAddress("ppfjet_had_id",&ppfjet_had_id_);
   tree->SetBranchAddress("ppfjet_had_candtrackind",&ppfjet_had_candtrackind_);
@@ -193,6 +213,7 @@ void testRespCorrDiJetsTree()
   tree->SetBranchAddress("ppfjet_twr_frac",&ppfjet_twr_frac_);
   tree->SetBranchAddress("ppfjet_twr_candtrackind",&ppfjet_twr_candtrackind_);
   tree->SetBranchAddress("ppfjet_twr_hadind",&ppfjet_twr_hadind_);
+  tree->SetBranchAddress("ppfjet_twr_elmttype",&ppfjet_twr_elmttype_);
   tree->SetBranchAddress("ppfjet_ncandtracks",&ppfjet_ncandtracks_);
   tree->SetBranchAddress("ppfjet_candtrack_px",&ppfjet_candtrack_px_);
   tree->SetBranchAddress("ppfjet_candtrack_py",&ppfjet_candtrack_py_);
@@ -210,6 +231,7 @@ void testRespCorrDiJetsTree()
   // Jet
   TH1D* h_tag_jet_Ediff_ = new TH1D("h_tag_jet_Ediff","tag (rechits - pfjet)/pfjet",200,-1,8);
   TH1D* h_tag_jet_genEdiff_ = new TH1D("h_tag_jet_genEdiff","tag (rechits - genjet)/genjet",200,-1,8);
+  TH1D* h_tag_jet_Ediff_cut_ = new TH1D("h_tag_jet_Ediff_cut","tag (rechits - pfjet)/pfjet with cuts",200,-1,8);
   TH1D* h_tag_jet_negEraw_ = new TH1D("h_tag_jet_negEraw","tag negative rechit energies",200,-2,0);
   TH1D* h_tag_jet_negEtimesFrac_ = new TH1D("h_tag_jet_negEtimesFrac","tag negative rechit energies times fraction",200,-2,0);
   TH1D* h_tag_jet_negEfrac_ = new TH1D("h_tag_jet_negEfrac","tag fraction with negative energies",200,0,1);
@@ -224,6 +246,9 @@ void testRespCorrDiJetsTree()
   TH1D* h_tag_h0_Ediff_EcalE_ = new TH1D("h_tag_h0_Ediff_EcalE","tag h0 (rechits + Ecal - cand)/cand",200,-1,8);
   TH1D* h_tag_HFhad_Ediff_EcalE_ = new TH1D("h_tag_HFhad_Ediff_EcalE","tag HFhad (rechits +Ecal - cand)/cand",200,-1,8);
   TH1D* h_tag_egammaHF_Ediff_EcalE_ = new TH1D("h_tag_egammaHF_Ediff_EcalE","tag egammaHF (rechits +Ecal - cand)/cand",200,-1,8);
+  TH1D* h_tag_rechitspercandidate_ = new TH1D("h_tag_rechitspercandidate","tag rechits per candidate",200,0,200);
+  TH1D* h_tag_h_Ediff_rawHcalE_ = new TH1D("h_tag_h_Ediff_rawHcalE","tag h (rechits - rawHcalE)/rawHcalE",200,-1,8);
+  TH1D* h_tag_h_Ediff_cut_ = new TH1D("h_tag_h_Ediff_cut","tag h (rechits - cand)/cand with cuts",200,-1,8);
   // Zero h rechits
   TH1D* h_tag_h_pt_rechits_ = new TH1D("h_tag_h_pt_rechits","tag h pt rechits",200,0,100);
   TH1D* h_tag_h_pt_norechits_EcalE_ = new TH1D("h_tag_h_pt_norechits_EcalE","tag h pt norechits EcalE",200,0,100);
@@ -237,6 +262,7 @@ void testRespCorrDiJetsTree()
   TH1D* h_tag_h_twrE_lowEdiff_ = new TH1D("h_tag_h_twrE_lowEdiff","tag h tower energies Ediff < 3",200,0,100);
   TH1D* h_tag_h_ntwrs_highEdiff_ = new TH1D("h_tag_h_ntwrs_highEdiff","tag h tower multiplicity Ediff > 3",400,0,400);
   TH1D* h_tag_h_ntwrs_lowEdiff_ = new TH1D("h_tag_h_ntwrs_lowEdiff","tag h tower multiplicity Ediff < 3",400,0,400);
+  TH1D* h_tag_h_ntwrs_goodEdiff_ = new TH1D("h_tag_h_ntwrs_goodEdiff","tag h tower multiplicity Ediff < 1.5",400,0,400);
   TH1D* h_tag_h_dR_highEdiff_ = new TH1D("h_tag_h_dR_highEdiff","tag h #DeltaR(candidate,other candidates) Ediff > 3",200,0,5);
   TH1D* h_tag_h_dR_lowEdiff_ = new TH1D("h_tag_h_dR_lowEdiff","tag h #DeltaR(candidate,other candidates) Ediff < 3",200,0,5);
   TH1D* h_tag_h_ncand_highEdiff_ = new TH1D("h_tag_h_ncand_highEdiff","tag h number of candidates in jet Ediff > 3",200,0,200);
@@ -257,7 +283,7 @@ void testRespCorrDiJetsTree()
   cout << "Running over " << nEvents << " events" << endl;
   //nEvents = 5;
   for(int iEvent=0; iEvent<nEvents; iEvent++){
-    if(iEvent % 100 == 0){
+    if(iEvent % 1000 == 0){
       cout << "Processing event " << iEvent << endl;
     }
     tree->GetEntry(iEvent);
@@ -267,10 +293,13 @@ void testRespCorrDiJetsTree()
     //////////////////////////
 
     float tag_jet_rechit_E = 0;
+    float tag_jet_rechit_E_cut = 0;
     float tag_jet_hadEcalE = 0;
     float tag_jet_negE_n = 0;
+    h_tag_rechitspercandidate_->Fill((double)tpfjet_ntwrs_/(double)tpfjet_had_n_);
     for(int i=0; i<tpfjet_had_n_; i++){
       float cand_rechit_E = 0;
+      float cand_rechit_E_cut = 0;
       float cand_ntwrs = 0;
       vector<float> cand_rechit_E_vector;
       tag_jet_hadEcalE += tpfjet_had_EcalE_->at(i);
@@ -279,6 +308,11 @@ void testRespCorrDiJetsTree()
 	  tag_jet_rechit_E += tpfjet_twr_hade_->at(j)*tpfjet_twr_frac_->at(j);
 	  cand_rechit_E += tpfjet_twr_hade_->at(j)*tpfjet_twr_frac_->at(j);
 	  cand_rechit_E_vector.push_back(tpfjet_twr_hade_->at(j)*tpfjet_twr_frac_->at(j));
+	  if(tpfjet_twr_frac_->at(j) > 0.05){
+	    tag_jet_rechit_E_cut += tpfjet_twr_hade_->at(j)*tpfjet_twr_frac_->at(j);
+	    cand_rechit_E_cut += tpfjet_twr_hade_->at(j)*tpfjet_twr_frac_->at(j);
+	  }
+	  //if(tpfjet_twr_frac_->at(j) > 0.05) cand_ntwrs++;
 	  cand_ntwrs++;
 	}
 	else if(tpfjet_twr_hadind_->at(j) == i){
@@ -294,7 +328,14 @@ void testRespCorrDiJetsTree()
 	float Ediff = (cand_rechit_E - tpfjet_had_E_->at(i))/tpfjet_had_E_->at(i);
 	h_tag_h_Ediff_->Fill(Ediff);
 	h_tag_h_EvsEdiff_->Fill(Ediff,tpfjet_had_E_->at(i));
-	h_tag_h_Ediff_EcalE_->Fill((cand_rechit_E + tpfjet_had_EcalE_->at(i) - tpfjet_had_E_->at(i))/tpfjet_had_E_->at(i));
+	h_tag_h_Ediff_EcalE_->Fill((cand_rechit_E + tpfjet_had_EcalE_->at(i) - tpfjet_had_E_->at(i))/(tpfjet_had_E_->at(i)));// - tpfjet_had_EcalE_->at(i)));
+	h_tag_h_Ediff_cut_->Fill((cand_rechit_E_cut - tpfjet_had_E_->at(i))/tpfjet_had_E_->at(i));
+	if(cand_rechit_E == 0){
+	  h_tag_h_Ediff_rawHcalE_->Fill(-1);
+	}
+	else{
+	  h_tag_h_Ediff_rawHcalE_->Fill((cand_rechit_E - tpfjet_had_rawHcalE_->at(i))/tpfjet_had_rawHcalE_->at(i));
+	}
 
 	if(Ediff > 3){
 	  h_tag_h_ntwrs_highEdiff_->Fill(cand_ntwrs);
@@ -318,6 +359,9 @@ void testRespCorrDiJetsTree()
 	    if(l != i){
 	      h_tag_h_dR_lowEdiff_->Fill(deltaR(tpfjet_had_px_->at(i),tpfjet_had_py_->at(i),tpfjet_had_pz_->at(i),tpfjet_had_px_->at(l),tpfjet_had_py_->at(l),tpfjet_had_pz_->at(l)));
 	    }
+	  }
+	  if(Ediff < 1.5){
+	    h_tag_h_ntwrs_goodEdiff_->Fill(cand_ntwrs);
 	  }
 	}
 
@@ -351,7 +395,7 @@ void testRespCorrDiJetsTree()
       else if(tpfjet_had_id_->at(i) == 1){
 	h_tag_h0_Ediff_->Fill((cand_rechit_E - tpfjet_had_E_->at(i))/tpfjet_had_E_->at(i));
 	h_tag_h0_EvsEdiff_->Fill((cand_rechit_E - tpfjet_had_E_->at(i))/tpfjet_had_E_->at(i),tpfjet_had_E_->at(i));
-	h_tag_h0_Ediff_EcalE_->Fill((cand_rechit_E + tpfjet_had_EcalE_->at(i) - tpfjet_had_E_->at(i))/tpfjet_had_E_->at(i));
+	h_tag_h0_Ediff_EcalE_->Fill((cand_rechit_E + tpfjet_had_EcalE_->at(i) - tpfjet_had_E_->at(i))/(tpfjet_had_E_->at(i)));// - tpfjet_had_EcalE_->at(i)));
 	h_tag_h0_EcalEfrac_->Fill(tpfjet_had_EcalE_->at(i)/tpfjet_had_E_->at(i));
       }
       else if(tpfjet_had_id_->at(i) == 2){
@@ -378,8 +422,10 @@ void testRespCorrDiJetsTree()
       }
     }
     float tag_jet_E = tag_jet_rechit_E + tag_jet_hadEcalE + tpfjet_unkown_E_ + tpfjet_electron_E_ + tpfjet_muon_E_ + tpfjet_photon_E_;
+    float tag_jet_E_cut = tag_jet_rechit_E_cut + tag_jet_hadEcalE + tpfjet_unkown_E_ + tpfjet_electron_E_ + tpfjet_muon_E_ + tpfjet_photon_E_;
     h_tag_jet_Ediff_->Fill((tag_jet_E - tpfjet_E_)/tpfjet_E_);
     h_tag_jet_genEdiff_->Fill((tag_jet_E - tpfjet_genE_)/tpfjet_genE_);
+    h_tag_jet_Ediff_cut_->Fill((tag_jet_E_cut - tpfjet_E_)/tpfjet_E_);
     h_tag_jet_negEfrac_->Fill((double)tag_jet_negE_n/(double)tpfjet_ntwrs_);
 
   }
@@ -393,6 +439,7 @@ void testRespCorrDiJetsTree()
 
   h_tag_jet_Ediff_->Write();
   h_tag_jet_genEdiff_->Write();
+  h_tag_jet_Ediff_cut_->Write();
   h_tag_jet_negEraw_->Write();
   h_tag_jet_negEtimesFrac_->Write();
   h_tag_jet_negEfrac_->Write();
@@ -405,7 +452,10 @@ void testRespCorrDiJetsTree()
   h_tag_h_Ediff_EcalE_->Write();
   h_tag_h0_Ediff_EcalE_->Write();
   h_tag_HFhad_Ediff_EcalE_->Write();
+  h_tag_h_Ediff_rawHcalE_->Write();
   h_tag_egammaHF_Ediff_EcalE_->Write();
+  h_tag_h_Ediff_cut_->Write();
+  h_tag_rechitspercandidate_->Write();
   h_tag_h_pt_rechits_->Write();
   h_tag_h_pt_norechits_EcalE_->Write();
   h_tag_h_pt_norechits_noEcalE_->Write();
@@ -417,6 +467,7 @@ void testRespCorrDiJetsTree()
   h_tag_h_twrE_lowEdiff_->Write();
   h_tag_h_ntwrs_highEdiff_->Write();
   h_tag_h_ntwrs_lowEdiff_->Write();
+  h_tag_h_ntwrs_goodEdiff_->Write();
   h_tag_h_dR_highEdiff_->Write();
   h_tag_h_dR_lowEdiff_->Write();
   h_tag_h_ncand_highEdiff_->Write();
