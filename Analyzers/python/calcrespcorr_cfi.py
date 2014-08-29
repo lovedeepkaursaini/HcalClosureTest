@@ -2,7 +2,7 @@ import FWCore.ParameterSet.Config as cms
 
 calcrespcorr = cms.EDAnalyzer(
     'CalcRespCorr',
-    clstrCollName = cms.string('recoCaloClusters_hfEMClusters'),#ParticleClustering'),
+    clstrCollName = cms.string('multi5x5SuperClusters'),#ParticleClustering'),
     rootHistFilename = cms.string('respcorrplots.root'),
     maxDeltaR = cms.double(0.3),
     maxModifiedEMF = cms.double(0.05),
