@@ -54,6 +54,7 @@ class DijetRespCorrDatum : public TObject
   Double_t GetProbeEcalE(void) const;
   Double_t GetThirdJetPx(void) const;
   Double_t GetThirdJetPy(void) const;
+  Int_t    GetCandTrackN(void) const;
   
   void SetTagEta(Double_t);
   void SetTagPhi(Double_t);
@@ -67,11 +68,18 @@ class DijetRespCorrDatum : public TObject
   void SetProbeEcalE(Double_t);
   void SetThirdJetPx(Double_t);
   void SetThirdJetPy(Double_t);
+  void SetCandTrackN(Int_t);
+  void AddCandTrackP(Double_t);
+  void AddCandTrackEcalE(Double_t);
+  void AddCandTrackHcalE(std::map<Int_t, Double_t>);
 
   // calculate the ecal, hcal, and HF energy in the tag and probe jets
   // scale the hcal and hf energy by the response corrections
   void GetTagEnergies(const TArrayD& respcorr, Double_t& ecal, Double_t& hcal, Double_t& hf) const;
   void GetProbeEnergies(const TArrayD& respcorr, Double_t& ecal, Double_t& hcal, Double_t& hf) const;
+  // Calculate the candidate track momentum, ecal energy, and hcal energy
+  // scale the hcal energy by the response corrections
+  void GetTrackVariables(const TArrayD& respcorr, const Int_t index_,  Double_t& TrackP_, Double_t& EcalE_, Double_t& HcalE_) const;
 
  private:
   // tag jet info
@@ -86,6 +94,11 @@ class DijetRespCorrDatum : public TObject
 
   // third jet info
   Double_t fThirdJetPx, fThirdJetPy;
+
+  // Track energy comparison info
+  Int_t fCandTrackN;
+  std::vector<Double_t> fCandTrackP, fCandTrackEcalE;
+  std::vector<std::map<Int_t, Double_t> > fCandTrackHcalE;
   
   ClassDef(DijetRespCorrDatum, 1);
 };
@@ -120,10 +133,16 @@ class DijetRespCorrData : public TObject
   inline void SetEcalRes(Double_t p=0.07) { fEcalRes=p; }
   inline void SetHcalRes(Double_t p=1.15) { fHcalRes=p; }
   inline void SetHfRes(Double_t p=1.35) { fHfRes=p; }
+  
+  inline void SetDoCandTrackEnergyDiff(Bool_t p) { fDoCandTrackEnergyDiff=p; }
+  inline Bool_t GetDoCandTrackEnergyDiff(void) const { return fDoCandTrackEnergyDiff; }
 
  private:
   // calculate the balance parameter and its resolution for a given dijet pair
   void GetBalance(const DijetRespCorrDatum& datum, const TArrayD& respcorr, Double_t& balance_, Double_t& resolution_) const;
+  // Calculate the difference in energy between the hits and the candidate's track
+  //void GetTrackEnergyDiff(const DijetRespCorrDatum& datum, const Int_t& index, const TArrayD& respcorr, Double_t& Ediff_, Double_t& dEdiff_) const;
+  void GetTrackEnergyDiff(const DijetRespCorrDatum& datum, const Int_t index, const TArrayD& respcorr, Double_t& Ediff_, Double_t& dEdiff_) const;
 
   // actual data
   std::vector<DijetRespCorrDatum> fData;
@@ -137,6 +156,8 @@ class DijetRespCorrData : public TObject
   Double_t fParMin;
   Double_t fParMax;
   Double_t fEcalRes, fHcalRes, fHfRes;
+
+  Bool_t fDoCandTrackEnergyDiff;
 
   ClassDef(DijetRespCorrData, 1);
 };

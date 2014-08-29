@@ -83,6 +83,11 @@ Double_t DijetRespCorrDatum::GetThirdJetPy(void) const
   return fThirdJetPy;
 }
 
+Int_t DijetRespCorrDatum::GetCandTrackN(void) const
+{
+  return fCandTrackN;
+}
+
 void DijetRespCorrDatum::SetTagEta(Double_t v)
 {
   fTagEta = v;
@@ -160,6 +165,30 @@ void DijetRespCorrDatum::SetThirdJetPy(Double_t v)
   return;
 }
 
+void DijetRespCorrDatum::SetCandTrackN(Int_t v)
+{
+  fCandTrackN = v;
+  return;
+}
+
+void DijetRespCorrDatum::AddCandTrackP(Double_t v)
+{
+  fCandTrackP.push_back(v);
+  return;
+}
+
+void DijetRespCorrDatum::AddCandTrackEcalE(Double_t v)
+{
+  fCandTrackEcalE.push_back(v);
+  return;
+}
+
+void DijetRespCorrDatum::AddCandTrackHcalE(std::map<Int_t, Double_t> v)
+{
+  fCandTrackHcalE.push_back(v);
+  return;
+}
+
 void DijetRespCorrDatum::GetTagEnergies(const TArrayD& respcorr, Double_t& ecal, Double_t& hcal, Double_t& hf) const
 {
   ecal=GetTagEcalE();
@@ -202,6 +231,21 @@ void DijetRespCorrDatum::GetProbeEnergies(const TArrayD& respcorr, Double_t& eca
   return;
 }
 
+void DijetRespCorrDatum::GetTrackVariables(const TArrayD& respcorr, const Int_t index_, Double_t& TrackP_, Double_t& EcalE_, Double_t& HcalE_) const
+{
+  TrackP_ = fCandTrackP[index_];
+  EcalE_ = fCandTrackEcalE[index_];
+
+  std::map<Int_t,Double_t> candmap = fCandTrackHcalE[index_];
+  for(std::map<Int_t, Double_t>::const_iterator mapit=candmap.begin(); mapit!=candmap.end(); ++mapit) {
+    int ieta=mapit->first;
+    double energy=mapit->second;
+    int index=ieta+MAXIETA;
+    HcalE_ += respcorr[index]*energy;
+  }
+  return;
+}
+
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
@@ -216,6 +260,8 @@ DijetRespCorrData::DijetRespCorrData()
   fEcalRes=0.07;
   fHcalRes=1.15;
   fHfRes=1.35;
+
+  fDoCandTrackEnergyDiff=false;
 }
 
 DijetRespCorrData::~DijetRespCorrData()
@@ -242,15 +288,35 @@ Double_t DijetRespCorrData::GetLikelihoodDistance(const TArrayD& respcorr) const
 {
   Double_t total=0.0;
 
-  // loop over each jet pair
-  for(std::vector<DijetRespCorrDatum>::const_iterator it=fData.begin(); it!=fData.end(); ++it) {
-
-    // calculate the balance and resolution for each jet pair
-    Double_t B, dB;
-    GetBalance(*it, respcorr, B, dB);
-
-    // this is the total likelihood
-    total += 0.5*(std::log(dB*dB)+B*B/dB/dB);
+  if(GetDoCandTrackEnergyDiff()){
+    // loop over each jet pair
+    for(std::vector<DijetRespCorrDatum>::const_iterator it=fData.begin(); it!=fData.end(); ++it) {
+      
+      // calculate the balance and resolution for each jet pair
+      Double_t B, dB;
+      GetBalance(*it, respcorr, B, dB);
+      
+      // this is the total likelihood
+      total += 0.5*(std::log(dB*dB)+B*B/dB/dB);
+      for(Int_t iCandTrack=0; iCandTrack<(*it).GetCandTrackN(); iCandTrack++){
+	// Calculate the difference in energy between rechits and tracks
+	Double_t Ediff, dEdiff;
+	GetTrackEnergyDiff(*it, iCandTrack, respcorr, Ediff, dEdiff);
+	total += 0.5*(std::log(dEdiff*dEdiff) + Ediff*Ediff/dEdiff/dEdiff);
+      }
+    }
+  }
+  else{
+    // loop over each jet pair
+    for(std::vector<DijetRespCorrDatum>::const_iterator it=fData.begin(); it!=fData.end(); ++it) {
+      
+      // calculate the balance and resolution for each jet pair
+      Double_t B, dB;
+      GetBalance(*it, respcorr, B, dB);
+      
+      // this is the total likelihood
+      total += 0.5*(std::log(dB*dB)+B*B/dB/dB);
+    }
   }
   return total;
 }
@@ -351,6 +417,18 @@ void DijetRespCorrData::GetBalance(const DijetRespCorrDatum& datum, const TArray
 
   balance_ = 2*(tetcorr-petcorr)/(tetcorr+petcorr);
   resolution_ = 1.0;
+  return;
+}
+
+void DijetRespCorrData::GetTrackEnergyDiff(const DijetRespCorrDatum& datum, const Int_t index, const TArrayD& respcorr, Double_t& Ediff_, Double_t& dEdiff_) const
+{
+  Double_t TrackP, EcalE, HcalE;
+  datum.GetTrackVariables(respcorr, index, TrackP, EcalE, HcalE);
+  
+  Double_t TrackE = sqrt(TrackP*TrackP + 0.019479835145232396); // sqrt(p^2 + m_pion^2)
+
+  Ediff_ = fabs(TrackE - EcalE - HcalE);
+  dEdiff_ = 1.0;
   return;
 }
 
