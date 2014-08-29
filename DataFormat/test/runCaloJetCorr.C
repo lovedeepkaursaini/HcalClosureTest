@@ -1,12 +1,12 @@
 void runCaloJetCorr()
 {
-  gSystem->Load("../../../lib/slc5_amd64_gcc462/libHcalClosureTestDataFormat.so");
+  gSystem->Load("../../../../lib/slc5_amd64_gcc462/libHcalClosureTestDataFormat.so");
 
-  TChain* tree = new TChain("dijettree");
-  TString input = "myfile.root";
+  TChain* tree = new TChain("calo_dijettree");
+  TString input = "/uscms_data/d3/dgsheffi/HCal/Trees/Pion_Pt-50_*_fullRecHits.root";
   tree->Add(input);
 
-  TString output = "caloJetCorr.root";
+  TString output = "/uscms_data/d3/dgsheffi/HCal/caloJetCorr_fullRecHits.root";
 
   DijetRespCorrData data;
 
