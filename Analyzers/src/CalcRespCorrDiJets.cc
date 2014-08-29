@@ -666,10 +666,16 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		// Get cluster and hits
 		reco::PFClusterRef clusterref = elements[iEle].clusterRef();
 		reco::PFCluster cluster = *clusterref;
+		const std::vector<reco::PFRecHitFraction> recHitFracs = cluster.recHitFractions();
+		int nHits = recHitFracs.size();
+		for(int iHit=0; iHit<nHits; iHit++){
+		  std::cout << recHitFracs[iHit].recHitRef()->energy() << std::endl;
+		}
+		
 		std::vector<std::pair<DetId,float>> hitsAndFracs = cluster.hitsAndFractions();
 		
 		// Run over hits and match
-		int nHits = hitsAndFracs.size();
+		nHits = hitsAndFracs.size();
 		for(int iHit=0; iHit<nHits; iHit++){
 		  int etaPhiPF = getEtaPhi(hitsAndFracs[iHit].first);
 		  
@@ -680,7 +686,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  for(edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>::const_iterator ith=hbhereco->begin(); ith!=hbhereco->end(); ++ith){
 		    int etaPhiRecHit = getEtaPhi((*ith).id());
 		    if(etaPhiPF == etaPhiRecHit){
-		      if(true){
+		      if(false){
 			tpfjet_twr_ieta_.push_back((*ith).id().ieta());
 			if(hitsAndFracs[iHit].second > 0.05 && (*ith).energy() > 0.0) twrietas[(*ith).id().ieta()]++;
 			tpfjet_twr_hade_.push_back((*ith).energy());
