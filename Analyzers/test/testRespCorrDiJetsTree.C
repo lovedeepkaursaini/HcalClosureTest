@@ -19,7 +19,7 @@ double deltaR(const double px1, const double py1, const double pz1, const double
   double dphi = fabs(p1.Phi() - p2.Phi());
   if(dphi>3.1415927) dphi = 2*3.1415927 - dphi;
   return sqrt(deta*deta + dphi*dphi);
-  }*/
+}*/
 
 void testRespCorrDiJetsTree()
 {
@@ -232,6 +232,8 @@ void testRespCorrDiJetsTree()
   TH1D* h_tag_jet_Ediff_ = new TH1D("h_tag_jet_Ediff","tag (rechits - pfjet)/pfjet",200,-1,8);
   TH1D* h_tag_jet_genEdiff_ = new TH1D("h_tag_jet_genEdiff","tag (rechits - genjet)/genjet",200,-1,8);
   TH1D* h_tag_jet_Ediff_cut_ = new TH1D("h_tag_jet_Ediff_cut","tag (rechits - pfjet)/pfjet with cuts",200,-1,8);
+  TH1D* h_tag_jet_Ediff_once_ = new TH1D("h_tag_jet_Ediff_once","tag (rechits - pfjet)/pfjet only using a rechit once",200,-1,8);
+  TH1D* h_tag_jet_fractionsum_ = new TH1D("h_tag_jet_fractionsum","tag sum of fractions per tower",150,0,1.5);
   TH1D* h_tag_jet_negEraw_ = new TH1D("h_tag_jet_negEraw","tag negative rechit energies",200,-2,0);
   TH1D* h_tag_jet_negEtimesFrac_ = new TH1D("h_tag_jet_negEtimesFrac","tag negative rechit energies times fraction",200,-2,0);
   TH1D* h_tag_jet_negEfrac_ = new TH1D("h_tag_jet_negEfrac","tag fraction with negative energies",200,0,1);
@@ -283,7 +285,7 @@ void testRespCorrDiJetsTree()
   cout << "Running over " << nEvents << " events" << endl;
   //nEvents = 5;
   for(int iEvent=0; iEvent<nEvents; iEvent++){
-    if(iEvent % 1000 == 0){
+    if(iEvent % 10 == 0){
       cout << "Processing event " << iEvent << endl;
     }
     tree->GetEntry(iEvent);
@@ -296,6 +298,7 @@ void testRespCorrDiJetsTree()
     float tag_jet_rechit_E_cut = 0;
     float tag_jet_hadEcalE = 0;
     float tag_jet_negE_n = 0;
+    map<float,float> tag_jet_rechit_E_map;
     h_tag_rechitspercandidate_->Fill((double)tpfjet_ntwrs_/(double)tpfjet_had_n_);
     for(int i=0; i<tpfjet_had_n_; i++){
       float cand_rechit_E = 0;
@@ -306,6 +309,7 @@ void testRespCorrDiJetsTree()
       for(int j=0; j<tpfjet_ntwrs_; j++){
 	if(tpfjet_twr_hadind_->at(j) == i &&  tpfjet_twr_hade_->at(j) > 0.0){
 	  tag_jet_rechit_E += tpfjet_twr_hade_->at(j)*tpfjet_twr_frac_->at(j);
+	  tag_jet_rechit_E_map[tpfjet_twr_hade_->at(j)] += tpfjet_twr_frac_->at(j);
 	  cand_rechit_E += tpfjet_twr_hade_->at(j)*tpfjet_twr_frac_->at(j);
 	  cand_rechit_E_vector.push_back(tpfjet_twr_hade_->at(j)*tpfjet_twr_frac_->at(j));
 	  if(tpfjet_twr_frac_->at(j) > 0.05){
@@ -420,12 +424,19 @@ void testRespCorrDiJetsTree()
 	h_tag_egammaHF_Ediff_EcalE_->Fill((cand_rechit_E + tpfjet_had_EcalE_->at(i) - tpfjet_had_E_->at(i))/tpfjet_had_E_->at(i));
 	h_tag_egammaHF_EcalEfrac_->Fill(tpfjet_had_EcalE_->at(i)/cand_rechit_E);
       }
+    } // Run over PF candidates
+    float tag_jet_rechit_E_once = 0;
+    for(map<float,float>::const_iterator itmap=tag_jet_rechit_E_map.begin(); itmap!=tag_jet_rechit_E_map.end(); itmap++){
+      tag_jet_rechit_E_once += itmap->first;
+      h_tag_jet_fractionsum_->Fill(itmap->second);
     }
     float tag_jet_E = tag_jet_rechit_E + tag_jet_hadEcalE + tpfjet_unkown_E_ + tpfjet_electron_E_ + tpfjet_muon_E_ + tpfjet_photon_E_;
     float tag_jet_E_cut = tag_jet_rechit_E_cut + tag_jet_hadEcalE + tpfjet_unkown_E_ + tpfjet_electron_E_ + tpfjet_muon_E_ + tpfjet_photon_E_;
+    float tag_jet_E_once = tag_jet_rechit_E_once + tag_jet_hadEcalE + tpfjet_unkown_E_ + tpfjet_electron_E_ + tpfjet_muon_E_ + tpfjet_photon_E_;
     h_tag_jet_Ediff_->Fill((tag_jet_E - tpfjet_E_)/tpfjet_E_);
     h_tag_jet_genEdiff_->Fill((tag_jet_E - tpfjet_genE_)/tpfjet_genE_);
     h_tag_jet_Ediff_cut_->Fill((tag_jet_E_cut - tpfjet_E_)/tpfjet_E_);
+    h_tag_jet_Ediff_once_->Fill((tag_jet_E_once - tpfjet_E_)/tpfjet_E_);
     h_tag_jet_negEfrac_->Fill((double)tag_jet_negE_n/(double)tpfjet_ntwrs_);
 
   }
@@ -440,6 +451,8 @@ void testRespCorrDiJetsTree()
   h_tag_jet_Ediff_->Write();
   h_tag_jet_genEdiff_->Write();
   h_tag_jet_Ediff_cut_->Write();
+  h_tag_jet_Ediff_once_->Write();
+  h_tag_jet_fractionsum_->Write();
   h_tag_jet_negEraw_->Write();
   h_tag_jet_negEtimesFrac_->Write();
   h_tag_jet_negEfrac_->Write();
