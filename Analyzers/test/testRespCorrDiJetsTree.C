@@ -1,25 +1,5 @@
 #include <vector>
 #include <map>
-/*#include <iostream>
-#include "TROOT.h"
-#include "TChain.h"
-#include "TString.h"
-#include "TH1D.h"
-#include "TH2D.h"
-#include "TFile.h"
-#include "TLorentzVector.h"
-
-using namespace std;
-
-
-double deltaR(const double px1, const double py1, const double pz1, const double px2, const double py2, const double pz2){
-  TLorentzVector p1(px1,py1,pz1,0.0);
-  TLorentzVector p2(px2,py2,pz2,0.0);
-  double deta = p1.Eta() - p2.Eta();
-  double dphi = fabs(p1.Phi() - p2.Phi());
-  if(dphi>3.1415927) dphi = 2*3.1415927 - dphi;
-  return sqrt(deta*deta + dphi*dphi);
-}*/
 
 void testRespCorrDiJetsTree()
 {
@@ -28,11 +8,9 @@ void testRespCorrDiJetsTree()
 
   TChain* tree = new TChain("pf_dijettree");
   TString input = "/uscms_data/d3/dgsheffi/HCal/Trees/QCD_Pt-15to3000_0030487D5E5F_useRecHitOnce.root";
-  //TString input = "/uscms_data/d3/dgsheffi/HCal/Trees/Pion_Pt-50.root";
   tree->Add(input);
 
   TString output = "/uscms_data/d3/dgsheffi/HCal/Trees/validation/QCD_Pt-15to3000_0030487D5E5F_useRecHitOnce.root";
-  //TString output = "/uscms_data/d3/dgsheffi/HCal/Trees/validation/Pion_Pt-50.root";
 
   float tpfjet_pt_, tpfjet_p_, tpfjet_E_, tpfjet_eta_, tpfjet_phi_, tpfjet_scale_;
   float tpfjet_gendr_, tpfjet_genpt_, tpfjet_genp_, tpfjet_genE_;
@@ -61,6 +39,7 @@ void testRespCorrDiJetsTree()
   vector<int>* tpfjet_twr_elmttype_;
   vector<float>* tpfjet_twr_hade_;
   vector<float>* tpfjet_twr_frac_;
+  vector<bool>* tpfjet_twr_first_;
   int tpfjet_ncandtracks_;
   vector<float>* tpfjet_candtrack_px_;
   vector<float>* tpfjet_candtrack_py_;
@@ -93,6 +72,7 @@ void testRespCorrDiJetsTree()
   vector<float>* ppfjet_twr_elmttype_;
   vector<float>* ppfjet_twr_hade_;
   vector<float>* ppfjet_twr_frac_;
+  vector<bool>* ppfjet_twr_first_;
   int ppfjet_ncandtracks_;
   vector<float>* ppfjet_candtrack_px_;
   vector<float>* ppfjet_candtrack_py_;
@@ -156,6 +136,7 @@ void testRespCorrDiJetsTree()
   tree->SetBranchAddress("tpfjet_twr_candtrackind",&tpfjet_twr_candtrackind_);
   tree->SetBranchAddress("tpfjet_twr_hadind",&tpfjet_twr_hadind_);
   tree->SetBranchAddress("tpfjet_twr_elmttype",&tpfjet_twr_elmttype_);
+  tree->SetBranchAddress("tpfjet_twr_first",&tpfjet_twr_first_);
   tree->SetBranchAddress("tpfjet_ncandtracks",&tpfjet_ncandtracks_);
   tree->SetBranchAddress("tpfjet_candtrack_px",&tpfjet_candtrack_px_);
   tree->SetBranchAddress("tpfjet_candtrack_py",&tpfjet_candtrack_py_);
@@ -214,6 +195,7 @@ void testRespCorrDiJetsTree()
   tree->SetBranchAddress("ppfjet_twr_candtrackind",&ppfjet_twr_candtrackind_);
   tree->SetBranchAddress("ppfjet_twr_hadind",&ppfjet_twr_hadind_);
   tree->SetBranchAddress("ppfjet_twr_elmttype",&ppfjet_twr_elmttype_);
+  tree->SetBranchAddress("ppfjet_twr_first",&ppfjet_twr_first_);
   tree->SetBranchAddress("ppfjet_ncandtracks",&ppfjet_ncandtracks_);
   tree->SetBranchAddress("ppfjet_candtrack_px",&ppfjet_candtrack_px_);
   tree->SetBranchAddress("ppfjet_candtrack_py",&ppfjet_candtrack_py_);
@@ -230,6 +212,9 @@ void testRespCorrDiJetsTree()
   
   // Jet
   TH1D* h_tag_jet_Ediff_ = new TH1D("h_tag_jet_Ediff","tag (rechits - pfjet)/pfjet",200,-1,8);
+  TH1D* h_tag_jet_Ediff_once_ = new TH1D("h_tag_jet_Ediff_once","tag (rechits - pfjet)/pfjet use rechits once",200,-1,8);
+  TH1D* h_tag_jet_duplicatefrac_ = new TH1D("h_tag_jet_duplicatefrac","fraction of rechits that are duplicates",100,0,1);
+  TH1D* h_tag_jet_additionalE_ = new TH1D("h_tag_jet_additionalE","additional E from multiple rechits",200,-50,150);
 
   int nEvents = tree->GetEntries();
   cout << "Running over " << nEvents << " events" << endl;
@@ -245,19 +230,31 @@ void testRespCorrDiJetsTree()
     //////////////////////////
 
     float tag_jet_rechit_E = 0;
+    float tag_jet_rechit_E_once = 0;
     float tag_jet_hadEcalE = 0;
+    int nduplicates = 0;
     for(int i=0; i<tpfjet_had_n_; i++){
-      float cand_rechit_E = 0;
       tag_jet_hadEcalE += tpfjet_had_EcalE_->at(i);
       for(int j=0; j<tpfjet_ntwrs_; j++){
 	if(tpfjet_twr_hadind_->at(j) == i &&  tpfjet_twr_hade_->at(j) > 0.0){
 	  tag_jet_rechit_E += tpfjet_twr_hade_->at(j)*tpfjet_twr_frac_->at(j);
+	  if(tpfjet_twr_first_->at(j)){
+	    tag_jet_rechit_E_once += tpfjet_twr_hade_->at(j)*tpfjet_twr_frac_->at(j);
+	  }
+	  else{
+	    nduplicates++;
+	  }
 	}
       }
     }
       
     float tag_jet_E = tag_jet_rechit_E + tag_jet_hadEcalE + tpfjet_unkown_E_ + tpfjet_electron_E_ + tpfjet_muon_E_ + tpfjet_photon_E_;
     h_tag_jet_Ediff_->Fill((tag_jet_E - tpfjet_E_)/tpfjet_E_);
+    float tag_jet_E_once = tag_jet_rechit_E_once + tag_jet_hadEcalE + tpfjet_unkown_E_ + tpfjet_electron_E_ + tpfjet_muon_E_ + tpfjet_photon_E_;
+    h_tag_jet_Ediff_once_->Fill((tag_jet_E_once - tpfjet_E_)/tpfjet_E_);
+    h_tag_jet_additionalE_->Fill(tag_jet_rechit_E - tag_jet_rechit_E_once);
+
+    h_tag_jet_duplicatefrac_->Fill((double)nduplicates/(double)tpfjet_ntwrs_);
   }
   
   //////////////////////////
@@ -268,6 +265,9 @@ void testRespCorrDiJetsTree()
   fout->cd();
 
   h_tag_jet_Ediff_->Write();
+  h_tag_jet_Ediff_once_->Write();
+  h_tag_jet_duplicatefrac_->Write();
+  h_tag_jet_additionalE_->Write();
   
   fout->Close();
   

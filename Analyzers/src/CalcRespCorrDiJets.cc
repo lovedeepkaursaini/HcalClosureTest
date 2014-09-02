@@ -420,6 +420,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
       tpfjet_twr_elmttype_.clear();
       tpfjet_twr_hade_.clear();
       tpfjet_twr_frac_.clear();
+      tpfjet_twr_first_.clear();
       tpfjet_candtrack_px_.clear();
       tpfjet_candtrack_py_.clear();
       tpfjet_candtrack_pz_.clear();
@@ -441,10 +442,14 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
       ppfjet_twr_elmttype_.clear();
       ppfjet_twr_hade_.clear();
       ppfjet_twr_frac_.clear();
+      ppfjet_twr_first_.clear();
       ppfjet_candtrack_px_.clear();
       ppfjet_candtrack_py_.clear();
       ppfjet_candtrack_pz_.clear();
       ppfjet_candtrack_EcalE_.clear();
+
+      std::map<int,float> tpfjet_rechits;
+      std::map<int,float> ppfjet_rechits;
       
       // fill tag jet variables
       tpfjet_pt_    = pf_tag.jet()->pt();
@@ -693,6 +698,13 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 			else{
 			  tpfjet_twr_candtrackind_.push_back(-1);
 			}
+			if(tpfjet_rechits[(*ith).id()] == 0){
+			  tpfjet_twr_first_.push_back(true);
+			}
+			else{
+			  tpfjet_twr_first_.push_back(false);
+			}
+			tpfjet_rechits[(*ith).id()] += hitsAndFracs[iHit].second;
 			++tpfjet_ntwrs_;
 		      }
 		    } // Test if ieta,iphi matches
@@ -752,6 +764,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		      tpfjet_twr_hadind_.push_back(tpfjet_had_n_ - 1);
 		      tpfjet_twr_elmttype_.push_back(1);
 		      tpfjet_twr_candtrackind_.push_back(-1);
+		      tpfjet_twr_first_.push_back(true);
 		      ++tpfjet_ntwrs_;
 		      HFHAD_E += (*ith).energy();
 		    }
@@ -811,6 +824,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		      tpfjet_twr_hadind_.push_back(tpfjet_had_n_ - 1);
 		      tpfjet_twr_elmttype_.push_back(2);
 		      tpfjet_twr_candtrackind_.push_back(-1);
+		      tpfjet_twr_first_.push_back(true);
 		      ++tpfjet_ntwrs_;
 		      HFEM_E += (*ith).energy();
 		    }
@@ -849,6 +863,13 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 			else{
 			  tpfjet_twr_candtrackind_.push_back(-1);
 			}
+			if(tpfjet_rechits[(*ith).id()] == 0){
+			  tpfjet_twr_first_.push_back(true);
+			}
+			else{
+			  tpfjet_twr_first_.push_back(false);
+			}
+			tpfjet_rechits[(*ith).id()] += hitsAndFracs[iHit].second;
 			++tpfjet_ntwrs_;
 		      }
 		    } // Test if ieta,iphi match
@@ -1110,6 +1131,13 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 			else{
 			  ppfjet_twr_candtrackind_.push_back(-1);
 			}
+			if(ppfjet_rechits[(*ith).id()] == 0){
+			  ppfjet_twr_first_.push_back(true);
+			}
+			else{
+			  ppfjet_twr_first_.push_back(false);
+			}
+			ppfjet_rechits[(*ith).id()] += hitsAndFracs[iHit].second;
 			++ppfjet_ntwrs_;
 		      }
 		    } // Test if ieta,iphi matches
@@ -1168,6 +1196,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		      ppfjet_twr_hadind_.push_back(ppfjet_had_n_ - 1);
 		      ppfjet_twr_elmttype_.push_back(1);
 		      ppfjet_twr_candtrackind_.push_back(-1);
+		      ppfjet_twr_first_.push_back(true);
 		      ++ppfjet_ntwrs_;
 		      HFHAD_E += (*ith).energy();
 		    }
@@ -1226,6 +1255,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		      ppfjet_twr_hadind_.push_back(ppfjet_had_n_ - 1);
 		      ppfjet_twr_elmttype_.push_back(2);
 		      ppfjet_twr_candtrackind_.push_back(-1);
+		      ppfjet_twr_first_.push_back(true);
 		      ++ppfjet_ntwrs_;
 		      HFEM_E += (*ith).energy();
 		    }
@@ -1263,6 +1293,13 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 			else{
 			  ppfjet_twr_candtrackind_.push_back(-1);
 			}
+			if(ppfjet_rechits[(*ith).id()] == 0){
+			  ppfjet_twr_first_.push_back(true);
+			}
+			else{
+			  ppfjet_twr_first_.push_back(false);
+			}
+			ppfjet_rechits[(*ith).id()] += hitsAndFracs[iHit].second;
 			++ppfjet_ntwrs_;
 		      }
 		    } // Test if ieta,iphi match
@@ -1471,6 +1508,7 @@ void CalcRespCorrDiJets::beginJob()
     pf_tree_->Branch("tpfjet_twr_candtrackind",&tpfjet_twr_candtrackind_);
     pf_tree_->Branch("tpfjet_twr_hadind",&tpfjet_twr_hadind_);
     pf_tree_->Branch("tpfjet_twr_elmttype",&tpfjet_twr_elmttype_);
+    pf_tree_->Branch("tpfjet_twr_first",&tpfjet_twr_first_);
     pf_tree_->Branch("tpfjet_ncandtracks",&tpfjet_ncandtracks_, "tpfjet_ncandtracks/I");
     pf_tree_->Branch("tpfjet_candtrack_px",&tpfjet_candtrack_px_);
     pf_tree_->Branch("tpfjet_candtrack_py",&tpfjet_candtrack_py_);
@@ -1533,6 +1571,7 @@ void CalcRespCorrDiJets::beginJob()
     pf_tree_->Branch("ppfjet_twr_candtrackind",&ppfjet_twr_candtrackind_);
     pf_tree_->Branch("ppfjet_twr_hadind",&ppfjet_twr_hadind_);
     pf_tree_->Branch("ppfjet_twr_elmttype",&ppfjet_twr_elmttype_);
+    pf_tree_->Branch("ppfjet_twr_first",&ppfjet_twr_first_);
     pf_tree_->Branch("ppfjet_ncandtracks",&ppfjet_ncandtracks_, "ppfjet_ncandtracks/I");
     pf_tree_->Branch("ppfjet_candtrack_px",&ppfjet_candtrack_px_);
     pf_tree_->Branch("ppfjet_candtrack_py",&ppfjet_candtrack_py_);
