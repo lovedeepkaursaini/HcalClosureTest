@@ -27,11 +27,11 @@ void testRespCorrDiJetsTree()
   gROOT->ProcessLine(".L deltaR.C+");
 
   TChain* tree = new TChain("pf_dijettree");
-  TString input = "/uscms_data/d3/dgsheffi/HCal/Trees/QCD_Pt-15to3000_0030487D5E5F.root";
+  TString input = "/uscms_data/d3/dgsheffi/HCal/Trees/QCD_Pt-15to3000_0030487D5E5F_useRecHitOnce.root";
   //TString input = "/uscms_data/d3/dgsheffi/HCal/Trees/Pion_Pt-50.root";
   tree->Add(input);
 
-  TString output = "/uscms_data/d3/dgsheffi/HCal/Trees/validation/QCD_Pt-15to3000_0030487D5E5F.root";
+  TString output = "/uscms_data/d3/dgsheffi/HCal/Trees/validation/QCD_Pt-15to3000_0030487D5E5F_useRecHitOnce.root";
   //TString output = "/uscms_data/d3/dgsheffi/HCal/Trees/validation/Pion_Pt-50.root";
 
   float tpfjet_pt_, tpfjet_p_, tpfjet_E_, tpfjet_eta_, tpfjet_phi_, tpfjet_scale_;
@@ -230,62 +230,12 @@ void testRespCorrDiJetsTree()
   
   // Jet
   TH1D* h_tag_jet_Ediff_ = new TH1D("h_tag_jet_Ediff","tag (rechits - pfjet)/pfjet",200,-1,8);
-  TH1D* h_tag_jet_genEdiff_ = new TH1D("h_tag_jet_genEdiff","tag (rechits - genjet)/genjet",200,-1,8);
-  TH1D* h_tag_jet_Ediff_cut_ = new TH1D("h_tag_jet_Ediff_cut","tag (rechits - pfjet)/pfjet with cuts",200,-1,8);
-  TH1D* h_tag_jet_Ediff_once_ = new TH1D("h_tag_jet_Ediff_once","tag (rechits - pfjet)/pfjet only using a rechit once",200,-1,8);
-  TH1D* h_tag_jet_fractionsum_ = new TH1D("h_tag_jet_fractionsum","tag sum of fractions per tower",150,0,1.5);
-  TH1D* h_tag_jet_negEraw_ = new TH1D("h_tag_jet_negEraw","tag negative rechit energies",200,-2,0);
-  TH1D* h_tag_jet_negEtimesFrac_ = new TH1D("h_tag_jet_negEtimesFrac","tag negative rechit energies times fraction",200,-2,0);
-  TH1D* h_tag_jet_negEfrac_ = new TH1D("h_tag_jet_negEfrac","tag fraction with negative energies",200,0,1);
-  // Candidates
-  TH1D* h_tag_h_Ediff_ = new TH1D("h_tag_h_Ediff","tag h (rechits - cand)/cand",200,-1,8);
-  TH1D* h_tag_h0_Ediff_ = new TH1D("h_tag_h0_Ediff","tag h0 (rechits - cand)/cand",200,-1,8);
-  TH1D* h_tag_HFhad_Ediff_ = new TH1D("h_tag_HFhad_Ediff","tag HFhad (rechits - cand)/cand",200,-1,8);
-  TH1D* h_tag_egammaHF_Ediff_ = new TH1D("h_tag_egammaHF_Ediff","tag egammaHF (rechits - cand)/cand",200,-1,8);
-  TH2D* h_tag_h_EvsEdiff_ = new TH2D("h_tag_h_EvsEdiff","tag h cand E vs (rechits - cand)/cand",200,-1,8,200,0,50);
-  TH2D* h_tag_h0_EvsEdiff_ = new TH2D("h_tag_h0_EvsEdiff","tag h0 cand E vs (rechits - cand)/cand",200,-1,8,200,0,50);
-  TH1D* h_tag_h_Ediff_EcalE_ = new TH1D("h_tag_h_Ediff_EcalE","tag h (rechits + Ecal - cand)/cand",200,-1,8);
-  TH1D* h_tag_h0_Ediff_EcalE_ = new TH1D("h_tag_h0_Ediff_EcalE","tag h0 (rechits + Ecal - cand)/cand",200,-1,8);
-  TH1D* h_tag_HFhad_Ediff_EcalE_ = new TH1D("h_tag_HFhad_Ediff_EcalE","tag HFhad (rechits +Ecal - cand)/cand",200,-1,8);
-  TH1D* h_tag_egammaHF_Ediff_EcalE_ = new TH1D("h_tag_egammaHF_Ediff_EcalE","tag egammaHF (rechits +Ecal - cand)/cand",200,-1,8);
-  TH1D* h_tag_rechitspercandidate_ = new TH1D("h_tag_rechitspercandidate","tag rechits per candidate",200,0,200);
-  TH1D* h_tag_h_Ediff_rawHcalE_ = new TH1D("h_tag_h_Ediff_rawHcalE","tag h (rechits - rawHcalE)/rawHcalE",200,-1,8);
-  TH1D* h_tag_h_Ediff_cut_ = new TH1D("h_tag_h_Ediff_cut","tag h (rechits - cand)/cand with cuts",200,-1,8);
-  // Zero h rechits
-  TH1D* h_tag_h_pt_rechits_ = new TH1D("h_tag_h_pt_rechits","tag h pt rechits",200,0,100);
-  TH1D* h_tag_h_pt_norechits_EcalE_ = new TH1D("h_tag_h_pt_norechits_EcalE","tag h pt norechits EcalE",200,0,100);
-  TH1D* h_tag_h_pt_norechits_noEcalE_ = new TH1D("h_tag_h_pt_norechits_noEcalE","tag h pt norechits noEcalE",200,0,100);
-  TH1D* h_tag_h_EcalEfrac_norechits_ = new TH1D("h_tag_h_EcalEfrac_norechits","tag h candEcalE/cand E norechits",200,0,1.5);
-  TH1D* h_tag_h_EcalEfrac_norechits_lowPt_ = new TH1D("h_tag_h_EcalEfrac_norechits_lowPt","tag h candEcalE/cand E norechits p_{T} < 1 GeV",200,0,1.5);
-  TH1D* h_tag_h_EcalEfrac_norechits_midPt_ = new TH1D("h_tag_h_EcalEfrac_norechits_midPt","tag h candEcalE/cand E norechits 1 < p_{T} < 10 GeV",200,0,1.5);
-  TH1D* h_tag_h_EcalEfrac_norechits_highPt_ = new TH1D("h_tag_h_EcalEfrac_norechits_highPt","tag h candEcalE/cand E norechits  p_{T} > 10 GeV",200,0,1.5);
-  // High h Ediff
-  TH1D* h_tag_h_twrE_highEdiff_ = new TH1D("h_tag_h_twrE_highEdiff","tag h tower energies Ediff > 3",200,0,100);
-  TH1D* h_tag_h_twrE_lowEdiff_ = new TH1D("h_tag_h_twrE_lowEdiff","tag h tower energies Ediff < 3",200,0,100);
-  TH1D* h_tag_h_ntwrs_highEdiff_ = new TH1D("h_tag_h_ntwrs_highEdiff","tag h tower multiplicity Ediff > 3",400,0,400);
-  TH1D* h_tag_h_ntwrs_lowEdiff_ = new TH1D("h_tag_h_ntwrs_lowEdiff","tag h tower multiplicity Ediff < 3",400,0,400);
-  TH1D* h_tag_h_ntwrs_goodEdiff_ = new TH1D("h_tag_h_ntwrs_goodEdiff","tag h tower multiplicity Ediff < 1.5",400,0,400);
-  TH1D* h_tag_h_dR_highEdiff_ = new TH1D("h_tag_h_dR_highEdiff","tag h #DeltaR(candidate,other candidates) Ediff > 3",200,0,5);
-  TH1D* h_tag_h_dR_lowEdiff_ = new TH1D("h_tag_h_dR_lowEdiff","tag h #DeltaR(candidate,other candidates) Ediff < 3",200,0,5);
-  TH1D* h_tag_h_ncand_highEdiff_ = new TH1D("h_tag_h_ncand_highEdiff","tag h number of candidates in jet Ediff > 3",200,0,200);
-  TH1D* h_tag_h_ncand_lowEdiff_ = new TH1D("h_tag_h_ncand_lowEdiff","tag h number of candidates in jet Ediff < 3",200,0,200);
-  // h
-  TH1D* h_tag_h0_EcalEfrac_ = new TH1D("h_tag_h0_EcalEfrac","tag h0 candidate EcalEfrac",200,0,1.5);
-  // HFhad
-  TH1D* h_tag_HFhad_eta_ = new TH1D("h_tag_HFhad_eta","tag HFhad candidate #eta",200,-5.5,5.5);
-  TH1D* h_tag_HFhad_EcalE_loweta_ = new TH1D("h_tag_HFhad_EcalE_loweta","tag HFhad candidate EcalE #eta < 3",200,0,200);
-  TH1D* h_tag_HFhad_EcalE_mideta_ = new TH1D("h_tag_HFhad_EcalE_mideta","tag HFhad candidate EcalE 3 < #eta < 3.5",200,0,200);
-  TH1D* h_tag_HFhad_EcalE_higheta_ = new TH1D("h_tag_HFhad_EcalE_higheta","tag HFhad candidate EcalE #eta > 3.5",200,0,200);
-  TH1D* h_tag_HFhad_EcalEfrac_ = new TH1D("h_tag_HFhad_EcalEfrac","tag HFhad candidate EcalEfrac",200,0,1.5);
-  TH1D* h_tag_HFhad_emf_ = new TH1D("h_tag_HFhad_emf","tag HFhad candidate EM fraction",200,0,1.5);
-  // egammaHF
-  TH1D* h_tag_egammaHF_EcalEfrac_ = new TH1D("h_tag_egammaHF_EcalEfrac","tag egammaHF candidate EcalEfrac",200,0,1.5);
 
   int nEvents = tree->GetEntries();
   cout << "Running over " << nEvents << " events" << endl;
   //nEvents = 5;
   for(int iEvent=0; iEvent<nEvents; iEvent++){
-    if(iEvent % 10 == 0){
+    if(iEvent % 100 == 0){
       cout << "Processing event " << iEvent << endl;
     }
     tree->GetEntry(iEvent);
@@ -295,150 +245,19 @@ void testRespCorrDiJetsTree()
     //////////////////////////
 
     float tag_jet_rechit_E = 0;
-    float tag_jet_rechit_E_cut = 0;
     float tag_jet_hadEcalE = 0;
-    float tag_jet_negE_n = 0;
-    map<float,float> tag_jet_rechit_E_map;
-    h_tag_rechitspercandidate_->Fill((double)tpfjet_ntwrs_/(double)tpfjet_had_n_);
     for(int i=0; i<tpfjet_had_n_; i++){
       float cand_rechit_E = 0;
-      float cand_rechit_E_cut = 0;
-      float cand_ntwrs = 0;
-      vector<float> cand_rechit_E_vector;
       tag_jet_hadEcalE += tpfjet_had_EcalE_->at(i);
       for(int j=0; j<tpfjet_ntwrs_; j++){
 	if(tpfjet_twr_hadind_->at(j) == i &&  tpfjet_twr_hade_->at(j) > 0.0){
 	  tag_jet_rechit_E += tpfjet_twr_hade_->at(j)*tpfjet_twr_frac_->at(j);
-	  tag_jet_rechit_E_map[tpfjet_twr_hade_->at(j)] += tpfjet_twr_frac_->at(j);
-	  cand_rechit_E += tpfjet_twr_hade_->at(j)*tpfjet_twr_frac_->at(j);
-	  cand_rechit_E_vector.push_back(tpfjet_twr_hade_->at(j)*tpfjet_twr_frac_->at(j));
-	  if(tpfjet_twr_frac_->at(j) > 0.05){
-	    tag_jet_rechit_E_cut += tpfjet_twr_hade_->at(j)*tpfjet_twr_frac_->at(j);
-	    cand_rechit_E_cut += tpfjet_twr_hade_->at(j)*tpfjet_twr_frac_->at(j);
-	  }
-	  //if(tpfjet_twr_frac_->at(j) > 0.05) cand_ntwrs++;
-	  cand_ntwrs++;
-	}
-	else if(tpfjet_twr_hadind_->at(j) == i){
-	  h_tag_jet_negEraw_->Fill(tpfjet_twr_hade_->at(j));
-	  h_tag_jet_negEtimesFrac_->Fill(tpfjet_twr_hade_->at(j)*tpfjet_twr_frac_->at(j));
-	  tag_jet_negE_n++;
 	}
       }
-
-      // Candidate types
-      
-      if(tpfjet_had_id_->at(i) == 0){
-	float Ediff = (cand_rechit_E - tpfjet_had_E_->at(i))/tpfjet_had_E_->at(i);
-	h_tag_h_Ediff_->Fill(Ediff);
-	h_tag_h_EvsEdiff_->Fill(Ediff,tpfjet_had_E_->at(i));
-	h_tag_h_Ediff_EcalE_->Fill((cand_rechit_E + tpfjet_had_EcalE_->at(i) - tpfjet_had_E_->at(i))/(tpfjet_had_E_->at(i)));// - tpfjet_had_EcalE_->at(i)));
-	h_tag_h_Ediff_cut_->Fill((cand_rechit_E_cut - tpfjet_had_E_->at(i))/tpfjet_had_E_->at(i));
-	if(cand_rechit_E == 0){
-	  h_tag_h_Ediff_rawHcalE_->Fill(-1);
-	}
-	else{
-	  h_tag_h_Ediff_rawHcalE_->Fill((cand_rechit_E - tpfjet_had_rawHcalE_->at(i))/tpfjet_had_rawHcalE_->at(i));
-	}
-
-	if(Ediff > 3){
-	  h_tag_h_ntwrs_highEdiff_->Fill(cand_ntwrs);
-	  h_tag_h_ncand_highEdiff_->Fill(tpfjet_had_n_);
-	  for(unsigned int k=0; k<cand_rechit_E_vector.size(); k++){
-	    h_tag_h_twrE_highEdiff_->Fill(cand_rechit_E_vector.at(k));
-	  }
-	  for(int l=0; l<tpfjet_had_n_; l++){
-	    if(l != i){
-	      h_tag_h_dR_highEdiff_->Fill(deltaR(tpfjet_had_px_->at(i),tpfjet_had_py_->at(i),tpfjet_had_pz_->at(i),tpfjet_had_px_->at(l),tpfjet_had_py_->at(l),tpfjet_had_pz_->at(l)));
-	    }
-	  }
-	}
-	else{
-	  h_tag_h_ntwrs_lowEdiff_->Fill(cand_ntwrs);
-	  h_tag_h_ncand_lowEdiff_->Fill(tpfjet_had_n_);
-	  for(unsigned int k=0; k<cand_rechit_E_vector.size(); k++){
-	    h_tag_h_twrE_lowEdiff_->Fill(cand_rechit_E_vector.at(k));
-	  }
-	  for(int l=0; l<tpfjet_had_n_; l++){
-	    if(l != i){
-	      h_tag_h_dR_lowEdiff_->Fill(deltaR(tpfjet_had_px_->at(i),tpfjet_had_py_->at(i),tpfjet_had_pz_->at(i),tpfjet_had_px_->at(l),tpfjet_had_py_->at(l),tpfjet_had_pz_->at(l)));
-	    }
-	  }
-	  if(Ediff < 1.5){
-	    h_tag_h_ntwrs_goodEdiff_->Fill(cand_ntwrs);
-	  }
-	}
-
-	// Track
-	if(tpfjet_had_candtrackind_->at(i) > -1){
-	  float track_pt = sqrt(tpfjet_candtrack_px_->at(tpfjet_had_candtrackind_->at(i))*tpfjet_candtrack_px_->at(tpfjet_had_candtrackind_->at(i)) + tpfjet_candtrack_py_->at(tpfjet_had_candtrackind_->at(i))*tpfjet_candtrack_py_->at(tpfjet_had_candtrackind_->at(i)));
-	  if(cand_rechit_E == 0){
-	    if(tpfjet_had_EcalE_->at(i) == 0){
-	      h_tag_h_pt_norechits_noEcalE_->Fill(track_pt);
-	    }
-	    else{
-	      h_tag_h_pt_norechits_EcalE_->Fill(track_pt);
-	    }
-	    
-	    h_tag_h_EcalEfrac_norechits_->Fill(tpfjet_had_EcalE_->at(i)/tpfjet_had_E_->at(i));
-	    if(track_pt < 1){
-	      h_tag_h_EcalEfrac_norechits_lowPt_->Fill(tpfjet_had_EcalE_->at(i)/tpfjet_had_E_->at(i));
-	    }
-	    else if(track_pt > 1 && track_pt < 10){
-	      h_tag_h_EcalEfrac_norechits_midPt_->Fill(tpfjet_had_EcalE_->at(i)/tpfjet_had_E_->at(i));
-	    }
-	    else{
-	      h_tag_h_EcalEfrac_norechits_highPt_->Fill(tpfjet_had_EcalE_->at(i)/tpfjet_had_E_->at(i));
-	    }
-	  }
-	  else{
-	    h_tag_h_pt_rechits_->Fill(track_pt);
-	  }
-	}
-      }
-      else if(tpfjet_had_id_->at(i) == 1){
-	h_tag_h0_Ediff_->Fill((cand_rechit_E - tpfjet_had_E_->at(i))/tpfjet_had_E_->at(i));
-	h_tag_h0_EvsEdiff_->Fill((cand_rechit_E - tpfjet_had_E_->at(i))/tpfjet_had_E_->at(i),tpfjet_had_E_->at(i));
-	h_tag_h0_Ediff_EcalE_->Fill((cand_rechit_E + tpfjet_had_EcalE_->at(i) - tpfjet_had_E_->at(i))/(tpfjet_had_E_->at(i)));// - tpfjet_had_EcalE_->at(i)));
-	h_tag_h0_EcalEfrac_->Fill(tpfjet_had_EcalE_->at(i)/tpfjet_had_E_->at(i));
-      }
-      else if(tpfjet_had_id_->at(i) == 2){
-	h_tag_HFhad_Ediff_->Fill((cand_rechit_E - tpfjet_had_E_->at(i))/tpfjet_had_E_->at(i));
-	h_tag_HFhad_Ediff_EcalE_->Fill((cand_rechit_E + tpfjet_had_EcalE_->at(i) - tpfjet_had_E_->at(i))/tpfjet_had_E_->at(i));
-	TLorentzVector candvec(tpfjet_had_px_->at(i),tpfjet_had_py_->at(i),tpfjet_had_pz_->at(i),tpfjet_had_E_->at(i));
-	h_tag_HFhad_eta_->Fill(candvec.Eta());
-	if(fabs(candvec.Eta()) < 3){
-	  h_tag_HFhad_EcalE_loweta_->Fill(tpfjet_had_EcalE_->at(i));
-	}
-	else if(fabs(candvec.Eta()) < 3.5){
-	  h_tag_HFhad_EcalE_mideta_->Fill(tpfjet_had_EcalE_->at(i));
-	}
-	else{
-	  h_tag_HFhad_EcalE_higheta_->Fill(tpfjet_had_EcalE_->at(i));
-	}
-	h_tag_HFhad_EcalEfrac_->Fill(tpfjet_had_EcalE_->at(i)/cand_rechit_E);
-	h_tag_HFhad_emf_->Fill(tpfjet_had_emf_->at(i));
-      }
-      else if(tpfjet_had_id_->at(i) == 3){
-	h_tag_egammaHF_Ediff_->Fill((cand_rechit_E - tpfjet_had_E_->at(i))/tpfjet_had_E_->at(i));
-	h_tag_egammaHF_Ediff_EcalE_->Fill((cand_rechit_E + tpfjet_had_EcalE_->at(i) - tpfjet_had_E_->at(i))/tpfjet_had_E_->at(i));
-	h_tag_egammaHF_EcalEfrac_->Fill(tpfjet_had_EcalE_->at(i)/cand_rechit_E);
-      }
-    } // Run over PF candidates
-    float tag_jet_rechit_E_once = 0;
-    for(map<float,float>::const_iterator itmap=tag_jet_rechit_E_map.begin(); itmap!=tag_jet_rechit_E_map.end(); itmap++){
-      tag_jet_rechit_E_once += itmap->first;
-      h_tag_jet_fractionsum_->Fill(itmap->second);
     }
+      
     float tag_jet_E = tag_jet_rechit_E + tag_jet_hadEcalE + tpfjet_unkown_E_ + tpfjet_electron_E_ + tpfjet_muon_E_ + tpfjet_photon_E_;
-    float tag_jet_E_cut = tag_jet_rechit_E_cut + tag_jet_hadEcalE + tpfjet_unkown_E_ + tpfjet_electron_E_ + tpfjet_muon_E_ + tpfjet_photon_E_;
-    float tag_jet_E_once = tag_jet_rechit_E_once + tag_jet_hadEcalE + tpfjet_unkown_E_ + tpfjet_electron_E_ + tpfjet_muon_E_ + tpfjet_photon_E_;
     h_tag_jet_Ediff_->Fill((tag_jet_E - tpfjet_E_)/tpfjet_E_);
-    h_tag_jet_genEdiff_->Fill((tag_jet_E - tpfjet_genE_)/tpfjet_genE_);
-    h_tag_jet_Ediff_cut_->Fill((tag_jet_E_cut - tpfjet_E_)/tpfjet_E_);
-    h_tag_jet_Ediff_once_->Fill((tag_jet_E_once - tpfjet_E_)/tpfjet_E_);
-    h_tag_jet_negEfrac_->Fill((double)tag_jet_negE_n/(double)tpfjet_ntwrs_);
-
   }
   
   //////////////////////////
@@ -449,50 +268,6 @@ void testRespCorrDiJetsTree()
   fout->cd();
 
   h_tag_jet_Ediff_->Write();
-  h_tag_jet_genEdiff_->Write();
-  h_tag_jet_Ediff_cut_->Write();
-  h_tag_jet_Ediff_once_->Write();
-  h_tag_jet_fractionsum_->Write();
-  h_tag_jet_negEraw_->Write();
-  h_tag_jet_negEtimesFrac_->Write();
-  h_tag_jet_negEfrac_->Write();
-  h_tag_h_Ediff_->Write();
-  h_tag_h0_Ediff_->Write();
-  h_tag_HFhad_Ediff_->Write();
-  h_tag_egammaHF_Ediff_->Write();
-  h_tag_h_EvsEdiff_->Write();
-  h_tag_h0_EvsEdiff_->Write();
-  h_tag_h_Ediff_EcalE_->Write();
-  h_tag_h0_Ediff_EcalE_->Write();
-  h_tag_HFhad_Ediff_EcalE_->Write();
-  h_tag_h_Ediff_rawHcalE_->Write();
-  h_tag_egammaHF_Ediff_EcalE_->Write();
-  h_tag_h_Ediff_cut_->Write();
-  h_tag_rechitspercandidate_->Write();
-  h_tag_h_pt_rechits_->Write();
-  h_tag_h_pt_norechits_EcalE_->Write();
-  h_tag_h_pt_norechits_noEcalE_->Write();
-  h_tag_h_EcalEfrac_norechits_->Write();
-  h_tag_h_EcalEfrac_norechits_lowPt_->Write();
-  h_tag_h_EcalEfrac_norechits_midPt_->Write();
-  h_tag_h_EcalEfrac_norechits_highPt_->Write();
-  h_tag_h_twrE_highEdiff_->Write();
-  h_tag_h_twrE_lowEdiff_->Write();
-  h_tag_h_ntwrs_highEdiff_->Write();
-  h_tag_h_ntwrs_lowEdiff_->Write();
-  h_tag_h_ntwrs_goodEdiff_->Write();
-  h_tag_h_dR_highEdiff_->Write();
-  h_tag_h_dR_lowEdiff_->Write();
-  h_tag_h_ncand_highEdiff_->Write();
-  h_tag_h_ncand_lowEdiff_->Write();
-  h_tag_h0_EcalEfrac_->Write();
-  h_tag_HFhad_eta_->Write();
-  h_tag_HFhad_EcalE_loweta_->Write();
-  h_tag_HFhad_EcalE_mideta_->Write();
-  h_tag_HFhad_EcalE_higheta_->Write();
-  h_tag_HFhad_EcalEfrac_->Write();
-  h_tag_HFhad_emf_->Write();
-  h_tag_egammaHF_EcalEfrac_->Write();
   
   fout->Close();
   
