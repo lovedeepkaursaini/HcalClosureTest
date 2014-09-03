@@ -307,6 +307,24 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	<< " could not find HORecHit named " << RecHitLabelName_ << ":" << hoRecHitInstance_ << ".\n";
       return;
     }
+
+    // Get PF Candidates
+    edm::Handle<reco::PFCandidateCollection> pfCandidates;
+    iEvent.getByLabel("particleFlow",pfCandidates);
+    if(!horeco.isValid()) {
+      throw edm::Exception(edm::errors::ProductNotFound)
+	<< " could not find PFCandidateCollection named " << "particleFlow" << ".\n";
+      return;
+    }
+    
+    // Get PF HCAL clusters
+    edm::Handle<std::vector<reco::PFRecHit>> clusterHCAL;
+    iEvent.getByLabel("particleFlowClusterHCAL",clusterHCAL);
+    if(!horeco.isValid()) {
+      throw edm::Exception(edm::errors::ProductNotFound)
+	<< " could not find vector<reco::PFRecHit> named " << "particleFlowClusterHCAL" << ".\n";
+      return;
+    }
     
     int HBHE_n = 0;
     for(edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>::const_iterator ith=hbhereco->begin(); ith!=hbhereco->end(); ++ith){
@@ -465,7 +483,55 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
       /////////////////////////////////////////////
       // Get PF constituents and fill HCAL towers
       /////////////////////////////////////////////
-      
+
+      std::map<int,float> matches;
+
+      for(reco::PFCandidateCollection::const_iterator it=pfCandidates->begin(); it!=pfCandidates->end(); it++){
+	const reco::PFCandidate& pfc = *it;
+	if(pfc.particleId() != 1) continue; // Only do charged hadrons
+	const reco::PFCandidate::ElementsInBlocks& theElements = pfc.elementsInBlocks();
+	if(theElements.empty()){
+	  std::cout << "empty" << std::endl;
+	  continue;
+	}
+	const reco::PFBlockRef blockRef = theElements[0].first;
+	const edm::OwnVector<reco::PFBlockElement>& elements = blockRef->elements();
+	for(unsigned iEle=0; iEle<elements.size(); iEle++) {
+	  reco::PFBlockElement::Type type = elements[iEle].type();
+	  switch(type){
+	  case reco::PFBlockElement::HCAL:
+	    break;
+	  default:
+	    continue;
+	  }
+	  
+	  const reco::PFBlockElementCluster& ehcal = dynamic_cast<const reco::PFBlockElementCluster&>(elements[iEle]);
+	  const std::vector< reco::PFRecHitFraction > erh=ehcal.clusterRef()->recHitFractions();
+	  for(unsigned int ieh=0;ieh<erh.size();ieh++) {
+	    std::cout << erh[ieh].recHitRef()->energy() << std::endl;
+	  }
+
+	  /*std::vector<std::pair<DetId,float>> hitsAndFracs = ehcal.clusterRef()->hitsAndFractions();
+	  int nHits = hitsAndFracs.size();
+	  for(int iHit=0; iHit<nHits; iHit++){
+	    int etaPhiPF = getEtaPhi(hitsAndFracs[iHit].first);
+	    
+	    for(edm::SortedCollection<HORecHit,edm::StrictWeakOrdering<HORecHit>>::const_iterator ith=horeco->begin(); ith!=horeco->end(); ++ith){
+	      int etaPhiRecHit = getEtaPhi((*ith).id());
+	      if(etaPhiPF == etaPhiRecHit){
+		if(matches[etaPhiRecHit] == 0){
+		  std::cout << "  " << etaPhiRecHit << " frac: " << hitsAndFracs[iHit].second << " E: " << (*ith).energy() << std::endl;
+		}
+		else{
+		  std::cout << "++" << etaPhiRecHit << " frac: " << hitsAndFracs[iHit].second << " E: " << (*ith).energy() << std::endl;
+		}
+		matches[etaPhiRecHit] += hitsAndFracs[iHit].second;
+	      }
+	    }
+	  }*/ // Loop over hits
+	}
+      }
+
       // Get tag PFCandidates
       std::vector<reco::PFCandidatePtr> tagconst=pf_tag.jet()->getPFConstituents();
       for(std::vector<reco::PFCandidatePtr>::const_iterator it=tagconst.begin(); it!=tagconst.end(); ++it){
@@ -660,7 +726,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	  // Get elements from block
 	  reco::PFBlockRef blockRef = (*it)->elementsInBlocks()[e].first;
 	  const edm::OwnVector<reco::PFBlockElement>& elements = blockRef->elements();
-	  std::cout << "index: " << (*it)->elementsInBlocks()[e].second << " e: " << e << " pt: " << (*it)->pt() << std::endl;
+	  //std::cout << "index: " << (*it)->elementsInBlocks()[e].second << " e: " << e << " pt: " << (*it)->pt() << std::endl;
 	  for(unsigned iEle=0; iEle<elements.size(); iEle++) {
 	    if(true || elements[iEle].index() == (*it)->elementsInBlocks()[e].second){
 	      if(elements[iEle].type() == reco::PFBlockElement::HCAL){ // Element is HB or HE
@@ -698,10 +764,10 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 			  tpfjet_twr_candtrackind_.push_back(-1);
 			}
 			if(tpfjet_rechits[(*ith).id()] == 0){
-			  std::cout << "  detId: " << etaPhiPF << " frac: " << hitsAndFracs[iHit].second << " hadn: " << tpfjet_had_n_ - 1 << " e: " << e << " iEle: " << iEle << " iHit: " << iHit << std::endl;
+			  //std::cout << "  detId: " << etaPhiPF << " frac: " << hitsAndFracs[iHit].second << " hadn: " << tpfjet_had_n_ - 1 << " e: " << e << " iEle: " << iEle << " iHit: " << iHit << std::endl;
 			}
 			else{
-			  std::cout << "++detId: " << etaPhiPF << " frac: " << hitsAndFracs[iHit].second << " hadn: " << tpfjet_had_n_ - 1 << " e: " << e << " iEle: " << iEle << " iHit: " << iHit << std::endl;
+			  //std::cout << "++detId: " << etaPhiPF << " frac: " << hitsAndFracs[iHit].second << " hadn: " << tpfjet_had_n_ - 1 << " e: " << e << " iEle: " << iEle << " iHit: " << iHit << std::endl;
 			}
 			tpfjet_rechits[(*ith).id()] += hitsAndFracs[iHit].second;
 			++tpfjet_ntwrs_;
