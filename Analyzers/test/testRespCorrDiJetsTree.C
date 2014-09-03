@@ -215,6 +215,15 @@ void testRespCorrDiJetsTree()
   TH1D* h_tag_jet_Ediff_once_ = new TH1D("h_tag_jet_Ediff_once","tag (rechits - pfjet)/pfjet use rechits once",200,-1,8);
   TH1D* h_tag_jet_duplicatefrac_ = new TH1D("h_tag_jet_duplicatefrac","fraction of rechits that are duplicates",100,0,1);
   TH1D* h_tag_jet_additionalE_ = new TH1D("h_tag_jet_additionalE","additional E from multiple rechits",200,-50,150);
+  
+  TH1D* h_tag_jet_eta_rechits_ = new TH1D("h_tag_jet_eta_rechits","tag #eta with rechits",200,-5,5);
+  TH1D* h_tag_jet_eta_norechits_ = new TH1D("h_tag_jet_eta_norechits","tag #eta without rechits",200,-5,5);
+  TH1D* h_probe_jet_eta_rechits_ = new TH1D("h_probe_jet_eta_rechits","probe #eta with rechits",200,-5,5);
+  TH1D* h_probe_jet_eta_norechits_ = new TH1D("h_probe_jet_eta_norechits","probe #eta without rechits",200,-5,5);
+
+  int nEventsNoRecHits = 0;
+  int nEventsNoTagRecHits = 0;
+  int nEventsNoProbeRecHits = 0;
 
   int nEvents = tree->GetEntries();
   cout << "Running over " << nEvents << " events" << endl;
@@ -228,6 +237,22 @@ void testRespCorrDiJetsTree()
     //////////////////////////
     // Fill tag histograms
     //////////////////////////
+
+    if(tpfjet_ntwrs_ == 0){
+      nEventsNoTagRecHits++;
+      h_tag_jet_eta_norechits_->Fill(tpfjet_eta_);
+    }
+    else{
+      h_tag_jet_eta_rechits_->Fill(tpfjet_eta_);
+    }
+    if(ppfjet_ntwrs_ == 0){
+      nEventsNoProbeRecHits++;
+      h_probe_jet_eta_norechits_->Fill(ppfjet_eta_);
+    }
+    else{
+      h_probe_jet_eta_rechits_->Fill(ppfjet_eta_);
+    }
+    if(tpfjet_ntwrs_ == 0 && ppfjet_ntwrs_ == 0) nEventsNoRecHits++;
 
     float tag_jet_rechit_E = 0;
     float tag_jet_rechit_E_once = 0;
@@ -268,9 +293,18 @@ void testRespCorrDiJetsTree()
   h_tag_jet_Ediff_once_->Write();
   h_tag_jet_duplicatefrac_->Write();
   h_tag_jet_additionalE_->Write();
+
+  h_tag_jet_eta_rechits_->Write();
+  h_tag_jet_eta_norechits_->Write();
+  h_probe_jet_eta_rechits_->Write();
+  h_probe_jet_eta_norechits_->Write();
   
   fout->Close();
-  
+
+  cout << "Events without tag rechits: " << nEventsNoTagRecHits << "/" << nEvents << " = " << (double)nEventsNoTagRecHits/(double)nEvents << endl;
+  cout << "Events without probe rechits: " << nEventsNoProbeRecHits << "/" << nEvents << " = " << (double)nEventsNoProbeRecHits/(double)nEvents << endl;
+  cout << "Events without any rechits: " << nEventsNoRecHits << "/" << nEvents << " = " << (double)nEventsNoRecHits/(double)nEvents << endl;
+
   return;
 }
 

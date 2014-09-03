@@ -265,6 +265,8 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 
   // Run over PFJets
   if(doPFJets_){
+    unsigned int debugEvent = 0;
+    
     pf_Run_ = iEvent.id().run();
     pf_Lumi_ = iEvent.id().luminosityBlock();
     pf_Event_ = iEvent.id().event();
@@ -280,8 +282,8 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 
     // Get RecHits in HB and HE
     edm::Handle<edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>> hbhereco;
-    //iEvent.getByLabel(RecHitLabelName_,hbheRecHitInstance_,hbhereco);
-    iEvent.getByLabel(hbheRecHitInstance_,hbhereco);
+    iEvent.getByLabel(RecHitLabelName_,hbheRecHitInstance_,hbhereco);
+    //iEvent.getByLabel(hbheRecHitInstance_,hbhereco);
     if(!hbhereco.isValid()) {
       throw edm::Exception(edm::errors::ProductNotFound)
 	<< " could not find HBHERecHit named " << RecHitLabelName_ << ":" << hbheRecHitInstance_ << ".\n";
@@ -290,8 +292,8 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
     
     // Get RecHits in HF
     edm::Handle<edm::SortedCollection<HFRecHit,edm::StrictWeakOrdering<HFRecHit>>> hfreco;
-    //iEvent.getByLabel(RecHitLabelName_,hfRecHitInstance_,hfreco);
-    iEvent.getByLabel(hfRecHitInstance_,hfreco);
+    iEvent.getByLabel(RecHitLabelName_,hfRecHitInstance_,hfreco);
+    //iEvent.getByLabel(hfRecHitInstance_,hfreco);
     if(!hfreco.isValid()) {
       throw edm::Exception(edm::errors::ProductNotFound)
 	<< " could not find HFRecHit named " << RecHitLabelName_ << ":" << hfRecHitInstance_ << ".\n";
@@ -300,8 +302,8 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 
     // Get RecHits in HO
     edm::Handle<edm::SortedCollection<HORecHit,edm::StrictWeakOrdering<HORecHit>>> horeco;
-    //iEvent.getByLabel(RecHitLabelName_,hoRecHitInstance_,horeco);
-    iEvent.getByLabel(hoRecHitInstance_,horeco);
+    iEvent.getByLabel(RecHitLabelName_,hoRecHitInstance_,horeco);
+    //iEvent.getByLabel(hoRecHitInstance_,horeco);
     if(!horeco.isValid()) {
       throw edm::Exception(edm::errors::ProductNotFound)
 	<< " could not find HORecHit named " << RecHitLabelName_ << ":" << hoRecHitInstance_ << ".\n";
@@ -311,14 +313,25 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
     int HBHE_n = 0;
     for(edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>::const_iterator ith=hbhereco->begin(); ith!=hbhereco->end(); ++ith){
       HBHE_n++;
+      h_hbherecoieta_->Fill((*ith).id().ieta());
+      if(iEvent.id().event() == debugEvent){
+	std::cout << (*ith).id().ieta() << " " << (*ith).id().iphi() << std::endl;
+	h_rechitspos_->Fill((*ith).id().ieta(), (*ith).id().iphi());
+      }
     }
     int HF_n = 0;
     for(edm::SortedCollection<HFRecHit,edm::StrictWeakOrdering<HFRecHit>>::const_iterator ith=hfreco->begin(); ith!=hfreco->end(); ++ith){
       HF_n++;
+      if(iEvent.id().event() == debugEvent){
+	h_rechitspos_->Fill((*ith).id().ieta(), (*ith).id().iphi());
+      }
     }
     int HO_n = 0;
     for(edm::SortedCollection<HORecHit,edm::StrictWeakOrdering<HORecHit>>::const_iterator ith=horeco->begin(); ith!=horeco->end(); ++ith){
       HO_n++;
+      if(iEvent.id().event() == debugEvent){
+	h_rechitspos_->Fill((*ith).id().ieta(), (*ith).id().iphi());
+      }
     }
     h_HBHE_n_->Fill(HBHE_n);
     h_HF_n_->Fill(HF_n);
@@ -460,6 +473,10 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
       tpfjet_scale_ = pf_tag.scale();
       tpfjet_ntwrs_=0;
       tpfjet_ncandtracks_=0;
+
+      if(iEvent.id().event() == debugEvent){
+	std::cout << "Tag eta: " << tpfjet_eta_ << " phi: " << tpfjet_phi_ << std::endl;
+      }
       
       //std::cout << pf_tag.jet()->print() << std::endl;
       int types = 0;
@@ -898,6 +915,8 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	}
       } // Loop over PF constitutents
 
+      if(debug_ && tpfjet_ntwrs_ == 0) std::cout << "no rechits " << iEvent.id().event() << std::endl;
+
       h_types_->Fill(types);
       h_ntypes_->Fill(ntypes);
 
@@ -910,6 +929,10 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
       ppfjet_scale_ = pf_probe.scale();
       ppfjet_ntwrs_=0;
       ppfjet_ncandtracks_=0;
+
+      if(iEvent.id().event() == debugEvent){
+	std::cout << "Probe eta: " << ppfjet_eta_ << " phi: " << ppfjet_phi_ << std::endl;
+      }
 
       // Get PF constituents and fill HCAL towers
       std::vector<reco::PFCandidatePtr> probeconst=pf_probe.jet()->getPFConstituents();
@@ -1443,10 +1466,12 @@ void CalcRespCorrDiJets::beginJob()
     h_HFEM_n_ = new TH1D("h_HFEM_n","h_HFEM_n",10,0,10);
     h_HFHAD_type_ = new TH1D("h_HFHAD_type","h_HFHAD_type",16,0,16);
     h_HFEM_type_ = new TH1D("h_HFEM_type","h_HFEM_type",16,0,16);
-    h_HBHE_n_ = new TH1D("h_HBHE_n","h_HBHE_n",200,0,5000);
-    h_HF_n_ = new TH1D("h_HF_n","h_HF_n",200,0,5000);
-    h_HO_n_ = new TH1D("h_HO_n","h_HO_n",200,0,5000);
+    h_HBHE_n_ = new TH1D("h_HBHE_n","h_HBHE_n",200,0,200);
+    h_HF_n_ = new TH1D("h_HF_n","h_HF_n",200,0,200);
+    h_HO_n_ = new TH1D("h_HO_n","h_HO_n",200,0,200);
     h_twrietas_ = new TH1D("h_twrietas","h_twrietas",20,0,20);
+    h_rechitspos_ = new TH2D("h_rechitspos","h_rechitspos",83,-41.5,41.5,72,-0.5,71.5);
+    h_hbherecoieta_ = new TH1D("h_hbherecoieta","h_hbherecoieta",83,-41.5,41.5);
     hPassSelPF_ = new TH1D("hPassSelectionPF", "Selection Pass Failures PFJets",200,-0.5,199.5);
 
     pf_tree_ = new TTree("pf_dijettree", "tree for dijet balancing using PFJets");
@@ -1614,6 +1639,8 @@ CalcRespCorrDiJets::endJob() {
     h_HF_n_->Write();
     h_HO_n_->Write();
     h_twrietas_->Write();
+    h_rechitspos_->Write();
+    h_hbherecoieta_->Write();
     hPassSelPF_->Write();
     pf_tree_->Write();
   }

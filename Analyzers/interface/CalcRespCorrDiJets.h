@@ -151,6 +151,8 @@ class CalcRespCorrDiJets : public edm::EDAnalyzer {
   TH1D* h_HF_n_;
   TH1D* h_HO_n_;
   TH1D* h_twrietas_;
+  TH2D* h_rechitspos_;
+  TH1D* h_hbherecoieta_;
   TTree* calo_tree_;
   TTree* pf_tree_;
   
