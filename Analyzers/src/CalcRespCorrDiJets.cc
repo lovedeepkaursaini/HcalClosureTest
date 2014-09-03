@@ -461,8 +461,8 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
       ppfjet_candtrack_pz_.clear();
       ppfjet_candtrack_EcalE_.clear();
 
-      std::map<int,float> tpfjet_rechits;
-      std::map<int,float> ppfjet_rechits;
+      std::map<int,int> tpfjet_rechits;
+      std::map<int,int> ppfjet_rechits;
       
       // fill tag jet variables
       tpfjet_pt_    = pf_tag.jet()->pt();
@@ -702,7 +702,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  for(edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>::const_iterator ith=hbhereco->begin(); ith!=hbhereco->end(); ++ith){
 		    int etaPhiRecHit = getEtaPhi((*ith).id());
 		    if(etaPhiPF == etaPhiRecHit){
-		      if(true){
+		      if(tpfjet_rechits.count((*ith).id()) == 0){
 			tpfjet_twr_ieta_.push_back((*ith).id().ieta());
 			if(hitsAndFracs[iHit].second > 0.05 && (*ith).energy() > 0.0) twrietas[(*ith).id().ieta()]++;
 			tpfjet_twr_hade_.push_back((*ith).energy());
@@ -715,14 +715,12 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 			else{
 			  tpfjet_twr_candtrackind_.push_back(-1);
 			}
-			if(tpfjet_rechits[(*ith).id()] == 0){
-			  tpfjet_twr_first_.push_back(true);
-			}
-			else{
-			  tpfjet_twr_first_.push_back(false);
-			}
-			tpfjet_rechits[(*ith).id()] += hitsAndFracs[iHit].second;
+			tpfjet_twr_first_.push_back(true);
+			tpfjet_rechits[(*ith).id()] = tpfjet_ntwrs_;
 			++tpfjet_ntwrs_;
+		      }
+		      else{
+			tpfjet_twr_frac_.at(tpfjet_rechits[(*ith).id()]) += hitsAndFracs[iHit].second;
 		      }
 		    } // Test if ieta,iphi matches
 		  } // Loop over rechits
@@ -867,7 +865,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  for(edm::SortedCollection<HORecHit,edm::StrictWeakOrdering<HORecHit>>::const_iterator ith=horeco->begin(); ith!=horeco->end(); ++ith){
 		    int etaPhiRecHit = getEtaPhi((*ith).id());
 		    if(etaPhiPF == etaPhiRecHit){
-		      if(true){
+		      if(tpfjet_rechits.count((*ith).id()) == 0){
 			tpfjet_twr_ieta_.push_back((*ith).id().ieta());
 			if(hitsAndFracs[iHit].second > 0.05 && (*ith).energy() > 0.0) twrietas[(*ith).id().ieta()]++;
 			tpfjet_twr_hade_.push_back((*ith).energy());
@@ -880,14 +878,12 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 			else{
 			  tpfjet_twr_candtrackind_.push_back(-1);
 			}
-			if(tpfjet_rechits[(*ith).id()] == 0){
-			  tpfjet_twr_first_.push_back(true);
-			}
-			else{
-			  tpfjet_twr_first_.push_back(false);
-			}
-			tpfjet_rechits[(*ith).id()] += hitsAndFracs[iHit].second;
+			tpfjet_twr_first_.push_back(true);
+			tpfjet_rechits[(*ith).id()] = tpfjet_ntwrs_;
 			++tpfjet_ntwrs_;
+		      }
+		      else{
+			tpfjet_twr_frac_.at(tpfjet_rechits[(*ith).id()]) += hitsAndFracs[iHit].second;
 		      }
 		    } // Test if ieta,iphi match
 		  } // Loop over rechits
@@ -1142,7 +1138,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  for(edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>::const_iterator ith=hbhereco->begin(); ith!=hbhereco->end(); ++ith){
 		    int etaPhiRecHit = getEtaPhi((*ith).id());
 		    if(etaPhiPF == etaPhiRecHit){
-		      if(true){
+		      if(ppfjet_rechits.count((*ith).id()) == 0){
 			ppfjet_twr_ieta_.push_back((*ith).id().ieta());
 			ppfjet_twr_hade_.push_back((*ith).energy());
 			ppfjet_twr_frac_.push_back(hitsAndFracs[iHit].second);
@@ -1154,14 +1150,12 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 			else{
 			  ppfjet_twr_candtrackind_.push_back(-1);
 			}
-			if(ppfjet_rechits[(*ith).id()] == 0){
-			  ppfjet_twr_first_.push_back(true);
-			}
-			else{
-			  ppfjet_twr_first_.push_back(false);
-			}
-			ppfjet_rechits[(*ith).id()] += hitsAndFracs[iHit].second;
+			ppfjet_twr_first_.push_back(true);
+			ppfjet_rechits[(*ith).id()] = ppfjet_ntwrs_;
 			++ppfjet_ntwrs_;
+		      }
+		      else{
+			ppfjet_twr_frac_.at(ppfjet_rechits[(*ith).id()]) += hitsAndFracs[iHit].second;
 		      }
 		    } // Test if ieta,iphi matches
 		  } // Loop over rechits
@@ -1304,7 +1298,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  for(edm::SortedCollection<HORecHit,edm::StrictWeakOrdering<HORecHit>>::const_iterator ith=horeco->begin(); ith!=horeco->end(); ++ith){
 		    int etaPhiRecHit = getEtaPhi((*ith).id());
 		    if(etaPhiPF == etaPhiRecHit){
-		      if(true){
+		      if(ppfjet_rechits.count((*ith).id()) == 0){
 			ppfjet_twr_ieta_.push_back((*ith).id().ieta());
 			ppfjet_twr_hade_.push_back((*ith).energy());
 			ppfjet_twr_frac_.push_back(hitsAndFracs[iHit].second);
@@ -1316,14 +1310,12 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 			else{
 			  ppfjet_twr_candtrackind_.push_back(-1);
 			}
-			if(ppfjet_rechits[(*ith).id()] == 0){
-			  ppfjet_twr_first_.push_back(true);
-			}
-			else{
-			  ppfjet_twr_first_.push_back(false);
-			}
-			ppfjet_rechits[(*ith).id()] += hitsAndFracs[iHit].second;
+			ppfjet_twr_first_.push_back(true);
+			ppfjet_rechits[(*ith).id()] = ppfjet_ntwrs_;
 			++ppfjet_ntwrs_;
+		      }
+		      else{
+			ppfjet_twr_frac_.at(ppfjet_rechits[(*ith).id()]) += hitsAndFracs[iHit].second;
 		      }
 		    } // Test if ieta,iphi match
 		  } // Loop over rechits
