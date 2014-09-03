@@ -656,11 +656,13 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	int HF_type_ = 0;
 	int maxElement=(*it)->elementsInBlocks().size();
 	for(int e=0; e<maxElement; ++e){
+	  if(e != 0) continue;
 	  // Get elements from block
 	  reco::PFBlockRef blockRef = (*it)->elementsInBlocks()[e].first;
 	  const edm::OwnVector<reco::PFBlockElement>& elements = blockRef->elements();
+	  std::cout << "index: " << (*it)->elementsInBlocks()[e].second << " e: " << e << " pt: " << (*it)->pt() << std::endl;
 	  for(unsigned iEle=0; iEle<elements.size(); iEle++) {
-	    if(elements[iEle].index() == (*it)->elementsInBlocks()[e].second){
+	    if(true || elements[iEle].index() == (*it)->elementsInBlocks()[e].second){
 	      if(elements[iEle].type() == reco::PFBlockElement::HCAL){ // Element is HB or HE
 		types |= 0x1;
 		ntypes++;
