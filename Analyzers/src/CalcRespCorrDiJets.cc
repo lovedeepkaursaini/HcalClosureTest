@@ -445,6 +445,8 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
       ppfjet_candtrack_py_.clear();
       ppfjet_candtrack_pz_.clear();
       ppfjet_candtrack_EcalE_.clear();
+
+      std::map<int,float> tpfjet_rechits;
       
       // fill tag jet variables
       tpfjet_pt_    = pf_tag.jet()->pt();
@@ -693,6 +695,13 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 			else{
 			  tpfjet_twr_candtrackind_.push_back(-1);
 			}
+			if(tpfjet_rechits[(*ith).id()] == 0){
+			  std::cout << "  detId: " << etaPhiPF << " frac: " << hitsAndFracs[iHit].second << " hadn: " << tpfjet_had_n_ - 1 << " e: " << e << " iEle: " << iEle << " iHit: " << iHit << std::endl;
+			}
+			else{
+			  std::cout << "++detId: " << etaPhiPF << " frac: " << hitsAndFracs[iHit].second << " hadn: " << tpfjet_had_n_ - 1 << " e: " << e << " iEle: " << iEle << " iHit: " << iHit << std::endl;
+			}
+			tpfjet_rechits[(*ith).id()] += hitsAndFracs[iHit].second;
 			++tpfjet_ntwrs_;
 		      }
 		    } // Test if ieta,iphi matches
