@@ -34,8 +34,8 @@ process.source = cms.Source("PoolSource",
                             )
 #print readFiles
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
-process.MessageLogger.cerr.FwkReport.reportEvery=cms.untracked.int32(100)
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10) )
+process.MessageLogger.cerr.FwkReport.reportEvery=cms.untracked.int32(1)
 process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 
 # timing

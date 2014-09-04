@@ -509,9 +509,9 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	  const std::vector< reco::PFRecHitFraction > erh=ehcal.clusterRef()->recHitFractions();
 	  for(unsigned int ieh=0;ieh<erh.size();ieh++) {
 	    std::cout << erh[ieh].recHitRef()->energy() << std::endl;
-	  }
+	    }
 
-	  /*std::vector<std::pair<DetId,float>> hitsAndFracs = ehcal.clusterRef()->hitsAndFractions();
+	  std::vector<std::pair<DetId,float>> hitsAndFracs = ehcal.clusterRef()->hitsAndFractions();
 	  int nHits = hitsAndFracs.size();
 	  for(int iHit=0; iHit<nHits; iHit++){
 	    int etaPhiPF = getEtaPhi(hitsAndFracs[iHit].first);
@@ -519,16 +519,16 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	    for(edm::SortedCollection<HORecHit,edm::StrictWeakOrdering<HORecHit>>::const_iterator ith=horeco->begin(); ith!=horeco->end(); ++ith){
 	      int etaPhiRecHit = getEtaPhi((*ith).id());
 	      if(etaPhiPF == etaPhiRecHit){
-		if(matches[etaPhiRecHit] == 0){
+		if(matches[etaPhiRecHit] <= 1){
 		  std::cout << "  " << etaPhiRecHit << " frac: " << hitsAndFracs[iHit].second << " E: " << (*ith).energy() << std::endl;
 		}
 		else{
-		  std::cout << "++" << etaPhiRecHit << " frac: " << hitsAndFracs[iHit].second << " E: " << (*ith).energy() << std::endl;
+		  std::cout << "++" << etaPhiRecHit << " frac: " << hitsAndFracs[iHit].second << " E: " << (*ith).energy() << " total frac: " << matches[etaPhiRecHit] + hitsAndFracs[iHit].second << std::endl;
 		}
 		matches[etaPhiRecHit] += hitsAndFracs[iHit].second;
 	      }
 	    }
-	  }*/ // Loop over hits
+	  } // Loop over hits
 	}
       }
 
