@@ -264,7 +264,12 @@ void testRespCorrDiJetsTree()
 	if(tpfjet_twr_hadind_->at(j) == i &&  tpfjet_twr_hade_->at(j) > 0.0){
 	  tag_jet_rechit_E += tpfjet_twr_hade_->at(j)*tpfjet_twr_frac_->at(j);
 	  if(tpfjet_twr_first_->at(j)){
-	    tag_jet_rechit_E_once += tpfjet_twr_hade_->at(j)*tpfjet_twr_frac_->at(j);
+	    if(tpfjet_twr_frac_->at(j) < 1){
+	      tag_jet_rechit_E_once += tpfjet_twr_hade_->at(j)*tpfjet_twr_frac_->at(j);
+	    }
+	    else{
+	      tag_jet_rechit_E_once += tpfjet_twr_hade_->at(j);
+	    }
 	  }
 	  else{
 	    nduplicates++;
