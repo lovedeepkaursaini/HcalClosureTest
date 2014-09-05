@@ -282,8 +282,8 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 
     // Get RecHits in HB and HE
     edm::Handle<edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>> hbhereco;
-    iEvent.getByLabel(RecHitLabelName_,hbheRecHitInstance_,hbhereco);
-    //iEvent.getByLabel(hbheRecHitInstance_,hbhereco);
+    //iEvent.getByLabel(RecHitLabelName_,hbheRecHitInstance_,hbhereco);
+    iEvent.getByLabel(hbheRecHitInstance_,hbhereco);
     if(!hbhereco.isValid()) {
       throw edm::Exception(edm::errors::ProductNotFound)
 	<< " could not find HBHERecHit named " << RecHitLabelName_ << ":" << hbheRecHitInstance_ << ".\n";
@@ -292,8 +292,8 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
     
     // Get RecHits in HF
     edm::Handle<edm::SortedCollection<HFRecHit,edm::StrictWeakOrdering<HFRecHit>>> hfreco;
-    iEvent.getByLabel(RecHitLabelName_,hfRecHitInstance_,hfreco);
-    //iEvent.getByLabel(hfRecHitInstance_,hfreco);
+    //iEvent.getByLabel(RecHitLabelName_,hfRecHitInstance_,hfreco);
+    iEvent.getByLabel(hfRecHitInstance_,hfreco);
     if(!hfreco.isValid()) {
       throw edm::Exception(edm::errors::ProductNotFound)
 	<< " could not find HFRecHit named " << RecHitLabelName_ << ":" << hfRecHitInstance_ << ".\n";
@@ -302,8 +302,8 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 
     // Get RecHits in HO
     edm::Handle<edm::SortedCollection<HORecHit,edm::StrictWeakOrdering<HORecHit>>> horeco;
-    iEvent.getByLabel(RecHitLabelName_,hoRecHitInstance_,horeco);
-    //iEvent.getByLabel(hoRecHitInstance_,horeco);
+    //iEvent.getByLabel(RecHitLabelName_,hoRecHitInstance_,horeco);
+    iEvent.getByLabel(hoRecHitInstance_,horeco);
     if(!horeco.isValid()) {
       throw edm::Exception(edm::errors::ProductNotFound)
 	<< " could not find HORecHit named " << RecHitLabelName_ << ":" << hoRecHitInstance_ << ".\n";
