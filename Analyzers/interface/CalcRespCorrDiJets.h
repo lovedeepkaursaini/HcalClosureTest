@@ -109,28 +109,27 @@ class CalcRespCorrDiJets : public edm::EDAnalyzer {
 
   
   // parameters
-  bool debug_;                   // print debug statements
-  std::string caloJetCollName_;  // label for the calo jet collection
-  std::string caloJetCorrName_;  // label for the calo jet correction service
-  std::string pfJetCollName_;    // label for the PF jet collection
-  std::string pfJetCorrName_;    // label for the PF jet correction service
-  std::string genJetCollName_;   // label for the genjet collection
+  bool debug_;                      // print debug statements
+  std::string caloJetCollName_;     // label for the calo jet collection
+  std::string caloJetCorrName_;     // label for the calo jet correction service
+  std::string pfJetCollName_;       // label for the PF jet collection
+  std::string pfJetCorrName_;       // label for the PF jet correction service
+  std::string genJetCollName_;      // label for the genjet collection
   std::string genParticleCollName_; // label for the genparticle collection
-  std::string RecHitLabelName_;  // label for the rechits
-  std::string hbheRecHitInstance_; // instance for HBHERecHits
-  std::string hfRecHitInstance_; // instance for HFRecHit
-  std::string hoRecHitInstance_; // instance for HORecHit
-  std::string rootHistFilename_; // name of the histogram file
-  double maxDeltaEta_;           // maximum delta-|Eta| between Jets
-  double minTagJetEta_;          // minimum |eta| of the tag jet
-  double maxTagJetEta_;          // maximum |eta| of the tag jet
-  double minSumJetEt_;           // minimum Sum of the tag and probe jet Et
-  double minJetEt_;              // minimum Jet Et
-  double maxThirdJetEt_;         // maximum 3rd jet Et
-  double maxJetEMF_;             // maximum EMF of the tag and probe jets
-  bool doCaloJets_;              // use CaloJets
-  bool doPFJets_;                // use PFJets
-  bool doGenJets_;               // use GenJets
+  std::string hbheRecHitName_;      // label for HBHERecHits collection
+  std::string hfRecHitName_;        // label for HFRecHit collection
+  std::string hoRecHitName_;        // label for HORecHit collection
+  std::string rootHistFilename_;    // name of the histogram file
+  double maxDeltaEta_;              // maximum delta-|Eta| between Jets
+  double minTagJetEta_;             // minimum |eta| of the tag jet
+  double maxTagJetEta_;             // maximum |eta| of the tag jet
+  double minSumJetEt_;              // minimum Sum of the tag and probe jet Et
+  double minJetEt_;                 // minimum Jet Et
+  double maxThirdJetEt_;            // maximum 3rd jet Et
+  double maxJetEMF_;                // maximum EMF of the tag and probe jets
+  bool doCaloJets_;                 // use CaloJets
+  bool doPFJets_;                   // use PFJets
+  bool doGenJets_;                  // use GenJets
 
   // root file/histograms
   TFile* rootfile_;

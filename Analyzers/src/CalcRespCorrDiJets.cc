@@ -36,10 +36,9 @@ CalcRespCorrDiJets::CalcRespCorrDiJets(const edm::ParameterSet& iConfig)
   pfJetCorrName_     = iConfig.getParameter<std::string>("pfJetCorrName");
   genJetCollName_    = iConfig.getParameter<std::string>("genJetCollName");
   genParticleCollName_ = iConfig.getParameter<std::string>("genParticleCollName");
-  RecHitLabelName_   = iConfig.getParameter<std::string>("RecHitLabelName");
-  hbheRecHitInstance_  = iConfig.getParameter<std::string>("hbheRecHitInstance");
-  hfRecHitInstance_  = iConfig.getParameter<std::string>("hfRecHitInstance");
-  hoRecHitInstance_  = iConfig.getParameter<std::string>("hoRecHitInstance");
+  hbheRecHitName_  = iConfig.getParameter<std::string>("hbheRecHitName");
+  hfRecHitName_  = iConfig.getParameter<std::string>("hfRecHitName");
+  hoRecHitName_  = iConfig.getParameter<std::string>("hoRecHitName");
   rootHistFilename_  = iConfig.getParameter<std::string>("rootHistFilename");
   maxDeltaEta_       = iConfig.getParameter<double>("maxDeltaEta");
   minTagJetEta_      = iConfig.getParameter<double>("minTagJetEta");
@@ -282,31 +281,28 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 
     // Get RecHits in HB and HE
     edm::Handle<edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>> hbhereco;
-    //iEvent.getByLabel(RecHitLabelName_,hbheRecHitInstance_,hbhereco);
-    iEvent.getByLabel(hbheRecHitInstance_,hbhereco);
+    iEvent.getByLabel(hbheRecHitName_,hbhereco);
     if(!hbhereco.isValid()) {
       throw edm::Exception(edm::errors::ProductNotFound)
-	<< " could not find HBHERecHit named " << RecHitLabelName_ << ":" << hbheRecHitInstance_ << ".\n";
+	<< " could not find HBHERecHit named " << hbheRecHitName_ << ".\n";
       return;
     }
     
     // Get RecHits in HF
     edm::Handle<edm::SortedCollection<HFRecHit,edm::StrictWeakOrdering<HFRecHit>>> hfreco;
-    //iEvent.getByLabel(RecHitLabelName_,hfRecHitInstance_,hfreco);
-    iEvent.getByLabel(hfRecHitInstance_,hfreco);
+    iEvent.getByLabel(hfRecHitName_,hfreco);
     if(!hfreco.isValid()) {
       throw edm::Exception(edm::errors::ProductNotFound)
-	<< " could not find HFRecHit named " << RecHitLabelName_ << ":" << hfRecHitInstance_ << ".\n";
+	<< " could not find HFRecHit named " << hfRecHitName_ << ".\n";
       return;
     }
 
     // Get RecHits in HO
     edm::Handle<edm::SortedCollection<HORecHit,edm::StrictWeakOrdering<HORecHit>>> horeco;
-    //iEvent.getByLabel(RecHitLabelName_,hoRecHitInstance_,horeco);
-    iEvent.getByLabel(hoRecHitInstance_,horeco);
+    iEvent.getByLabel(hoRecHitName_,horeco);
     if(!horeco.isValid()) {
       throw edm::Exception(edm::errors::ProductNotFound)
-	<< " could not find HORecHit named " << RecHitLabelName_ << ":" << hoRecHitInstance_ << ".\n";
+	<< " could not find HORecHit named " << hoRecHitName_ << ".\n";
       return;
     }
     
@@ -751,25 +747,6 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  const CaloCellGeometry::CornersVec& cv = thisCell->getCorners();
 
 		  bool passMatch = false;
-		  /*if(cv[0].z() > 0){
-		    if((*it)->eta() < cv[4].eta() && (*it)->eta() > cv[2].eta()){
-		      if((*it)->phi() < cv[4].phi() && (*it)->phi() > cv[2].phi()) passMatch = true;
-		      else if(cv[4].phi() < cv[2].phi()){
-			if((*it)->phi() < cv[4].phi()) passMatch = true;
-			else if((*it)->phi() > cv[2].phi()) passMatch = true;
-		      }
-		    }
-		  }
-		  else{
-		    if((*it)->eta() < cv[0].eta() && (*it)->eta() > cv[6].eta()){
-		      if((*it)->phi() < cv[0].phi() && (*it)->phi() > cv[6].phi()) passMatch = true;
-		      else if(cv[0].phi() < cv[6].phi()){
-			if((*it)->phi() < cv[0].phi()) passMatch = true;
-			else if((*it)->phi() > cv[6].phi()) passMatch = true;
-		      }
-		    }
-		    }*/
-
 		  if((*it)->eta() < cv[0].eta() && (*it)->eta() > cv[2].eta()){
 		    if((*it)->phi() < cv[0].phi() && (*it)->phi() > cv[2].phi()) passMatch = true;
 		    else if(cv[0].phi() < cv[2].phi()){
@@ -779,18 +756,16 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  }
 
 		  if(passMatch){
-		    if(true){
-		      tpfjet_had_ntwrs_.at(tpfjet_had_n_ - 1)++;
-		      tpfjet_twr_ieta_.push_back((*ith).id().ieta());
-		      tpfjet_twr_hade_.push_back((*ith).energy());
-		      tpfjet_twr_frac_.push_back(1.0);
-		      tpfjet_twr_hadind_.push_back(tpfjet_had_n_ - 1);
-		      tpfjet_twr_elmttype_.push_back(1);
-		      tpfjet_twr_candtrackind_.push_back(-1);
-		      tpfjet_twr_first_.push_back(true);
-		      ++tpfjet_ntwrs_;
-		      HFHAD_E += (*ith).energy();
-		    }
+		    tpfjet_had_ntwrs_.at(tpfjet_had_n_ - 1)++;
+		    tpfjet_twr_ieta_.push_back((*ith).id().ieta());
+		    tpfjet_twr_hade_.push_back((*ith).energy());
+		    tpfjet_twr_frac_.push_back(1.0);
+		    tpfjet_twr_hadind_.push_back(tpfjet_had_n_ - 1);
+		    tpfjet_twr_elmttype_.push_back(1);
+		    tpfjet_twr_candtrackind_.push_back(-1);
+		    tpfjet_twr_first_.push_back(true);
+		    ++tpfjet_ntwrs_;
+		    HFHAD_E += (*ith).energy();
 		  }
 		}
 	      }
@@ -812,25 +787,6 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  const CaloCellGeometry::CornersVec& cv = thisCell->getCorners();
 
 		  bool passMatch = false;
-		  /*if(cv[0].z() > 0){
-		    if((*it)->eta() < cv[4].eta() && (*it)->eta() > cv[2].eta()){
-		      if((*it)->phi() < cv[4].phi() && (*it)->phi() > cv[2].phi()) passMatch = true;
-		      else if(cv[4].phi() < cv[2].phi()){
-			if((*it)->phi() < cv[4].phi()) passMatch = true;
-			else if((*it)->phi() > cv[2].phi()) passMatch = true;
-		      }
-		    }
-		  }
-		  else{
-		    if((*it)->eta() < cv[0].eta() && (*it)->eta() > cv[6].eta()){
-		      if((*it)->phi() < cv[0].phi() && (*it)->phi() > cv[6].phi()) passMatch = true;
-		      else if(cv[0].phi() < cv[6].phi()){
-			if((*it)->phi() < cv[0].phi()) passMatch = true;
-			else if((*it)->phi() > cv[6].phi()) passMatch = true;
-		      }
-		    }
-		    }*/
-
 		  if((*it)->eta() < cv[0].eta() && (*it)->eta() > cv[2].eta()){
 		    if((*it)->phi() < cv[0].phi() && (*it)->phi() > cv[2].phi()) passMatch = true;
 		    else if(cv[0].phi() < cv[2].phi()){
@@ -840,18 +796,16 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  }
 
 		  if(passMatch){
-		    if(true){
-		      tpfjet_had_ntwrs_.at(tpfjet_had_n_ - 1)++;
-		      tpfjet_twr_ieta_.push_back((*ith).id().ieta());
-		      tpfjet_twr_hade_.push_back((*ith).energy());
-		      tpfjet_twr_frac_.push_back(1.0);
-		      tpfjet_twr_hadind_.push_back(tpfjet_had_n_ - 1);
-		      tpfjet_twr_elmttype_.push_back(2);
-		      tpfjet_twr_candtrackind_.push_back(-1);
-		      tpfjet_twr_first_.push_back(true);
-		      ++tpfjet_ntwrs_;
-		      HFEM_E += (*ith).energy();
-		    }
+		    tpfjet_had_ntwrs_.at(tpfjet_had_n_ - 1)++;
+		    tpfjet_twr_ieta_.push_back((*ith).id().ieta());
+		    tpfjet_twr_hade_.push_back((*ith).energy());
+		    tpfjet_twr_frac_.push_back(1.0);
+		    tpfjet_twr_hadind_.push_back(tpfjet_had_n_ - 1);
+		    tpfjet_twr_elmttype_.push_back(2);
+		    tpfjet_twr_candtrackind_.push_back(-1);
+		    tpfjet_twr_first_.push_back(true);
+		    ++tpfjet_ntwrs_;
+		    HFEM_E += (*ith).energy();
 		  }
 		}
 	      }
@@ -1194,24 +1148,6 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  const CaloCellGeometry::CornersVec& cv = thisCell->getCorners();
 		  
 		  bool passMatch = false;
-		  /*if(cv[0].z() > 0){
-		    if((*it)->eta() < cv[4].eta() && (*it)->eta() > cv[2].eta()){
-		      if((*it)->phi() < cv[4].phi() && (*it)->phi() > cv[2].phi()) passMatch = true;
-		      else if(cv[4].phi() < cv[2].phi()){
-			if((*it)->phi() < cv[4].phi()) passMatch = true;
-			else if((*it)->phi() > cv[2].phi()) passMatch = true;
-		      }
-		    }
-		  }
-		  else{
-		    if((*it)->eta() < cv[0].eta() && (*it)->eta() > cv[6].eta()){
-		      if((*it)->phi() < cv[0].phi() && (*it)->phi() > cv[6].phi()) passMatch = true;
-		      else if(cv[0].phi() < cv[6].phi()){
-			if((*it)->phi() < cv[0].phi()) passMatch = true;
-			else if((*it)->phi() > cv[6].phi()) passMatch = true;
-		      }
-		    }
-		    }*/
 		  if((*it)->eta() < cv[0].eta() && (*it)->eta() > cv[2].eta()){
 		    if((*it)->phi() < cv[0].phi() && (*it)->phi() > cv[2].phi()) passMatch = true;
 		    else if(cv[0].phi() < cv[2].phi()){
@@ -1221,18 +1157,16 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  }
 		  
 		  if(passMatch){
-		    if(true){
-		      ppfjet_had_ntwrs_.at(ppfjet_had_n_ - 1)++;
-		      ppfjet_twr_ieta_.push_back((*ith).id().ieta());
-		      ppfjet_twr_hade_.push_back((*ith).energy());
-		      ppfjet_twr_frac_.push_back(1.0);
-		      ppfjet_twr_hadind_.push_back(ppfjet_had_n_ - 1);
-		      ppfjet_twr_elmttype_.push_back(1);
-		      ppfjet_twr_candtrackind_.push_back(-1);
-		      ppfjet_twr_first_.push_back(true);
-		      ++ppfjet_ntwrs_;
-		      HFHAD_E += (*ith).energy();
-		    }
+		    ppfjet_had_ntwrs_.at(ppfjet_had_n_ - 1)++;
+		    ppfjet_twr_ieta_.push_back((*ith).id().ieta());
+		    ppfjet_twr_hade_.push_back((*ith).energy());
+		    ppfjet_twr_frac_.push_back(1.0);
+		    ppfjet_twr_hadind_.push_back(ppfjet_had_n_ - 1);
+		    ppfjet_twr_elmttype_.push_back(1);
+		    ppfjet_twr_candtrackind_.push_back(-1);
+		    ppfjet_twr_first_.push_back(true);
+		    ++ppfjet_ntwrs_;
+		    HFHAD_E += (*ith).energy();
 		  }
 		}		
 	      }
@@ -1254,24 +1188,6 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  const CaloCellGeometry::CornersVec& cv = thisCell->getCorners();
 		  
 		  bool passMatch = false;
-		  /*if(cv[0].z() > 0){
-		    if((*it)->eta() < cv[4].eta() && (*it)->eta() > cv[2].eta()){
-		      if((*it)->phi() < cv[4].phi() && (*it)->phi() > cv[2].phi()) passMatch = true;
-		      else if(cv[4].phi() < cv[2].phi()){
-			if((*it)->phi() < cv[4].phi()) passMatch = true;
-			else if((*it)->phi() > cv[2].phi()) passMatch = true;
-		      }
-		    }
-		  }
-		  else{
-		    if((*it)->eta() < cv[0].eta() && (*it)->eta() > cv[6].eta()){
-		      if((*it)->phi() < cv[0].phi() && (*it)->phi() > cv[6].phi()) passMatch = true;
-		      else if(cv[0].phi() < cv[6].phi()){
-			if((*it)->phi() < cv[0].phi()) passMatch = true;
-			else if((*it)->phi() > cv[6].phi()) passMatch = true;
-		      }
-		    }
-		    }*/
 		  if((*it)->eta() < cv[0].eta() && (*it)->eta() > cv[2].eta()){
 		    if((*it)->phi() < cv[0].phi() && (*it)->phi() > cv[2].phi()) passMatch = true;
 		    else if(cv[0].phi() < cv[2].phi()){
@@ -1281,18 +1197,16 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  }
 		  
 		  if(passMatch){
-		    if(true){
-		      ppfjet_had_ntwrs_.at(ppfjet_had_n_ - 1)++;
-		      ppfjet_twr_ieta_.push_back((*ith).id().ieta());
-		      ppfjet_twr_hade_.push_back((*ith).energy());
-		      ppfjet_twr_frac_.push_back(1.0);
-		      ppfjet_twr_hadind_.push_back(ppfjet_had_n_ - 1);
-		      ppfjet_twr_elmttype_.push_back(2);
-		      ppfjet_twr_candtrackind_.push_back(-1);
-		      ppfjet_twr_first_.push_back(true);
-		      ++ppfjet_ntwrs_;
-		      HFEM_E += (*ith).energy();
-		    }
+		    ppfjet_had_ntwrs_.at(ppfjet_had_n_ - 1)++;
+		    ppfjet_twr_ieta_.push_back((*ith).id().ieta());
+		    ppfjet_twr_hade_.push_back((*ith).energy());
+		    ppfjet_twr_frac_.push_back(1.0);
+		    ppfjet_twr_hadind_.push_back(ppfjet_had_n_ - 1);
+		    ppfjet_twr_elmttype_.push_back(2);
+		    ppfjet_twr_candtrackind_.push_back(-1);
+		    ppfjet_twr_first_.push_back(true);
+		    ++ppfjet_ntwrs_;
+		    HFEM_E += (*ith).energy();
 		  }
 		}
 	      }
@@ -1394,13 +1308,6 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
       
       pf_tree_->Fill();
     }
-
-    
-    /*std::cout << "Event " << iEvent.id().event() << std::endl;
-    for(edm::SortedCollection<HFRecHit,edm::StrictWeakOrdering<HFRecHit>>::const_iterator ith=hfreco->begin(); ith!=hfreco->end(); ++ith){
-      //std::cout << (*ith).id() << std::endl;
-      if((*ith).id().depth() > 2) std::cout << (*ith).id().depth() << std::endl;
-      }*/
   }
   
   return;
