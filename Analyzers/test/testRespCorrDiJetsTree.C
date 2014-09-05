@@ -7,12 +7,13 @@ void testRespCorrDiJetsTree()
   gROOT->ProcessLine(".L deltaR.C+");
 
   TChain* tree = new TChain("pf_dijettree");
-  //TString input = "/uscms_data/d3/dgsheffi/HCal/Trees/QCD_Pt-15to3000_0030487D5E5F_useRecHitOnce.root";
-  TString input = "/uscms_data/d3/dgsheffi/HCal/Trees/Pion_Pt-50_useRecHitOnce.root";
+  TString input = "/uscms_data/d3/dgsheffi/HCal/Trees/QCD_Pt-15to3000_0030487D5E5F.root";
+  //TString input = "/uscms_data/d3/dgsheffi/HCal/Trees/Pion_Pt-50.root";
+  cout << "Opening file:" << input << endl;
   tree->Add(input);
 
-  //TString output = "/uscms_data/d3/dgsheffi/HCal/Trees/validation/QCD_Pt-15to3000_0030487D5E5F_useRecHitOnce.root";
-  TString output = "/uscms_data/d3/dgsheffi/HCal/Trees/validation/Pion_Pt-50_useRecHitOnce.root";
+  TString output = "/uscms_data/d3/dgsheffi/HCal/Trees/validation/QCD_Pt-15to3000_0030487D5E5F.root";
+  //TString output = "/uscms_data/d3/dgsheffi/HCal/Trees/validation/Pion_Pt-50.root";
 
   float tpfjet_pt_, tpfjet_p_, tpfjet_E_, tpfjet_eta_, tpfjet_phi_, tpfjet_scale_;
   float tpfjet_gendr_, tpfjet_genpt_, tpfjet_genp_, tpfjet_genE_;
@@ -223,6 +224,7 @@ void testRespCorrDiJetsTree()
   TH1D* h_tag_jet_Ediff_once_track_HB_ = new TH1D("h_tag_jet_Ediff_once_track_HB","tag (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits in HB",200,-1,8);
   TH1D* h_tag_jet_Ediff_once_track_HE_ = new TH1D("h_tag_jet_Ediff_once_track_HE","tag (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits in HE",200,-1,8);
   TH1D* h_tag_jet_Ediff_once_track_HF_ = new TH1D("h_tag_jet_Ediff_once_track_HF","tag (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits in HF",200,-1,8);
+  TH1D* h_tag_jet_Ediff_once_track_nofrac_ = new TH1D("h_tag_jet_Ediff_once_track_nofrac","tag (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits",200,-1,8);
   TH1D* h_tag_jet_duplicatefrac_ = new TH1D("h_tag_jet_duplicatefrac","fraction of rechits that are duplicates",100,0,1);
   TH1D* h_tag_jet_additionalE_ = new TH1D("h_tag_jet_additionalE","additional E from multiple rechits",200,-50,150);
   
@@ -266,6 +268,7 @@ void testRespCorrDiJetsTree()
 
     float tag_jet_rechit_E = 0;
     float tag_jet_rechit_E_once = 0;
+    float tag_jet_rechit_E_once_nofrac = 0;
     float tag_jet_hadEcalE = 0;
     float tag_jet_candNoRecHits_E = 0;
     int nduplicates = 0;
@@ -284,6 +287,7 @@ void testRespCorrDiJetsTree()
 	    else{
 	      tag_jet_rechit_E_once += tpfjet_twr_hade_->at(j);
 	    }
+	    tag_jet_rechit_E_once_nofrac += tpfjet_twr_hade_->at(j);
 	  }
 	  else{
 	    nduplicates++;
@@ -307,6 +311,9 @@ void testRespCorrDiJetsTree()
     else{
       h_tag_jet_Ediff_once_track_HF_->Fill((tag_jet_E_once_track - tpfjet_E_)/tpfjet_E_);
     }
+    float tag_jet_E_once_track_nofrac = tag_jet_rechit_E_once_nofrac + tag_jet_hadEcalE + tag_jet_candNoRecHits_E + tpfjet_unkown_E_ + tpfjet_electron_E_ + tpfjet_muon_E_ + tpfjet_photon_E_;
+    h_tag_jet_Ediff_once_track_nofrac_->Fill((tag_jet_E_once_track_nofrac - tpfjet_E_)/tpfjet_E_);
+
     h_tag_jet_additionalE_->Fill(tag_jet_rechit_E - tag_jet_rechit_E_once);
 
     h_tag_jet_duplicatefrac_->Fill((double)nduplicates/(double)tpfjet_ntwrs_);
@@ -325,6 +332,7 @@ void testRespCorrDiJetsTree()
   h_tag_jet_Ediff_once_track_HB_->Write();
   h_tag_jet_Ediff_once_track_HE_->Write();
   h_tag_jet_Ediff_once_track_HF_->Write();
+  h_tag_jet_Ediff_once_track_nofrac_->Write();
   h_tag_jet_duplicatefrac_->Write();
   h_tag_jet_additionalE_->Write();
 
@@ -334,6 +342,7 @@ void testRespCorrDiJetsTree()
   h_probe_jet_eta_norechits_->Write();
   
   fout->Close();
+  cout << "Created file:" << output << endl;
 
   cout << "Events without tag rechits: " << nEventsNoTagRecHits << "/" << nEvents << " = " << (double)nEventsNoTagRecHits/(double)nEvents << endl;
   cout << "Events without probe rechits: " << nEventsNoProbeRecHits << "/" << nEvents << " = " << (double)nEventsNoProbeRecHits/(double)nEvents << endl;
