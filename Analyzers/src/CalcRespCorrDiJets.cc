@@ -425,6 +425,8 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
       tpfjet_had_mcpdgId_.clear();
       tpfjet_had_ntwrs_.clear();
       tpfjet_twr_ieta_.clear();
+      tpfjet_twr_iphi_.clear();
+      tpfjet_twr_depth_.clear();
       tpfjet_twr_candtrackind_.clear();
       tpfjet_twr_hadind_.clear();
       tpfjet_twr_elmttype_.clear();
@@ -447,6 +449,8 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
       ppfjet_had_mcpdgId_.clear();
       ppfjet_had_ntwrs_.clear();
       ppfjet_twr_ieta_.clear();
+      ppfjet_twr_iphi_.clear();
+      ppfjet_twr_depth_.clear();
       ppfjet_twr_candtrackind_.clear();
       ppfjet_twr_hadind_.clear();
       ppfjet_twr_elmttype_.clear();
@@ -705,6 +709,8 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		      tpfjet_had_ntwrs_.at(tpfjet_had_n_ - 1)++;
 		      if(tpfjet_rechits.count((*ith).id()) == 0){
 			tpfjet_twr_ieta_.push_back((*ith).id().ieta());
+			tpfjet_twr_iphi_.push_back((*ith).id().iphi());
+			tpfjet_twr_depth_.push_back((*ith).id().depth());
 			if(hitsAndFracs[iHit].second > 0.05 && (*ith).energy() > 0.0) twrietas[(*ith).id().ieta()]++;
 			tpfjet_twr_hade_.push_back((*ith).energy());
 			tpfjet_twr_frac_.push_back(hitsAndFracs[iHit].second);
@@ -757,6 +763,8 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  if(passMatch){
 		    tpfjet_had_ntwrs_.at(tpfjet_had_n_ - 1)++;
 		    tpfjet_twr_ieta_.push_back((*ith).id().ieta());
+		    tpfjet_twr_iphi_.push_back((*ith).id().iphi());
+		    tpfjet_twr_depth_.push_back((*ith).id().depth());
 		    tpfjet_twr_hade_.push_back((*ith).energy());
 		    tpfjet_twr_frac_.push_back(1.0);
 		    tpfjet_twr_hadind_.push_back(tpfjet_had_n_ - 1);
@@ -796,6 +804,8 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  if(passMatch){
 		    tpfjet_had_ntwrs_.at(tpfjet_had_n_ - 1)++;
 		    tpfjet_twr_ieta_.push_back((*ith).id().ieta());
+		    tpfjet_twr_iphi_.push_back((*ith).id().iphi());
+		    tpfjet_twr_depth_.push_back((*ith).id().depth());
 		    tpfjet_twr_hade_.push_back((*ith).energy());
 		    tpfjet_twr_frac_.push_back(1.0);
 		    tpfjet_twr_hadind_.push_back(tpfjet_had_n_ - 1);
@@ -828,6 +838,8 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		      tpfjet_had_ntwrs_.at(tpfjet_had_n_ - 1)++;
 		      if(tpfjet_rechits.count((*ith).id()) == 0){
 			tpfjet_twr_ieta_.push_back((*ith).id().ieta());
+			tpfjet_twr_iphi_.push_back((*ith).id().iphi());
+			tpfjet_twr_depth_.push_back((*ith).id().depth());
 			if(hitsAndFracs[iHit].second > 0.05 && (*ith).energy() > 0.0) twrietas[(*ith).id().ieta()]++;
 			tpfjet_twr_hade_.push_back((*ith).energy());
 			tpfjet_twr_frac_.push_back(hitsAndFracs[iHit].second);
@@ -1107,6 +1119,8 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		      ppfjet_had_ntwrs_.at(ppfjet_had_n_ - 1)++;
 		      if(ppfjet_rechits.count((*ith).id()) == 0){
 			ppfjet_twr_ieta_.push_back((*ith).id().ieta());
+			ppfjet_twr_iphi_.push_back((*ith).id().iphi());
+			ppfjet_twr_depth_.push_back((*ith).id().depth());
 			ppfjet_twr_hade_.push_back((*ith).energy());
 			tpfjet_twr_frac_.push_back(hitsAndFracs[iHit].second);
 			ppfjet_rechits[(*ith).id()].second.insert(hitsAndFracs[iHit].second);
@@ -1158,6 +1172,8 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  if(passMatch){
 		    ppfjet_had_ntwrs_.at(ppfjet_had_n_ - 1)++;
 		    ppfjet_twr_ieta_.push_back((*ith).id().ieta());
+		    ppfjet_twr_iphi_.push_back((*ith).id().iphi());
+		    ppfjet_twr_depth_.push_back((*ith).id().depth());
 		    ppfjet_twr_hade_.push_back((*ith).energy());
 		    ppfjet_twr_frac_.push_back(1.0);
 		    ppfjet_twr_hadind_.push_back(ppfjet_had_n_ - 1);
@@ -1197,6 +1213,8 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  if(passMatch){
 		    ppfjet_had_ntwrs_.at(ppfjet_had_n_ - 1)++;
 		    ppfjet_twr_ieta_.push_back((*ith).id().ieta());
+		    ppfjet_twr_iphi_.push_back((*ith).id().iphi());
+		    ppfjet_twr_depth_.push_back((*ith).id().depth());
 		    ppfjet_twr_hade_.push_back((*ith).energy());
 		    ppfjet_twr_frac_.push_back(1.0);
 		    ppfjet_twr_hadind_.push_back(ppfjet_had_n_ - 1);
@@ -1229,6 +1247,8 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		      ppfjet_had_ntwrs_.at(ppfjet_had_n_ - 1)++;
 		      if(ppfjet_rechits.count((*ith).id()) == 0){
 			ppfjet_twr_ieta_.push_back((*ith).id().ieta());
+			ppfjet_twr_iphi_.push_back((*ith).id().iphi());
+			ppfjet_twr_depth_.push_back((*ith).id().depth());
 			ppfjet_twr_hade_.push_back((*ith).energy());
 			ppfjet_twr_frac_.push_back(hitsAndFracs[iHit].second);
 			ppfjet_rechits[(*ith).id()].second.insert(hitsAndFracs[iHit].second);
@@ -1444,6 +1464,8 @@ void CalcRespCorrDiJets::beginJob()
     pf_tree_->Branch("tpfjet_had_ntwrs",&tpfjet_had_ntwrs_);
     pf_tree_->Branch("tpfjet_ntwrs",&tpfjet_ntwrs_, "tpfjet_ntwrs/I");
     pf_tree_->Branch("tpfjet_twr_ieta",&tpfjet_twr_ieta_);
+    pf_tree_->Branch("tpfjet_twr_iphi",&tpfjet_twr_iphi_);
+    pf_tree_->Branch("tpfjet_twr_depth",&tpfjet_twr_depth_);
     pf_tree_->Branch("tpfjet_twr_hade",&tpfjet_twr_hade_);
     pf_tree_->Branch("tpfjet_twr_frac",&tpfjet_twr_frac_);
     pf_tree_->Branch("tpfjet_twr_candtrackind",&tpfjet_twr_candtrackind_);
@@ -1507,6 +1529,8 @@ void CalcRespCorrDiJets::beginJob()
     pf_tree_->Branch("ppfjet_had_ntwrs",&ppfjet_had_ntwrs_);
     pf_tree_->Branch("ppfjet_ntwrs",&ppfjet_ntwrs_, "ppfjet_ntwrs/I");
     pf_tree_->Branch("ppfjet_twr_ieta",&ppfjet_twr_ieta_);
+    pf_tree_->Branch("ppfjet_twr_iphi",&ppfjet_twr_iphi_);
+    pf_tree_->Branch("ppfjet_twr_depth",&ppfjet_twr_depth_);
     pf_tree_->Branch("ppfjet_twr_hade",&ppfjet_twr_hade_);
     pf_tree_->Branch("ppfjet_twr_frac",&ppfjet_twr_frac_);
     pf_tree_->Branch("ppfjet_twr_candtrackind",&ppfjet_twr_candtrackind_);
@@ -1583,7 +1607,7 @@ double CalcRespCorrDiJets::deltaR(const double eta1, const double phi1, const do
 
 /*
 // DetId rawId bits xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-//                  1111222         3345555556666666
+//                  1111222      3333345555556666666
 //   1 = detector
 //   2 = subdetector
 //   3 = depth
