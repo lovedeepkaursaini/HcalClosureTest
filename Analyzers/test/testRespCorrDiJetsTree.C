@@ -43,7 +43,6 @@ void testRespCorrDiJetsTree()
   vector<int>* tpfjet_twr_elmttype_;
   vector<float>* tpfjet_twr_hade_;
   vector<float>* tpfjet_twr_frac_;
-  vector<bool>* tpfjet_twr_first_;
   int tpfjet_ncandtracks_;
   vector<float>* tpfjet_candtrack_px_;
   vector<float>* tpfjet_candtrack_py_;
@@ -77,7 +76,6 @@ void testRespCorrDiJetsTree()
   vector<float>* ppfjet_twr_elmttype_;
   vector<float>* ppfjet_twr_hade_;
   vector<float>* ppfjet_twr_frac_;
-  vector<bool>* ppfjet_twr_first_;
   int ppfjet_ncandtracks_;
   vector<float>* ppfjet_candtrack_px_;
   vector<float>* ppfjet_candtrack_py_;
@@ -142,7 +140,6 @@ void testRespCorrDiJetsTree()
   tree->SetBranchAddress("tpfjet_twr_candtrackind",&tpfjet_twr_candtrackind_);
   tree->SetBranchAddress("tpfjet_twr_hadind",&tpfjet_twr_hadind_);
   tree->SetBranchAddress("tpfjet_twr_elmttype",&tpfjet_twr_elmttype_);
-  tree->SetBranchAddress("tpfjet_twr_first",&tpfjet_twr_first_);
   tree->SetBranchAddress("tpfjet_ncandtracks",&tpfjet_ncandtracks_);
   tree->SetBranchAddress("tpfjet_candtrack_px",&tpfjet_candtrack_px_);
   tree->SetBranchAddress("tpfjet_candtrack_py",&tpfjet_candtrack_py_);
@@ -202,7 +199,6 @@ void testRespCorrDiJetsTree()
   tree->SetBranchAddress("ppfjet_twr_candtrackind",&ppfjet_twr_candtrackind_);
   tree->SetBranchAddress("ppfjet_twr_hadind",&ppfjet_twr_hadind_);
   tree->SetBranchAddress("ppfjet_twr_elmttype",&ppfjet_twr_elmttype_);
-  tree->SetBranchAddress("ppfjet_twr_first",&ppfjet_twr_first_);
   tree->SetBranchAddress("ppfjet_ncandtracks",&ppfjet_ncandtracks_);
   tree->SetBranchAddress("ppfjet_candtrack_px",&ppfjet_candtrack_px_);
   tree->SetBranchAddress("ppfjet_candtrack_py",&ppfjet_candtrack_py_);
@@ -225,7 +221,6 @@ void testRespCorrDiJetsTree()
   TH1D* h_tag_jet_Ediff_once_track_HE_ = new TH1D("h_tag_jet_Ediff_once_track_HE","tag (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits in HE",200,-1,8);
   TH1D* h_tag_jet_Ediff_once_track_HF_ = new TH1D("h_tag_jet_Ediff_once_track_HF","tag (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits in HF",200,-1,8);
   TH1D* h_tag_jet_Ediff_once_track_nofrac_ = new TH1D("h_tag_jet_Ediff_once_track_nofrac","tag (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits",200,-1,8);
-  TH1D* h_tag_jet_duplicatefrac_ = new TH1D("h_tag_jet_duplicatefrac","fraction of rechits that are duplicates",100,0,1);
   TH1D* h_tag_jet_additionalE_ = new TH1D("h_tag_jet_additionalE","additional E from multiple rechits",200,-50,150);
   
   TH1D* h_tag_jet_eta_rechits_ = new TH1D("h_tag_jet_eta_rechits","tag #eta with rechits",200,-5,5);
@@ -271,7 +266,6 @@ void testRespCorrDiJetsTree()
     float tag_jet_rechit_E_once_nofrac = 0;
     float tag_jet_hadEcalE = 0;
     float tag_jet_candNoRecHits_E = 0;
-    int nduplicates = 0;
     for(int i=0; i<tpfjet_had_n_; i++){
       tag_jet_hadEcalE += tpfjet_had_EcalE_->at(i);
       if(tpfjet_had_ntwrs_->at(i) == 0 && tpfjet_had_candtrackind_->at(i) > -1){
@@ -280,18 +274,13 @@ void testRespCorrDiJetsTree()
       for(int j=0; j<tpfjet_ntwrs_; j++){
 	if(tpfjet_twr_hadind_->at(j) == i &&  tpfjet_twr_hade_->at(j) > 0.0){
 	  tag_jet_rechit_E += tpfjet_twr_hade_->at(j)*tpfjet_twr_frac_->at(j);
-	  if(tpfjet_twr_first_->at(j)){
-	    if(tpfjet_twr_frac_->at(j) < 1){
-	      tag_jet_rechit_E_once += tpfjet_twr_hade_->at(j)*tpfjet_twr_frac_->at(j);
-	    }
-	    else{
-	      tag_jet_rechit_E_once += tpfjet_twr_hade_->at(j);
-	    }
-	    tag_jet_rechit_E_once_nofrac += tpfjet_twr_hade_->at(j);
+	  if(tpfjet_twr_frac_->at(j) < 1){
+	    tag_jet_rechit_E_once += tpfjet_twr_hade_->at(j)*tpfjet_twr_frac_->at(j);
 	  }
 	  else{
-	    nduplicates++;
+	    tag_jet_rechit_E_once += tpfjet_twr_hade_->at(j);
 	  }
+	  tag_jet_rechit_E_once_nofrac += tpfjet_twr_hade_->at(j);
 	}
       }
     }
@@ -315,8 +304,6 @@ void testRespCorrDiJetsTree()
     h_tag_jet_Ediff_once_track_nofrac_->Fill((tag_jet_E_once_track_nofrac - tpfjet_E_)/tpfjet_E_);
 
     h_tag_jet_additionalE_->Fill(tag_jet_rechit_E - tag_jet_rechit_E_once);
-
-    h_tag_jet_duplicatefrac_->Fill((double)nduplicates/(double)tpfjet_ntwrs_);
   }
   
   //////////////////////////
@@ -333,7 +320,6 @@ void testRespCorrDiJetsTree()
   h_tag_jet_Ediff_once_track_HE_->Write();
   h_tag_jet_Ediff_once_track_HF_->Write();
   h_tag_jet_Ediff_once_track_nofrac_->Write();
-  h_tag_jet_duplicatefrac_->Write();
   h_tag_jet_additionalE_->Write();
 
   h_tag_jet_eta_rechits_->Write();
