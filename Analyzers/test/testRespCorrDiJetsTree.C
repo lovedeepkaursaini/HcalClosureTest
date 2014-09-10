@@ -382,7 +382,7 @@ void testRespCorrDiJetsTree()
 	    break;
 	  case 2:
 	    h_probe_jet_dR_HE_->Fill(ppfjet_twr_dR_->at(j));
-	    h_probe_jet_frac_HE_->Fill(ppfjet_twr_frac_->at(j));
+	    //h_probe_jet_frac_HE_->Fill(ppfjet_twr_frac_->at(j));
 	    break;
 	  default:
 	    break;
