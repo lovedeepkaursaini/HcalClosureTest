@@ -305,6 +305,14 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	<< " could not find HORecHit named " << hoRecHitName_ << ".\n";
       return;
     }
+
+    // Get geometry
+    edm::ESHandle<CaloGeometry> geoHandle;
+    evSetup.get<CaloGeometryRecord>().get(geoHandle);
+    const CaloSubdetectorGeometry *HBGeom = geoHandle->getSubdetectorGeometry(DetId::Hcal, 1);
+    const CaloSubdetectorGeometry *HEGeom = geoHandle->getSubdetectorGeometry(DetId::Hcal, 2);
+    const CaloSubdetectorGeometry *HOGeom = geoHandle->getSubdetectorGeometry(DetId::Hcal, 3);
+    const CaloSubdetectorGeometry *HFGeom = geoHandle->getSubdetectorGeometry(DetId::Hcal, 4);
     
     int HBHE_n = 0;
     for(edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>::const_iterator ith=hbhereco->begin(); ith!=hbhereco->end(); ++ith){
@@ -707,11 +715,6 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  int tmpieta = ((hitsAndFracs[iHit].first.rawId() >> 7) & 0x3F);
 		  h_ietaHCAL_->Fill(tmpzside*tmpieta);
 
-		  edm::ESHandle<CaloGeometry> geoHandle;
-		  evSetup.get<CaloGeometryRecord>().get(geoHandle);
-		  const CaloSubdetectorGeometry *HBGeom = geoHandle->getSubdetectorGeometry(DetId::Hcal, 1); // Get HB gemoetry
-		  const CaloSubdetectorGeometry *HEGeom = geoHandle->getSubdetectorGeometry(DetId::Hcal, 2); // Get HE gemoetry
-
 		  for(edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>::const_iterator ith=hbhereco->begin(); ith!=hbhereco->end(); ++ith){
 		    int etaPhiRecHit = getEtaPhi((*ith).id());
 		    if(etaPhiPF == etaPhiRecHit){
@@ -740,6 +743,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 			    const CaloCellGeometry::CornersVec& cv = thisCell->getCorners();
 			    float avgeta = (cv[0].eta() + cv[2].eta())/2.0;
 			    float avgphi = (cv[0].phi() + cv[2].phi())/2.0;
+			    if(cv[0].phi() < cv[2].phi()) std::cout << "tHB" << cv[0].phi() << " " << cv[2].phi() << std::endl;
 			    tpfjet_twr_dR_.push_back(deltaR(tpfjet_eta_,tpfjet_phi_,avgeta,avgphi));
 			    break;
 			  }
@@ -749,6 +753,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 			    const CaloCellGeometry::CornersVec& cv = thisCell->getCorners();
 			    float avgeta = (cv[0].eta() + cv[2].eta())/2.0;
 			    float avgphi = (cv[0].phi() + cv[2].phi())/2.0;
+			    if(cv[0].phi() < cv[2].phi()) std::cout << "tHE" << cv[0].phi() << " " << cv[2].phi() << std::endl;
 			    tpfjet_twr_dR_.push_back(deltaR(tpfjet_eta_,tpfjet_phi_,avgeta,avgphi));
 			    break;
 			  }
@@ -775,10 +780,6 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		
 		h_etaHFHAD_->Fill((*it)->eta());
 		
-		edm::ESHandle<CaloGeometry> geoHandle;
-		evSetup.get<CaloGeometryRecord>().get(geoHandle);
-		const CaloSubdetectorGeometry *HFGeom = geoHandle->getSubdetectorGeometry(DetId::Hcal, 4); // Get HF gemoetry
-		
 		for(edm::SortedCollection<HFRecHit,edm::StrictWeakOrdering<HFRecHit>>::const_iterator ith=hfreco->begin(); ith!=hfreco->end(); ++ith){
 		  if((*ith).id().depth() == 1) continue; // Remove long fibers
 		  const CaloCellGeometry *thisCell = HFGeom->getGeometry((*ith).id().rawId());
@@ -788,6 +789,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  if((*it)->eta() < cv[0].eta() && (*it)->eta() > cv[2].eta()){
 		    if((*it)->phi() < cv[0].phi() && (*it)->phi() > cv[2].phi()) passMatch = true;
 		    else if(cv[0].phi() < cv[2].phi()){
+		      std::cout << "HFHAD tag" << std::endl;
 		      if((*it)->phi() < cv[0].phi()) passMatch = true;
 		      else if((*it)->phi() > cv[2].phi()) passMatch = true;
 		    }
@@ -806,6 +808,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		    tpfjet_twr_candtrackind_.push_back(-1);
 		    float avgeta = (cv[0].eta() + cv[2].eta())/2.0;
 		    float avgphi = (cv[0].phi() + cv[2].phi())/2.0;
+		    if(cv[0].phi() < cv[2].phi()) std::cout << "tHFhad" << cv[0].phi() << " " << cv[2].phi() << std::endl;
 		    tpfjet_twr_dR_.push_back(deltaR(tpfjet_eta_,tpfjet_phi_,avgeta,avgphi));
 		    ++tpfjet_ntwrs_;
 		    HFHAD_E += (*ith).energy();
@@ -820,10 +823,6 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 
 		h_etaHFEM_->Fill((*it)->eta());
 
-		edm::ESHandle<CaloGeometry> geoHandle;
-		evSetup.get<CaloGeometryRecord>().get(geoHandle);
-		const CaloSubdetectorGeometry *HFGeom = geoHandle->getSubdetectorGeometry(DetId::Hcal, 4); // Get HF gemoetry
-		
 		for(edm::SortedCollection<HFRecHit,edm::StrictWeakOrdering<HFRecHit>>::const_iterator ith=hfreco->begin(); ith!=hfreco->end(); ++ith){
 		  if((*ith).id().depth() == 2) continue; // Remove short fibers
 		  const CaloCellGeometry *thisCell = HFGeom->getGeometry((*ith).id().rawId());
@@ -833,6 +832,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  if((*it)->eta() < cv[0].eta() && (*it)->eta() > cv[2].eta()){
 		    if((*it)->phi() < cv[0].phi() && (*it)->phi() > cv[2].phi()) passMatch = true;
 		    else if(cv[0].phi() < cv[2].phi()){
+		      std::cout << "HFEM tag" << std::endl;
 		      if((*it)->phi() < cv[0].phi()) passMatch = true;
 		      else if((*it)->phi() > cv[2].phi()) passMatch = true;
 		    }
@@ -851,6 +851,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		    tpfjet_twr_candtrackind_.push_back(-1);
 		    float avgeta = (cv[0].eta() + cv[2].eta())/2.0;
 		    float avgphi = (cv[0].phi() + cv[2].phi())/2.0;
+		    if(cv[0].phi() < cv[2].phi()) std::cout << "tHFem" << cv[0].phi() << " " << cv[2].phi() << std::endl;
 		    tpfjet_twr_dR_.push_back(deltaR(tpfjet_eta_,tpfjet_phi_,avgeta,avgphi));
 		    ++tpfjet_ntwrs_;
 		    HFEM_E += (*ith).energy();
@@ -872,10 +873,6 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  int tmpzside = ((hitsAndFracs[iHit].first.rawId() >> 13) & 0x1) ? 1 : -1;
 		  int tmpieta = ((hitsAndFracs[iHit].first.rawId() >> 7) & 0x3F);
 		  h_ietaHO_->Fill(tmpzside*tmpieta);
-
-		  edm::ESHandle<CaloGeometry> geoHandle;
-		  evSetup.get<CaloGeometryRecord>().get(geoHandle);
-		  const CaloSubdetectorGeometry *HOGeom = geoHandle->getSubdetectorGeometry(DetId::Hcal, 3); // Get HO gemoetry
 
 		  for(edm::SortedCollection<HORecHit,edm::StrictWeakOrdering<HORecHit>>::const_iterator ith=horeco->begin(); ith!=horeco->end(); ++ith){
 		    int etaPhiRecHit = getEtaPhi((*ith).id());
@@ -902,6 +899,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 			const CaloCellGeometry::CornersVec& cv = thisCell->getCorners();
 			float avgeta = (cv[0].eta() + cv[2].eta())/2.0;
 			float avgphi = (cv[0].phi() + cv[2].phi())/2.0;
+			if(cv[0].phi() < cv[2].phi()) std::cout << "tHO" << cv[0].phi() << " " << cv[2].phi() << std::endl;
 			tpfjet_twr_dR_.push_back(deltaR(tpfjet_eta_,tpfjet_phi_,avgeta,avgphi));
 			tpfjet_rechits[(*ith).id()].first = tpfjet_ntwrs_;
 			++tpfjet_ntwrs_;
@@ -1164,11 +1162,6 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		for(int iHit=0; iHit<nHits; iHit++){
 		  int etaPhiPF = getEtaPhi(hitsAndFracs[iHit].first);
 
-		  edm::ESHandle<CaloGeometry> geoHandle;
-		  evSetup.get<CaloGeometryRecord>().get(geoHandle);
-		  const CaloSubdetectorGeometry *HBGeom = geoHandle->getSubdetectorGeometry(DetId::Hcal, 1); // Get HB gemoetry
-		  const CaloSubdetectorGeometry *HEGeom = geoHandle->getSubdetectorGeometry(DetId::Hcal, 2); // Get HE gemoetry
-
 		  for(edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>::const_iterator ith=hbhereco->begin(); ith!=hbhereco->end(); ++ith){
 		    int etaPhiRecHit = getEtaPhi((*ith).id());
 		    if(etaPhiPF == etaPhiRecHit){
@@ -1196,6 +1189,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 			    const CaloCellGeometry::CornersVec& cv = thisCell->getCorners();
 			    float avgeta = (cv[0].eta() + cv[2].eta())/2.0;
 			    float avgphi = (cv[0].phi() + cv[2].phi())/2.0;
+			    if(cv[0].phi() < cv[2].phi()) std::cout << "pHB" << cv[0].phi() << " " << cv[2].phi() << std::endl;
 			    ppfjet_twr_dR_.push_back(deltaR(ppfjet_eta_,ppfjet_phi_,avgeta,avgphi));
 			    break;
 			  }
@@ -1205,6 +1199,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 			    const CaloCellGeometry::CornersVec& cv = thisCell->getCorners();
 			    float avgeta = (cv[0].eta() + cv[2].eta())/2.0;
 			    float avgphi = (cv[0].phi() + cv[2].phi())/2.0;
+			    if(cv[0].phi() < cv[2].phi()) std::cout << "pHE" << cv[0].phi() << " " << cv[2].phi() << std::endl;
 			    ppfjet_twr_dR_.push_back(deltaR(ppfjet_eta_,ppfjet_phi_,avgeta,avgphi));
 			    break;
 			  }
@@ -1231,10 +1226,6 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		
 		h_etaHFHAD_->Fill((*it)->eta());
 
-		edm::ESHandle<CaloGeometry> geoHandle;
-		evSetup.get<CaloGeometryRecord>().get(geoHandle);
-		const CaloSubdetectorGeometry *HFGeom = geoHandle->getSubdetectorGeometry(DetId::Hcal, 4); // Get HF gemoetry
-
 		for(edm::SortedCollection<HFRecHit,edm::StrictWeakOrdering<HFRecHit>>::const_iterator ith=hfreco->begin(); ith!=hfreco->end(); ++ith){
 		  if((*ith).id().depth() == 1) continue; // Remove long fibers
 		  const CaloCellGeometry *thisCell = HFGeom->getGeometry((*ith).id().rawId());
@@ -1244,6 +1235,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  if((*it)->eta() < cv[0].eta() && (*it)->eta() > cv[2].eta()){
 		    if((*it)->phi() < cv[0].phi() && (*it)->phi() > cv[2].phi()) passMatch = true;
 		    else if(cv[0].phi() < cv[2].phi()){
+		      std::cout << "HFHAD probe" << std::endl;
 		      if((*it)->phi() < cv[0].phi()) passMatch = true;
 		      else if((*it)->phi() > cv[2].phi()) passMatch = true;
 		    }
@@ -1262,6 +1254,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		    ppfjet_twr_candtrackind_.push_back(-1);
 		    float avgeta = (cv[0].eta() + cv[2].eta())/2.0;
 		    float avgphi = (cv[0].phi() + cv[2].phi())/2.0;
+		    if(cv[0].phi() < cv[2].phi()) std::cout << "pHFhad" << cv[0].phi() << " " << cv[2].phi() << std::endl;
 		    ppfjet_twr_dR_.push_back(deltaR(ppfjet_eta_,ppfjet_phi_,avgeta,avgphi));
 		    ++ppfjet_ntwrs_;
 		    HFHAD_E += (*ith).energy();
@@ -1276,10 +1269,6 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 
 		h_etaHFEM_->Fill((*it)->eta());
 		
-		edm::ESHandle<CaloGeometry> geoHandle;
-		evSetup.get<CaloGeometryRecord>().get(geoHandle);
-		const CaloSubdetectorGeometry *HFGeom = geoHandle->getSubdetectorGeometry(DetId::Hcal, 4); // Get HF gemoetry
-		
 		for(edm::SortedCollection<HFRecHit,edm::StrictWeakOrdering<HFRecHit>>::const_iterator ith=hfreco->begin(); ith!=hfreco->end(); ++ith){
 		  if((*ith).id().depth() == 2) continue; // Remove short fibers
 		  const CaloCellGeometry *thisCell = HFGeom->getGeometry((*ith).id().rawId());
@@ -1289,6 +1278,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  if((*it)->eta() < cv[0].eta() && (*it)->eta() > cv[2].eta()){
 		    if((*it)->phi() < cv[0].phi() && (*it)->phi() > cv[2].phi()) passMatch = true;
 		    else if(cv[0].phi() < cv[2].phi()){
+		      std::cout << "HFEM probe" << std::endl;
 		      if((*it)->phi() < cv[0].phi()) passMatch = true;
 		      else if((*it)->phi() > cv[2].phi()) passMatch = true;
 		    }
@@ -1307,6 +1297,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		    ppfjet_twr_candtrackind_.push_back(-1);
 		    float avgeta = (cv[0].eta() + cv[2].eta())/2.0;
 		    float avgphi = (cv[0].phi() + cv[2].phi())/2.0;
+		    if(cv[0].phi() < cv[2].phi()) std::cout << "pHFem" << cv[0].phi() << " " << cv[2].phi() << std::endl;
 		    ppfjet_twr_dR_.push_back(deltaR(ppfjet_eta_,ppfjet_phi_,avgeta,avgphi));
 		    ++ppfjet_ntwrs_;
 		    HFEM_E += (*ith).energy();
@@ -1328,10 +1319,6 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		  int tmpzside = ((hitsAndFracs[iHit].first.rawId() >> 13) & 0x1) ? 1 : -1;
 		  int tmpieta = ((hitsAndFracs[iHit].first.rawId() >> 7) & 0x3F);
 		  h_ietaHO_->Fill(tmpzside*tmpieta);
-
-		  edm::ESHandle<CaloGeometry> geoHandle;
-		  evSetup.get<CaloGeometryRecord>().get(geoHandle);
-		  const CaloSubdetectorGeometry *HOGeom = geoHandle->getSubdetectorGeometry(DetId::Hcal, 3); // Get HO gemoetry
 
 		  for(edm::SortedCollection<HORecHit,edm::StrictWeakOrdering<HORecHit>>::const_iterator ith=horeco->begin(); ith!=horeco->end(); ++ith){
 		    int etaPhiRecHit = getEtaPhi((*ith).id());
@@ -1357,6 +1344,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 			const CaloCellGeometry::CornersVec& cv = thisCell->getCorners();
 			float avgeta = (cv[0].eta() + cv[2].eta())/2.0;
 			float avgphi = (cv[0].phi() + cv[2].phi())/2.0;
+			if(cv[0].phi() < cv[2].phi()) std::cout << "pHO" << cv[0].phi() << " " << cv[2].phi() << std::endl;
 			ppfjet_twr_dR_.push_back(deltaR(ppfjet_eta_,ppfjet_phi_,avgeta,avgphi));
 			ppfjet_rechits[(*ith).id()].first = ppfjet_ntwrs_;
 			++ppfjet_ntwrs_;
