@@ -250,6 +250,11 @@ void testRespCorrDiJetsTree()
   TH1D* h_probe_jet_Ediff_once_track_nofrac_HE_ = new TH1D("h_probe_jet_Ediff_once_track_nofrac_HE","probe (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits in hE",200,-1,8);
   TH1D* h_probe_jet_Ediff_once_track_nofrac_HF_ = new TH1D("h_probe_jet_Ediff_once_track_nofrac_HF","probe (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits in HF",200,-1,8);
   TH1D* h_probe_jet_Ediff_once_track_nofrac_nocut_ = new TH1D("h_probe_jet_Ediff_once_track_nofrac_nocut","probe (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits",200,0,10);
+  TH1D* h_probe_jet_dR_HB_ = new TH1D("h_probe_jet_dR_HB","#DeltaR in HB",200,0,5);
+  TH1D* h_probe_jet_frac_HB_ = new TH1D("h_probe_jet_frac_HB","fraction in HB",200,0,1.5);
+  TH1D* h_probe_jet_dR_HE_ = new TH1D("h_probe_jet_dR_HE","#DeltaR in HE",200,0,5);
+  TH1D* h_probe_jet_frac_HE_ = new TH1D("h_probe_jet_frac_HE","fraction in HE",200,0,1.5);
+
   TH1D* h_probe_jet_eta_rechits_ = new TH1D("h_probe_jet_eta_rechits","probe #eta with rechits",200,-5,5);
   TH1D* h_probe_jet_eta_norechits_ = new TH1D("h_probe_jet_eta_norechits","probe #eta without rechits",200,-5,5);
 
@@ -370,9 +375,21 @@ void testRespCorrDiJetsTree()
       }
       for(int j=0; j<ppfjet_ntwrs_; j++){
 	if(ppfjet_twr_hadind_->at(j) == i && ppfjet_twr_hade_->at(j) > 0.0){
-	  tag_jet_rechit_E_once_nofrac_nocut += ppfjet_twr_hade_->at(j);
+	  switch(ppfjet_twr_subdet_->at(j)){
+	  case 1:
+	    h_probe_jet_dR_HB_->Fill(ppfjet_twr_dR_->at(j));
+	    //h_probe_jet_frac_HB_->Fill(ppfjet_twr_frac_->at(j));
+	    break;
+	  case 2:
+	    h_probe_jet_dR_HE_->Fill(ppfjet_twr_dR_->at(j));
+	    h_probe_jet_frac_HE_->Fill(ppfjet_twr_frac_->at(j));
+	    break;
+	  default:
+	    break;
+	  }
+	  probe_jet_rechit_E_once_nofrac_nocut += ppfjet_twr_hade_->at(j);
 	  if(ppfjet_twr_dR_->at(j) < 0.5){
-	    tag_jet_rechit_E_once_nofrac += ppfjet_twr_hade_->at(j);
+	    probe_jet_rechit_E_once_nofrac += ppfjet_twr_hade_->at(j);
 	  }
 	}
       }
@@ -429,6 +446,10 @@ void testRespCorrDiJetsTree()
   h_probe_jet_Ediff_once_track_nofrac_HE_->Write();
   h_probe_jet_Ediff_once_track_nofrac_HF_->Write();
   h_probe_jet_Ediff_once_track_nofrac_nocut_->Write();
+  h_probe_jet_dR_HB_->Write();
+  h_probe_jet_frac_HB_->Write();
+  h_probe_jet_dR_HE_->Write();
+  h_probe_jet_frac_HE_->Write();
   h_probe_jet_eta_rechits_->Write();
   h_probe_jet_eta_norechits_->Write();
   
