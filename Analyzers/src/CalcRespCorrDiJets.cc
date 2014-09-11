@@ -893,6 +893,19 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		    int etaPhiRecHit = getEtaPhi((*ith).id());
 		    if(etaPhiPF == etaPhiRecHit){
 		      tpfjet_had_ntwrs_.at(tpfjet_had_n_ - 1)++;
+		      const HcalChannelQuality* theHcalChStatus;
+		      const HcalSeverityLevelComputer* theHcalSevLvlComputer;
+		      edm::ESHandle<HcalChannelQuality> hcalChStatus;
+		      evSetup.get<HcalChannelQualityRcd>().get( hcalChStatus );
+		      theHcalChStatus = hcalChStatus.product();
+		      edm::ESHandle<HcalSeverityLevelComputer> hcalSevLvlComputerHndl;
+		      evSetup.get<HcalSeverityLevelComputerRcd>().get(hcalSevLvlComputerHndl);
+		      theHcalSevLvlComputer = hcalSevLvlComputerHndl.product();
+		      const DetId id = (*ith).detid();
+		      const uint32_t recHitFlag = (*ith).flags();
+		      const uint32_t dbStatusFlag = theHcalChStatus->getValues(id)->getValue();
+		      int severityLevel = theHcalSevLvlComputer->getSeverityLevel(id, recHitFlag, dbStatusFlag);
+		      tpfjet_rechit_severity_.push_back(severityLevel);
 		      if(tpfjet_rechits.count((*ith).id()) == 0){
 			tpfjet_twr_ieta_.push_back((*ith).id().ieta());
 			tpfjet_twr_iphi_.push_back((*ith).id().iphi());
@@ -1181,6 +1194,19 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		    int etaPhiRecHit = getEtaPhi((*ith).id());
 		    if(etaPhiPF == etaPhiRecHit){
 		      ppfjet_had_ntwrs_.at(ppfjet_had_n_ - 1)++;
+		      const HcalChannelQuality* theHcalChStatus;
+		      const HcalSeverityLevelComputer* theHcalSevLvlComputer;
+		      edm::ESHandle<HcalChannelQuality> hcalChStatus;
+		      evSetup.get<HcalChannelQualityRcd>().get( hcalChStatus );
+		      theHcalChStatus = hcalChStatus.product();
+		      edm::ESHandle<HcalSeverityLevelComputer> hcalSevLvlComputerHndl;
+		      evSetup.get<HcalSeverityLevelComputerRcd>().get(hcalSevLvlComputerHndl);
+		      theHcalSevLvlComputer = hcalSevLvlComputerHndl.product();
+		      const DetId id = (*ith).detid();
+		      const uint32_t recHitFlag = (*ith).flags();
+		      const uint32_t dbStatusFlag = theHcalChStatus->getValues(id)->getValue();
+		      int severityLevel = theHcalSevLvlComputer->getSeverityLevel(id, recHitFlag, dbStatusFlag);
+		      ppfjet_rechit_severity_.push_back(severityLevel);
 		      if(ppfjet_rechits.count((*ith).id()) == 0){
 			ppfjet_twr_ieta_.push_back((*ith).id().ieta());
 			ppfjet_twr_iphi_.push_back((*ith).id().iphi());
@@ -1339,6 +1365,19 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		    int etaPhiRecHit = getEtaPhi((*ith).id());
 		    if(etaPhiPF == etaPhiRecHit){
 		      ppfjet_had_ntwrs_.at(ppfjet_had_n_ - 1)++;
+		      const HcalChannelQuality* theHcalChStatus;
+		      const HcalSeverityLevelComputer* theHcalSevLvlComputer;
+		      edm::ESHandle<HcalChannelQuality> hcalChStatus;
+		      evSetup.get<HcalChannelQualityRcd>().get( hcalChStatus );
+		      theHcalChStatus = hcalChStatus.product();
+		      edm::ESHandle<HcalSeverityLevelComputer> hcalSevLvlComputerHndl;
+		      evSetup.get<HcalSeverityLevelComputerRcd>().get(hcalSevLvlComputerHndl);
+		      theHcalSevLvlComputer = hcalSevLvlComputerHndl.product();
+		      const DetId id = (*ith).detid();
+		      const uint32_t recHitFlag = (*ith).flags();
+		      const uint32_t dbStatusFlag = theHcalChStatus->getValues(id)->getValue();
+		      int severityLevel = theHcalSevLvlComputer->getSeverityLevel(id, recHitFlag, dbStatusFlag);
+		      ppfjet_rechit_severity_.push_back(severityLevel);
 		      if(ppfjet_rechits.count((*ith).id()) == 0){
 			ppfjet_twr_ieta_.push_back((*ith).id().ieta());
 			ppfjet_twr_iphi_.push_back((*ith).id().iphi());
