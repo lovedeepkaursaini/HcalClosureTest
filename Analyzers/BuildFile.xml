@@ -7,7 +7,7 @@
 <use   name="JetMETCorrections/Objects"/>
 <use   name="Geometry/CaloGeometry"/>
 <use   name="Geometry/Records"/>
+<use   name="CondFormats/DataRecord"/>
+<use   name="CondFormats/HcalObjects"/>
+<use   name="RecoLocalCalo/HcalRecAlgos"/>
 <use   name="root"/>
-<export>
-   <lib name="HcalClosureTestAnalyzers"/>
-</export>

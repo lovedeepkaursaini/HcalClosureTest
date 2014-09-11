@@ -442,6 +442,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
       tpfjet_twr_hade_.clear();
       tpfjet_twr_frac_.clear();
       tpfjet_twr_dR_.clear();
+      tpfjet_rechit_severity_.clear();
       tpfjet_candtrack_px_.clear();
       tpfjet_candtrack_py_.clear();
       tpfjet_candtrack_pz_.clear();
@@ -468,6 +469,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
       ppfjet_twr_hade_.clear();
       ppfjet_twr_frac_.clear();
       ppfjet_twr_dR_.clear();
+      ppfjet_rechit_severity_.clear();
       ppfjet_candtrack_px_.clear();
       ppfjet_candtrack_py_.clear();
       ppfjet_candtrack_pz_.clear();
@@ -719,6 +721,19 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		    int etaPhiRecHit = getEtaPhi((*ith).id());
 		    if(etaPhiPF == etaPhiRecHit){
 		      tpfjet_had_ntwrs_.at(tpfjet_had_n_ - 1)++;
+		      const HcalChannelQuality* theHcalChStatus;
+		      const HcalSeverityLevelComputer* theHcalSevLvlComputer;
+		      edm::ESHandle<HcalChannelQuality> hcalChStatus;
+		      evSetup.get<HcalChannelQualityRcd>().get( hcalChStatus );
+		      theHcalChStatus = hcalChStatus.product();
+		      edm::ESHandle<HcalSeverityLevelComputer> hcalSevLvlComputerHndl;
+		      evSetup.get<HcalSeverityLevelComputerRcd>().get(hcalSevLvlComputerHndl);
+		      theHcalSevLvlComputer = hcalSevLvlComputerHndl.product();
+		      const DetId id = (*ith).detid();
+		      const uint32_t recHitFlag = (*ith).flags();
+		      const uint32_t dbStatusFlag = theHcalChStatus->getValues(id)->getValue();
+		      int severityLevel = theHcalSevLvlComputer->getSeverityLevel(id, recHitFlag, dbStatusFlag);
+		      tpfjet_rechit_severity_.push_back(severityLevel);
 		      if(tpfjet_rechits.count((*ith).id()) == 0){
 			tpfjet_twr_ieta_.push_back((*ith).id().ieta());
 			tpfjet_twr_iphi_.push_back((*ith).id().iphi());
@@ -1559,6 +1574,7 @@ void CalcRespCorrDiJets::beginJob()
     pf_tree_->Branch("tpfjet_twr_hadind",&tpfjet_twr_hadind_);
     pf_tree_->Branch("tpfjet_twr_elmttype",&tpfjet_twr_elmttype_);
     pf_tree_->Branch("tpfjet_twr_dR",&tpfjet_twr_dR_);
+    pf_tree_->Branch("tpfjet_rechit_severity",&tpfjet_rechit_severity_);
     pf_tree_->Branch("tpfjet_ncandtracks",&tpfjet_ncandtracks_, "tpfjet_ncandtracks/I");
     pf_tree_->Branch("tpfjet_candtrack_px",&tpfjet_candtrack_px_);
     pf_tree_->Branch("tpfjet_candtrack_py",&tpfjet_candtrack_py_);
@@ -1626,6 +1642,7 @@ void CalcRespCorrDiJets::beginJob()
     pf_tree_->Branch("ppfjet_twr_hadind",&ppfjet_twr_hadind_);
     pf_tree_->Branch("ppfjet_twr_elmttype",&ppfjet_twr_elmttype_);
     pf_tree_->Branch("ppfjet_twr_dR",&ppfjet_twr_dR_);
+    pf_tree_->Branch("ppfjet_rechit_severity",&ppfjet_rechit_severity_);
     pf_tree_->Branch("ppfjet_ncandtracks",&ppfjet_ncandtracks_, "ppfjet_ncandtracks/I");
     pf_tree_->Branch("ppfjet_candtrack_px",&ppfjet_candtrack_px_);
     pf_tree_->Branch("ppfjet_candtrack_py",&ppfjet_candtrack_py_);
