@@ -229,9 +229,9 @@ void testRespCorrDiJetsTree()
   TH1D* h_tag_jet_Ediff_once_track_HE_ = new TH1D("h_tag_jet_Ediff_once_track_HE","tag (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits in HE",200,-1,8);
   TH1D* h_tag_jet_Ediff_once_track_HF_ = new TH1D("h_tag_jet_Ediff_once_track_HF","tag (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits in HF",200,-1,8);
   TH1D* h_tag_jet_Ediff_once_track_nofrac_ = new TH1D("h_tag_jet_Ediff_once_track_nofrac","tag (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits",200,0,2);
-  TH1D* h_tag_jet_Ediff_once_track_nofrac_HB_ = new TH1D("h_tag_jet_Ediff_once_track_nofrac_HB","tag (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits in HB",200,-1,8);
-  TH1D* h_tag_jet_Ediff_once_track_nofrac_HE_ = new TH1D("h_tag_jet_Ediff_once_track_nofrac_HE","tag (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits in hE",200,-1,8);
-  TH1D* h_tag_jet_Ediff_once_track_nofrac_HF_ = new TH1D("h_tag_jet_Ediff_once_track_nofrac_HF","tag (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits in HF",200,-1,8);
+  TH1D* h_tag_jet_Ediff_once_track_nofrac_HB_ = new TH1D("h_tag_jet_Ediff_once_track_nofrac_HB","tag (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits in HB",200,-1,2);
+  TH1D* h_tag_jet_Ediff_once_track_nofrac_HE_ = new TH1D("h_tag_jet_Ediff_once_track_nofrac_HE","tag (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits in hE",200,-1,2);
+  TH1D* h_tag_jet_Ediff_once_track_nofrac_HF_ = new TH1D("h_tag_jet_Ediff_once_track_nofrac_HF","tag (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits in HF",200,-1,2);
   TH1D* h_tag_jet_Ediff_once_track_nofrac_nocut_ = new TH1D("h_tag_jet_Ediff_once_track_nofrac_nocut","tag (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits",200,0,10);
   TH1D* h_tag_jet_additionalE_ = new TH1D("h_tag_jet_additionalE","additional E from multiple rechits",200,-50,150);
   
@@ -240,20 +240,20 @@ void testRespCorrDiJetsTree()
 
   TH2D* h_tag_jet_fracvsdR_HB_ = new TH2D("h_tag_jet_fracvsdR_HB","fraction vs. #DeltaR in HB",200,0,5,200,0,1.5);
   TH1D* h_tag_jet_dR_HB_ = new TH1D("h_tag_jet_dR_HB","#DeltaR in HB",200,0,5);
-  TH1D* h_tag_jet_frac_HB_ = new TH1D("h_tag_jet_frac_HB","fraction in HB",200,0,1.5);
+  TH1D* h_tag_jet_frac_HB_ = new TH1D("h_tag_jet_frac_HB","fraction in HB",200,0,1.1);
   TH2D* h_tag_jet_fracvsdR_HE_ = new TH2D("h_tag_jet_fracvsdR_HE","fraction vs. #DeltaR in HE",200,0,5,200,0,1.5);
   TH1D* h_tag_jet_dR_HE_ = new TH1D("h_tag_jet_dR_HE","#DeltaR in HE",200,0,5);
-  TH1D* h_tag_jet_frac_HE_ = new TH1D("h_tag_jet_frac_HE","fraction in HE",200,0,1.5);
+  TH1D* h_tag_jet_frac_HE_ = new TH1D("h_tag_jet_frac_HE","fraction in HE",200,0,1.1);
 
   TH1D* h_probe_jet_Ediff_once_track_nofrac_ = new TH1D("h_probe_jet_Ediff_once_track_nofrac","probe (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits",200,0,2);
-  TH1D* h_probe_jet_Ediff_once_track_nofrac_HB_ = new TH1D("h_probe_jet_Ediff_once_track_nofrac_HB","probe (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits in HB",200,-1,8);
-  TH1D* h_probe_jet_Ediff_once_track_nofrac_HE_ = new TH1D("h_probe_jet_Ediff_once_track_nofrac_HE","probe (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits in hE",200,-1,8);
-  TH1D* h_probe_jet_Ediff_once_track_nofrac_HF_ = new TH1D("h_probe_jet_Ediff_once_track_nofrac_HF","probe (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits in HF",200,-1,8);
+  TH1D* h_probe_jet_Ediff_once_track_nofrac_HB_ = new TH1D("h_probe_jet_Ediff_once_track_nofrac_HB","probe (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits in HB",200,-1,2);
+  TH1D* h_probe_jet_Ediff_once_track_nofrac_HE_ = new TH1D("h_probe_jet_Ediff_once_track_nofrac_HE","probe (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits in hE",200,-1,2);
+  TH1D* h_probe_jet_Ediff_once_track_nofrac_HF_ = new TH1D("h_probe_jet_Ediff_once_track_nofrac_HF","probe (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits in HF",200,-1,2);
   TH1D* h_probe_jet_Ediff_once_track_nofrac_nocut_ = new TH1D("h_probe_jet_Ediff_once_track_nofrac_nocut","probe (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits",200,0,10);
   TH1D* h_probe_jet_dR_HB_ = new TH1D("h_probe_jet_dR_HB","#DeltaR in HB",200,0,5);
-  TH1D* h_probe_jet_frac_HB_ = new TH1D("h_probe_jet_frac_HB","fraction in HB",200,0,1.5);
+  TH1D* h_probe_jet_frac_HB_ = new TH1D("h_probe_jet_frac_HB","fraction in HB",200,0,1.1);
   TH1D* h_probe_jet_dR_HE_ = new TH1D("h_probe_jet_dR_HE","#DeltaR in HE",200,0,5);
-  TH1D* h_probe_jet_frac_HE_ = new TH1D("h_probe_jet_frac_HE","fraction in HE",200,0,1.5);
+  TH1D* h_probe_jet_frac_HE_ = new TH1D("h_probe_jet_frac_HE","fraction in HE",200,0,1.1);
 
   TH1D* h_probe_jet_eta_rechits_ = new TH1D("h_probe_jet_eta_rechits","probe #eta with rechits",200,-5,5);
   TH1D* h_probe_jet_eta_norechits_ = new TH1D("h_probe_jet_eta_norechits","probe #eta without rechits",200,-5,5);
@@ -378,11 +378,11 @@ void testRespCorrDiJetsTree()
 	  switch(ppfjet_twr_subdet_->at(j)){
 	  case 1:
 	    h_probe_jet_dR_HB_->Fill(ppfjet_twr_dR_->at(j));
-	    //h_probe_jet_frac_HB_->Fill(ppfjet_twr_frac_->at(j));
+	    h_probe_jet_frac_HB_->Fill(ppfjet_twr_frac_->at(j));
 	    break;
 	  case 2:
 	    h_probe_jet_dR_HE_->Fill(ppfjet_twr_dR_->at(j));
-	    //h_probe_jet_frac_HE_->Fill(ppfjet_twr_frac_->at(j));
+	    h_probe_jet_frac_HE_->Fill(ppfjet_twr_frac_->at(j));
 	    break;
 	  default:
 	    break;
