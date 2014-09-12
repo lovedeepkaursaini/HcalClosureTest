@@ -225,7 +225,7 @@ void testRespCorrDiJetsTree()
   tree->SetBranchAddress("pf_Lumi",&pf_Lumi_);
   tree->SetBranchAddress("pf_Event",&pf_Event_);
 
-  int debugEvent = 1308;
+  int debugEvent = 372; //372
 
   // Jet
   TH1D* h_tag_jet_Ediff_ = new TH1D("h_tag_jet_Ediff","tag (rechits - pfjet)/pfjet",200,-1,8);
@@ -305,10 +305,12 @@ void testRespCorrDiJetsTree()
       cout << "tag " << tpfjet_eta_ << " " << tpfjet_phi_ << endl;
       cout << "probe " << ppfjet_eta_ << " " << ppfjet_phi_ << endl;
       for(int j=0; j<tpfjet_ntwrs_; j++){
+	if(tpfjet_twr_frac_->at(j) < 0.95) continue;
 	h_tag_jet_rechitpos_->Fill(tpfjet_twr_ieta_->at(j),tpfjet_twr_iphi_->at(j),tpfjet_twr_hade_->at(j));
 	if(tpfjet_twr_dR_->at(j) < 0.5) h_tag_jet_rechitpos_R5_->Fill(tpfjet_twr_ieta_->at(j),tpfjet_twr_iphi_->at(j),tpfjet_twr_hade_->at(j));
       }
       for(int j=0; j<ppfjet_ntwrs_; j++){
+	if(ppfjet_twr_frac_->at(j) < 0.95) continue;
 	h_probe_jet_rechitpos_->Fill(ppfjet_twr_ieta_->at(j),ppfjet_twr_iphi_->at(j),ppfjet_twr_hade_->at(j));
 	if(ppfjet_twr_dR_->at(j) < 0.5) h_probe_jet_rechitpos_R5_->Fill(ppfjet_twr_ieta_->at(j),ppfjet_twr_iphi_->at(j),ppfjet_twr_hade_->at(j));
       }
