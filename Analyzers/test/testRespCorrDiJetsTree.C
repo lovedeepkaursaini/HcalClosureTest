@@ -38,6 +38,7 @@ void testRespCorrDiJetsTree()
   vector<int>* tpfjet_had_ntwrs_;
   int tpfjet_ntwrs_;
   vector<int>* tpfjet_twr_ieta_;
+  vector<int>* tpfjet_twr_iphi_;
   vector<int>* tpfjet_twr_candtrackind_;
   vector<int>* tpfjet_twr_hadind_;
   vector<int>* tpfjet_twr_elmttype_;
@@ -73,6 +74,7 @@ void testRespCorrDiJetsTree()
   vector<int>* ppfjet_had_ntwrs_;
   int ppfjet_ntwrs_;
   vector<int>* ppfjet_twr_ieta_;
+  vector<int>* ppfjet_twr_iphi_;
   vector<int>* ppfjet_twr_subdet_;
   vector<float>* ppfjet_twr_candtrackind_;
   vector<float>* ppfjet_twr_hadind_;
@@ -139,6 +141,7 @@ void testRespCorrDiJetsTree()
   tree->SetBranchAddress("tpfjet_had_ntwrs",&tpfjet_had_ntwrs_);
   tree->SetBranchAddress("tpfjet_ntwrs",&tpfjet_ntwrs_);
   tree->SetBranchAddress("tpfjet_twr_ieta",&tpfjet_twr_ieta_);
+  tree->SetBranchAddress("tpfjet_twr_iphi",&tpfjet_twr_iphi_);
   tree->SetBranchAddress("tpfjet_twr_hade",&tpfjet_twr_hade_);
   tree->SetBranchAddress("tpfjet_twr_frac",&tpfjet_twr_frac_);
   tree->SetBranchAddress("tpfjet_twr_candtrackind",&tpfjet_twr_candtrackind_);
@@ -200,6 +203,7 @@ void testRespCorrDiJetsTree()
   tree->SetBranchAddress("ppfjet_had_ntwrs",&ppfjet_had_ntwrs_);
   tree->SetBranchAddress("ppfjet_ntwrs",&ppfjet_ntwrs_);
   tree->SetBranchAddress("ppfjet_twr_ieta",&ppfjet_twr_ieta_);
+  tree->SetBranchAddress("ppfjet_twr_iphi",&ppfjet_twr_iphi_);
   tree->SetBranchAddress("ppfjet_twr_hade",&ppfjet_twr_hade_);
   tree->SetBranchAddress("ppfjet_twr_frac",&ppfjet_twr_frac_);
   tree->SetBranchAddress("ppfjet_twr_candtrackind",&ppfjet_twr_candtrackind_);
@@ -220,7 +224,9 @@ void testRespCorrDiJetsTree()
   tree->SetBranchAddress("pf_Run",&pf_Run_);
   tree->SetBranchAddress("pf_Lumi",&pf_Lumi_);
   tree->SetBranchAddress("pf_Event",&pf_Event_);
-  
+
+  int debugEvent = 1308;
+
   // Jet
   TH1D* h_tag_jet_Ediff_ = new TH1D("h_tag_jet_Ediff","tag (rechits - pfjet)/pfjet",200,-1,8);
   TH1D* h_tag_jet_Ediff_once_ = new TH1D("h_tag_jet_Ediff_once","tag (rechits - pfjet)/pfjet use rechits once",200,-1,8);
@@ -244,6 +250,8 @@ void testRespCorrDiJetsTree()
   TH2D* h_tag_jet_fracvsdR_HE_ = new TH2D("h_tag_jet_fracvsdR_HE","fraction vs. #DeltaR in HE",200,0,5,200,0,1.5);
   TH1D* h_tag_jet_dR_HE_ = new TH1D("h_tag_jet_dR_HE","#DeltaR in HE",200,0,5);
   TH1D* h_tag_jet_frac_HE_ = new TH1D("h_tag_jet_frac_HE","fraction in HE",200,0,1.1);
+  TH2D* h_tag_jet_rechitpos_ = new TH2D("h_tag_jet_rechitpos","rechits in tag jet",83,-41.5,41.5,72,-0.5,71.5);
+  TH2D* h_tag_jet_rechitpos_R5_ = new TH2D("h_tag_jet_rechitpos_R5","rechits in tag jet #DeltaR < 0.5",83,-41.5,41.5,72,-0.5,71.5);
 
   TH1D* h_probe_jet_Ediff_once_track_nofrac_ = new TH1D("h_probe_jet_Ediff_once_track_nofrac","probe (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits",200,0,2);
   TH1D* h_probe_jet_Ediff_once_track_nofrac_HB_ = new TH1D("h_probe_jet_Ediff_once_track_nofrac_HB","probe (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits in HB",200,-1,2);
@@ -254,6 +262,8 @@ void testRespCorrDiJetsTree()
   TH1D* h_probe_jet_frac_HB_ = new TH1D("h_probe_jet_frac_HB","fraction in HB",200,0,1.1);
   TH1D* h_probe_jet_dR_HE_ = new TH1D("h_probe_jet_dR_HE","#DeltaR in HE",200,0,5);
   TH1D* h_probe_jet_frac_HE_ = new TH1D("h_probe_jet_frac_HE","fraction in HE",200,0,1.1);
+  TH2D* h_probe_jet_rechitpos_ = new TH2D("h_probe_jet_rechitpos","rechits in probe jet",83,-41.5,41.5,72,-0.5,71.5);
+  TH2D* h_probe_jet_rechitpos_R5_ = new TH2D("h_probe_jet_rechitpos_R5","rechits in probe jet #DeltaR < 0.5",83,-41.5,41.5,72,-0.5,71.5);
 
   TH1D* h_probe_jet_eta_rechits_ = new TH1D("h_probe_jet_eta_rechits","probe #eta with rechits",200,-5,5);
   TH1D* h_probe_jet_eta_norechits_ = new TH1D("h_probe_jet_eta_norechits","probe #eta without rechits",200,-5,5);
@@ -290,6 +300,19 @@ void testRespCorrDiJetsTree()
       h_probe_jet_eta_rechits_->Fill(ppfjet_eta_);
     }
     if(tpfjet_ntwrs_ == 0 && ppfjet_ntwrs_ == 0) nEventsNoRecHits++;
+
+    if(iEvent == debugEvent){
+      cout << "tag " << tpfjet_eta_ << " " << tpfjet_phi_ << endl;
+      cout << "probe " << ppfjet_eta_ << " " << ppfjet_phi_ << endl;
+      for(int j=0; j<tpfjet_ntwrs_; j++){
+	h_tag_jet_rechitpos_->Fill(tpfjet_twr_ieta_->at(j),tpfjet_twr_iphi_->at(j),tpfjet_twr_hade_->at(j));
+	if(tpfjet_twr_dR_->at(j) < 0.5) h_tag_jet_rechitpos_R5_->Fill(tpfjet_twr_ieta_->at(j),tpfjet_twr_iphi_->at(j),tpfjet_twr_hade_->at(j));
+      }
+      for(int j=0; j<ppfjet_ntwrs_; j++){
+	h_probe_jet_rechitpos_->Fill(ppfjet_twr_ieta_->at(j),ppfjet_twr_iphi_->at(j),ppfjet_twr_hade_->at(j));
+	if(ppfjet_twr_dR_->at(j) < 0.5) h_probe_jet_rechitpos_R5_->Fill(ppfjet_twr_ieta_->at(j),ppfjet_twr_iphi_->at(j),ppfjet_twr_hade_->at(j));
+      }
+    }
 
     float tag_jet_rechit_E = 0;
     float tag_jet_rechit_E_once = 0;
@@ -440,6 +463,8 @@ void testRespCorrDiJetsTree()
   h_tag_jet_fracvsdR_HE_->Write();
   h_tag_jet_dR_HE_->Write();
   h_tag_jet_frac_HE_->Write();
+  h_tag_jet_rechitpos_->Write();
+  h_tag_jet_rechitpos_R5_->Write();
 
   h_probe_jet_Ediff_once_track_nofrac_->Write();
   h_probe_jet_Ediff_once_track_nofrac_HB_->Write();
@@ -450,6 +475,8 @@ void testRespCorrDiJetsTree()
   h_probe_jet_frac_HB_->Write();
   h_probe_jet_dR_HE_->Write();
   h_probe_jet_frac_HE_->Write();
+  h_probe_jet_rechitpos_->Write();
+  h_probe_jet_rechitpos_R5_->Write();
   h_probe_jet_eta_rechits_->Write();
   h_probe_jet_eta_norechits_->Write();
   
