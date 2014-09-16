@@ -252,7 +252,7 @@ void testRespCorrDiJetsTree()
   TH1D* h_tag_jet_frac_HE_ = new TH1D("h_tag_jet_frac_HE","fraction in HE",200,0,1.1);
   TH2D* h_tag_jet_rechitpos_ = new TH2D("h_tag_jet_rechitpos","rechits in tag jet",83,-41.5,41.5,72,-0.5,71.5);
   TH2D* h_tag_jet_rechitpos_R5_ = new TH2D("h_tag_jet_rechitpos_R5","rechits in tag jet #DeltaR < 0.5",83,-41.5,41.5,72,-0.5,71.5);
-  TH2D* h_tag_jet_candpos_ = new TH2D("h_tag_jet_candpos","candidates in tag jet",83,-41.5,41.5,72,-0.5,71.5);
+  TH2D* h_tag_jet_candpos_ = new TH2D("h_tag_jet_candpos","candidates in tag jet",167,-41.5,41.5,144,-0.5,71.5);
 
   TH1D* h_probe_jet_Ediff_once_track_nofrac_ = new TH1D("h_probe_jet_Ediff_once_track_nofrac","probe (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits",200,0,2);
   TH1D* h_probe_jet_Ediff_once_track_nofrac_HB_ = new TH1D("h_probe_jet_Ediff_once_track_nofrac_HB","probe (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits in HB",200,-1,2);
@@ -265,7 +265,7 @@ void testRespCorrDiJetsTree()
   TH1D* h_probe_jet_frac_HE_ = new TH1D("h_probe_jet_frac_HE","fraction in HE",200,0,1.1);
   TH2D* h_probe_jet_rechitpos_ = new TH2D("h_probe_jet_rechitpos","rechits in probe jet",83,-41.5,41.5,72,-0.5,71.5);
   TH2D* h_probe_jet_rechitpos_R5_ = new TH2D("h_probe_jet_rechitpos_R5","rechits in probe jet #DeltaR < 0.5",83,-41.5,41.5,72,-0.5,71.5);
-  TH2D* h_probe_jet_candpos_ = new TH2D("h_probe_jet_candpos","candidates in probe jet",83,-41.5,41.5,72,-0.5,71.5);
+  TH2D* h_probe_jet_candpos_ = new TH2D("h_probe_jet_candpos","candidates in probe jet",167,-41.5,41.5,144,-0.5,71.5);
 
   TH1D* h_probe_jet_eta_rechits_ = new TH1D("h_probe_jet_eta_rechits","probe #eta with rechits",200,-5,5);
   TH1D* h_probe_jet_eta_norechits_ = new TH1D("h_probe_jet_eta_norechits","probe #eta without rechits",200,-5,5);
@@ -317,13 +317,13 @@ void testRespCorrDiJetsTree()
 	if(ppfjet_twr_dR_->at(j) < 0.5) h_probe_jet_rechitpos_R5_->Fill(ppfjet_twr_ieta_->at(j),ppfjet_twr_iphi_->at(j),ppfjet_twr_hade_->at(j));
       }
       for(int i=0; i<tpfjet_had_n_; i++){
-	TLorentzVector tv(tpfjet_had_px_->at(i),tpfjet_had_py_->at(i),tpfjet_had_px_->at(i),tpfjet_had_E_->at(i));
+	TLorentzVector tv(tpfjet_had_px_->at(i),tpfjet_had_py_->at(i),tpfjet_had_pz_->at(i),tpfjet_had_E_->at(i));
 	float tmpphi = tv.Phi();
 	if(tmpphi < 0) tmpphi += 2*3.141592653;
 	h_tag_jet_candpos_->Fill(tv.Eta()/0.087,tmpphi/0.087,tpfjet_had_E_->at(i));
       }
       for(int i=0; i<ppfjet_had_n_; i++){
-	TLorentzVector pv(ppfjet_had_px_->at(i),ppfjet_had_py_->at(i),ppfjet_had_px_->at(i),ppfjet_had_E_->at(i));
+	TLorentzVector pv(ppfjet_had_px_->at(i),ppfjet_had_py_->at(i),ppfjet_had_pz_->at(i),ppfjet_had_E_->at(i));
 	//cout << pv.Eta() << endl;
 	float tmpphi = pv.Phi();
 	if(tmpphi < 0) tmpphi += 2*3.141592653;
