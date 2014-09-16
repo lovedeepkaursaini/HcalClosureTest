@@ -742,7 +742,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 			    const CaloCellGeometry *thisCell = HBGeom->getGeometry((*ith).id().rawId());
 			    const CaloCellGeometry::CornersVec& cv = thisCell->getCorners();
 			    float avgeta = (cv[0].eta() + cv[2].eta())/2.0;
-			    float avgphi = (cv[0].phi() + cv[2].phi())/2.0;
+			    float avgphi = (static_cast<double>(cv[0].phi()) + static_cast<double>(cv[2].phi()))/2.0;
 			    if(cv[0].phi() < cv[2].phi()) std::cout << "tHB" << cv[0].phi() << " " << cv[2].phi() << std::endl;
 			    tpfjet_twr_dR_.push_back(deltaR(tpfjet_eta_,tpfjet_phi_,avgeta,avgphi));
 			    break;
@@ -752,7 +752,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 			    const CaloCellGeometry *thisCell = HEGeom->getGeometry((*ith).id().rawId());
 			    const CaloCellGeometry::CornersVec& cv = thisCell->getCorners();
 			    float avgeta = (cv[0].eta() + cv[2].eta())/2.0;
-			    float avgphi = (cv[0].phi() + cv[2].phi())/2.0;
+			    float avgphi = (static_cast<double>(cv[0].phi()) + static_cast<double>(cv[2].phi()))/2.0;
 			    if(cv[0].phi() < cv[2].phi()) std::cout << "tHE" << cv[0].phi() << " " << cv[2].phi() << std::endl;
 			    tpfjet_twr_dR_.push_back(deltaR(tpfjet_eta_,tpfjet_phi_,avgeta,avgphi));
 			    break;
@@ -807,7 +807,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		    tpfjet_twr_elmttype_.push_back(1);
 		    tpfjet_twr_candtrackind_.push_back(-1);
 		    float avgeta = (cv[0].eta() + cv[2].eta())/2.0;
-		    float avgphi = (cv[0].phi() + cv[2].phi())/2.0;
+		    float avgphi = (static_cast<double>(cv[0].phi()) + static_cast<double>(cv[2].phi()))/2.0;
 		    if(cv[0].phi() < cv[2].phi()) std::cout << "tHFhad" << cv[0].phi() << " " << cv[2].phi() << std::endl;
 		    tpfjet_twr_dR_.push_back(deltaR(tpfjet_eta_,tpfjet_phi_,avgeta,avgphi));
 		    ++tpfjet_ntwrs_;
@@ -850,7 +850,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		    tpfjet_twr_elmttype_.push_back(2);
 		    tpfjet_twr_candtrackind_.push_back(-1);
 		    float avgeta = (cv[0].eta() + cv[2].eta())/2.0;
-		    float avgphi = (cv[0].phi() + cv[2].phi())/2.0;
+		    float avgphi = (static_cast<double>(cv[0].phi()) + static_cast<double>(cv[2].phi()))/2.0;
 		    if(cv[0].phi() < cv[2].phi()) std::cout << "tHFem" << cv[0].phi() << " " << cv[2].phi() << std::endl;
 		    tpfjet_twr_dR_.push_back(deltaR(tpfjet_eta_,tpfjet_phi_,avgeta,avgphi));
 		    ++tpfjet_ntwrs_;
@@ -898,7 +898,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 			const CaloCellGeometry *thisCell = HOGeom->getGeometry((*ith).id().rawId());
 			const CaloCellGeometry::CornersVec& cv = thisCell->getCorners();
 			float avgeta = (cv[0].eta() + cv[2].eta())/2.0;
-			float avgphi = (cv[0].phi() + cv[2].phi())/2.0;
+			float avgphi = (static_cast<double>(cv[0].phi()) + static_cast<double>(cv[2].phi()))/2.0;
 			if(cv[0].phi() < cv[2].phi()) std::cout << "tHO" << cv[0].phi() << " " << cv[2].phi() << std::endl;
 			tpfjet_twr_dR_.push_back(deltaR(tpfjet_eta_,tpfjet_phi_,avgeta,avgphi));
 			tpfjet_rechits[(*ith).id()].first = tpfjet_ntwrs_;
@@ -952,6 +952,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
       if(iEvent.id().event() == debugEvent){
 	std::cout << "Probe eta: " << ppfjet_eta_ << " phi: " << ppfjet_phi_ << std::endl;
       }
+      //std::cout << "Probe eta: " << ppfjet_eta_ << " phi: " << ppfjet_phi_ << std::endl; //debug
 
       // Get PF constituents and fill HCAL towers
       std::vector<reco::PFCandidatePtr> probeconst=pf_probe.jet()->getPFConstituents();
@@ -1188,8 +1189,10 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 			    const CaloCellGeometry *thisCell = HBGeom->getGeometry((*ith).id().rawId());
 			    const CaloCellGeometry::CornersVec& cv = thisCell->getCorners();
 			    float avgeta = (cv[0].eta() + cv[2].eta())/2.0;
-			    float avgphi = (cv[0].phi() + cv[2].phi())/2.0;
+			    float avgphi = (static_cast<double>(cv[0].phi()) + static_cast<double>(cv[2].phi()))/2.0;
 			    if(cv[0].phi() < cv[2].phi()) std::cout << "pHB" << cv[0].phi() << " " << cv[2].phi() << std::endl;
+			    //if(pf_Event_ == 9413996) //debug
+			    //printf("pHB ieta: %3d iphi: %2d eta0: %6f phi0: %6f eta2: %6f phi2: %6f dR: %f\n",(*ith).id().ieta(),(*ith).id().iphi(),static_cast<double>(cv[0].eta()),static_cast<double>(cv[0].phi()),static_cast<double>(cv[2].eta()),static_cast<double>(cv[2].phi()),static_cast<double>(deltaR(ppfjet_eta_,ppfjet_phi_,avgeta,avgphi))); //debug
 			    ppfjet_twr_dR_.push_back(deltaR(ppfjet_eta_,ppfjet_phi_,avgeta,avgphi));
 			    break;
 			  }
@@ -1198,8 +1201,14 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 			    const CaloCellGeometry *thisCell = HEGeom->getGeometry((*ith).id().rawId());
 			    const CaloCellGeometry::CornersVec& cv = thisCell->getCorners();
 			    float avgeta = (cv[0].eta() + cv[2].eta())/2.0;
-			    float avgphi = (cv[0].phi() + cv[2].phi())/2.0;
+			    float avgphi = (static_cast<double>(cv[0].phi()) + static_cast<double>(cv[2].phi()))/2.0;
 			    if(cv[0].phi() < cv[2].phi()) std::cout << "pHE" << cv[0].phi() << " " << cv[2].phi() << std::endl;
+			    //printf("pHE ieta: %3d iphi: %2d eta0: %6f phi0: %6f eta2: %6f phi2: %6f dR: %f\n",(*ith).id().ieta(),(*ith).id().iphi(),static_cast<double>cv[0].eta(),static_cast<double>cv[0].phi(),static_cast<double>cv[2].eta(),static_cast<double>cv[2].phi(),static_cast<double>deltaR(ppfjet_eta_,ppfjet_phi_,avgeta,avgphi)); //debug
+			    /*printf("  cv0: %f cv2: %f sum: %f avg: %f\n",
+				   static_cast<double>cv[0].phi(),
+				   static_cast<double>cv[2].phi(),
+				   (static_cast<double>cv[0].phi() + static_cast<double>cv[2].phi()),
+				   static_cast<double>((cv[0].phi() + cv[2].phi())/2.0));*/
 			    ppfjet_twr_dR_.push_back(deltaR(ppfjet_eta_,ppfjet_phi_,avgeta,avgphi));
 			    break;
 			  }
@@ -1253,7 +1262,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		    ppfjet_twr_elmttype_.push_back(1);
 		    ppfjet_twr_candtrackind_.push_back(-1);
 		    float avgeta = (cv[0].eta() + cv[2].eta())/2.0;
-		    float avgphi = (cv[0].phi() + cv[2].phi())/2.0;
+		    float avgphi = (static_cast<double>(cv[0].phi()) + static_cast<double>(cv[2].phi()))/2.0;
 		    if(cv[0].phi() < cv[2].phi()) std::cout << "pHFhad" << cv[0].phi() << " " << cv[2].phi() << std::endl;
 		    ppfjet_twr_dR_.push_back(deltaR(ppfjet_eta_,ppfjet_phi_,avgeta,avgphi));
 		    ++ppfjet_ntwrs_;
@@ -1296,7 +1305,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		    ppfjet_twr_elmttype_.push_back(2);
 		    ppfjet_twr_candtrackind_.push_back(-1);
 		    float avgeta = (cv[0].eta() + cv[2].eta())/2.0;
-		    float avgphi = (cv[0].phi() + cv[2].phi())/2.0;
+		    float avgphi = (static_cast<double>(cv[0].phi()) + static_cast<double>(cv[2].phi()))/2.0;
 		    if(cv[0].phi() < cv[2].phi()) std::cout << "pHFem" << cv[0].phi() << " " << cv[2].phi() << std::endl;
 		    ppfjet_twr_dR_.push_back(deltaR(ppfjet_eta_,ppfjet_phi_,avgeta,avgphi));
 		    ++ppfjet_ntwrs_;
@@ -1343,7 +1352,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 			const CaloCellGeometry *thisCell = HOGeom->getGeometry((*ith).id().rawId());
 			const CaloCellGeometry::CornersVec& cv = thisCell->getCorners();
 			float avgeta = (cv[0].eta() + cv[2].eta())/2.0;
-			float avgphi = (cv[0].phi() + cv[2].phi())/2.0;
+			float avgphi = (static_cast<double>(cv[0].phi()) + static_cast<double>(cv[2].phi()))/2.0;
 			if(cv[0].phi() < cv[2].phi()) std::cout << "pHO" << cv[0].phi() << " " << cv[2].phi() << std::endl;
 			ppfjet_twr_dR_.push_back(deltaR(ppfjet_eta_,ppfjet_phi_,avgeta,avgphi));
 			ppfjet_rechits[(*ith).id()].first = ppfjet_ntwrs_;
