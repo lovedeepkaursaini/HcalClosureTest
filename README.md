@@ -3,6 +3,8 @@ HcalClosureTest
 
 Code to calibrate CMS's HCAL in eta using dijet balance. Created by J. P. Chou (Brown) https://github.com/johnpaulchou/usercode/tree/master/HcalClosureTest and updated by David G. Sheffield (Rutgers).
 
+Runs in CMSSW_5_3_18.
+
 # Creating the Tree
 
 Running Analyzers/test/testRespCorrDiJets_cfg.py creates a tree containing the information needed for dijet balancing. It is set by default to run over CaloJets, PFJets, and GenJets. Any of these can be shut off by adding the lines
