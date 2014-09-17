@@ -442,6 +442,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
       tpfjet_twr_hade_.clear();
       tpfjet_twr_frac_.clear();
       tpfjet_twr_dR_.clear();
+      tpfjet_twr_clusterdR_.clear();
       tpfjet_candtrack_px_.clear();
       tpfjet_candtrack_py_.clear();
       tpfjet_candtrack_pz_.clear();
@@ -468,6 +469,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
       ppfjet_twr_hade_.clear();
       ppfjet_twr_frac_.clear();
       ppfjet_twr_dR_.clear();
+      ppfjet_twr_clusterdR_.clear();
       ppfjet_candtrack_px_.clear();
       ppfjet_candtrack_py_.clear();
       ppfjet_candtrack_pz_.clear();
@@ -704,6 +706,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		// Get cluster and hits
 		reco::PFClusterRef clusterref = elements[iEle].clusterRef();
 		reco::PFCluster cluster = *clusterref;
+		double cluster_dR = deltaR(tpfjet_eta_,tpfjet_phi_,cluster.eta(),cluster.phi());
 		std::vector<std::pair<DetId,float>> hitsAndFracs = cluster.hitsAndFractions();
 		
 		// Run over hits and match
@@ -730,6 +733,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 			tpfjet_rechits[(*ith).id()].second.insert(hitsAndFracs[iHit].second);
 			tpfjet_twr_hadind_.push_back(tpfjet_had_n_ - 1);
 			tpfjet_twr_elmttype_.push_back(0);
+			tpfjet_twr_clusterdR_.push_back(cluster_dR);
 			if(hasTrack){
 			  tpfjet_twr_candtrackind_.push_back(tpfjet_ncandtracks_ - 1);
 			}
@@ -805,6 +809,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		    tpfjet_twr_frac_.push_back(1.0);
 		    tpfjet_twr_hadind_.push_back(tpfjet_had_n_ - 1);
 		    tpfjet_twr_elmttype_.push_back(1);
+		    tpfjet_twr_clusterdR_.push_back(-1);
 		    tpfjet_twr_candtrackind_.push_back(-1);
 		    float avgeta = (cv[0].eta() + cv[2].eta())/2.0;
 		    float avgphi = (static_cast<double>(cv[0].phi()) + static_cast<double>(cv[2].phi()))/2.0;
@@ -848,6 +853,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		    tpfjet_twr_frac_.push_back(1.0);
 		    tpfjet_twr_hadind_.push_back(tpfjet_had_n_ - 1);
 		    tpfjet_twr_elmttype_.push_back(2);
+		    tpfjet_twr_clusterdR_.push_back(-1);
 		    tpfjet_twr_candtrackind_.push_back(-1);
 		    float avgeta = (cv[0].eta() + cv[2].eta())/2.0;
 		    float avgphi = (static_cast<double>(cv[0].phi()) + static_cast<double>(cv[2].phi()))/2.0;
@@ -864,6 +870,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		HF_type_ |= 0x8;
 		reco::PFClusterRef clusterref = elements[iEle].clusterRef();
 		reco::PFCluster cluster = *clusterref;
+		double cluster_dR = deltaR(tpfjet_eta_,tpfjet_phi_,cluster.eta(),cluster.phi());
 
 		std::vector<std::pair<DetId,float>> hitsAndFracs = cluster.hitsAndFractions();
 		int nHits = hitsAndFracs.size();
@@ -889,6 +896,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 			tpfjet_rechits[(*ith).id()].second.insert(hitsAndFracs[iHit].second);
 			tpfjet_twr_hadind_.push_back(tpfjet_had_n_ - 1);
 			tpfjet_twr_elmttype_.push_back(3);
+			tpfjet_twr_clusterdR_.push_back(cluster_dR);
 			if(hasTrack){
 			  tpfjet_twr_candtrackind_.push_back(tpfjet_ncandtracks_ - 1);
 			}
@@ -1156,6 +1164,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		// Get cluster and hits
 		reco::PFClusterRef clusterref = elements[iEle].clusterRef();
 		reco::PFCluster cluster = *clusterref;
+		double cluster_dR = deltaR(ppfjet_eta_,ppfjet_phi_,cluster.eta(),cluster.phi());
 		std::vector<std::pair<DetId,float>> hitsAndFracs = cluster.hitsAndFractions();
 
 		// Run over hits and match
@@ -1177,6 +1186,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 			ppfjet_rechits[(*ith).id()].second.insert(hitsAndFracs[iHit].second);
 			ppfjet_twr_hadind_.push_back(ppfjet_had_n_ - 1);
 			ppfjet_twr_elmttype_.push_back(0);
+			ppfjet_twr_clusterdR_.push_back(cluster_dR);
 			if(hasTrack){
 			  ppfjet_twr_candtrackind_.push_back(ppfjet_ncandtracks_ - 1);
 			}
@@ -1260,6 +1270,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		    ppfjet_twr_frac_.push_back(1.0);
 		    ppfjet_twr_hadind_.push_back(ppfjet_had_n_ - 1);
 		    ppfjet_twr_elmttype_.push_back(1);
+		    ppfjet_twr_clusterdR_.push_back(-1);
 		    ppfjet_twr_candtrackind_.push_back(-1);
 		    float avgeta = (cv[0].eta() + cv[2].eta())/2.0;
 		    float avgphi = (static_cast<double>(cv[0].phi()) + static_cast<double>(cv[2].phi()))/2.0;
@@ -1303,6 +1314,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		    ppfjet_twr_frac_.push_back(1.0);
 		    ppfjet_twr_hadind_.push_back(ppfjet_had_n_ - 1);
 		    ppfjet_twr_elmttype_.push_back(2);
+		    ppfjet_twr_clusterdR_.push_back(-1);
 		    ppfjet_twr_candtrackind_.push_back(-1);
 		    float avgeta = (cv[0].eta() + cv[2].eta())/2.0;
 		    float avgphi = (static_cast<double>(cv[0].phi()) + static_cast<double>(cv[2].phi()))/2.0;
@@ -1319,6 +1331,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 		HF_type_ |= 0x8;
 		reco::PFClusterRef clusterref = elements[iEle].clusterRef();
 		reco::PFCluster cluster = *clusterref;
+		double cluster_dR = deltaR(ppfjet_eta_,ppfjet_phi_,cluster.eta(),cluster.phi());
 
 		std::vector<std::pair<DetId,float>> hitsAndFracs = cluster.hitsAndFractions();
 		int nHits = hitsAndFracs.size();
@@ -1343,6 +1356,7 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 			ppfjet_rechits[(*ith).id()].second.insert(hitsAndFracs[iHit].second);
 			ppfjet_twr_hadind_.push_back(ppfjet_had_n_ - 1);
 			ppfjet_twr_elmttype_.push_back(3);
+			ppfjet_twr_clusterdR_.push_back(cluster_dR);
 			if(hasTrack){
 			  ppfjet_twr_candtrackind_.push_back(ppfjet_ncandtracks_ - 1);
 			}
@@ -1568,6 +1582,7 @@ void CalcRespCorrDiJets::beginJob()
     pf_tree_->Branch("tpfjet_twr_hadind",&tpfjet_twr_hadind_);
     pf_tree_->Branch("tpfjet_twr_elmttype",&tpfjet_twr_elmttype_);
     pf_tree_->Branch("tpfjet_twr_dR",&tpfjet_twr_dR_);
+    pf_tree_->Branch("tpfjet_twr_clusterdR",&tpfjet_twr_clusterdR_);
     pf_tree_->Branch("tpfjet_ncandtracks",&tpfjet_ncandtracks_, "tpfjet_ncandtracks/I");
     pf_tree_->Branch("tpfjet_candtrack_px",&tpfjet_candtrack_px_);
     pf_tree_->Branch("tpfjet_candtrack_py",&tpfjet_candtrack_py_);
@@ -1635,6 +1650,7 @@ void CalcRespCorrDiJets::beginJob()
     pf_tree_->Branch("ppfjet_twr_hadind",&ppfjet_twr_hadind_);
     pf_tree_->Branch("ppfjet_twr_elmttype",&ppfjet_twr_elmttype_);
     pf_tree_->Branch("ppfjet_twr_dR",&ppfjet_twr_dR_);
+    pf_tree_->Branch("ppfjet_twr_clusterdR",&ppfjet_twr_clusterdR_);
     pf_tree_->Branch("ppfjet_ncandtracks",&ppfjet_ncandtracks_, "ppfjet_ncandtracks/I");
     pf_tree_->Branch("ppfjet_candtrack_px",&ppfjet_candtrack_px_);
     pf_tree_->Branch("ppfjet_candtrack_py",&ppfjet_candtrack_py_);

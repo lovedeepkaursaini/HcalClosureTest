@@ -7,12 +7,12 @@ void testRespCorrDiJetsTree()
   gROOT->ProcessLine(".L deltaR.C+");
 
   TChain* tree = new TChain("pf_dijettree");
-  TString input = "/uscms_data/d3/dgsheffi/HCal/Trees/QCD_Pt-15to3000_0030487D5E5F.root";
+  TString input = "/uscms_data/d3/dgsheffi/HCal/Trees/QCD_Pt-15to3000_0030487D5E5F_cluster.root";
   //TString input = "/uscms_data/d3/dgsheffi/HCal/Trees/Pion_Pt-50.root";
   cout << "Opening file:" << input << endl;
   tree->Add(input);
 
-  TString output = "/uscms_data/d3/dgsheffi/HCal/Trees/validation/QCD_Pt-15to3000_0030487D5E5F.root";
+  TString output = "/uscms_data/d3/dgsheffi/HCal/Trees/validation/QCD_Pt-15to3000_0030487D5E5F_cluster.root";
   //TString output = "/uscms_data/d3/dgsheffi/HCal/Trees/validation/Pion_Pt-50.root";
 
   float tpfjet_pt_, tpfjet_p_, tpfjet_E_, tpfjet_eta_, tpfjet_phi_, tpfjet_scale_;
@@ -46,6 +46,7 @@ void testRespCorrDiJetsTree()
   vector<float>* tpfjet_twr_hade_;
   vector<float>* tpfjet_twr_frac_;
   vector<float>* tpfjet_twr_dR_;
+  vector<float>* tpfjet_twr_clusterdR_;
   int tpfjet_ncandtracks_;
   vector<float>* tpfjet_candtrack_px_;
   vector<float>* tpfjet_candtrack_py_;
@@ -82,6 +83,7 @@ void testRespCorrDiJetsTree()
   vector<float>* ppfjet_twr_hade_;
   vector<float>* ppfjet_twr_frac_;
   vector<float>* ppfjet_twr_dR_;
+  vector<float>* ppfjet_twr_clusterdR_;
   int ppfjet_ncandtracks_;
   vector<float>* ppfjet_candtrack_px_;
   vector<float>* ppfjet_candtrack_py_;
@@ -148,6 +150,7 @@ void testRespCorrDiJetsTree()
   tree->SetBranchAddress("tpfjet_twr_hadind",&tpfjet_twr_hadind_);
   tree->SetBranchAddress("tpfjet_twr_elmttype",&tpfjet_twr_elmttype_);
   tree->SetBranchAddress("tpfjet_twr_dR",&tpfjet_twr_dR_);
+  tree->SetBranchAddress("tpfjet_twr_clusterdR",&tpfjet_twr_clusterdR_);
   tree->SetBranchAddress("tpfjet_twr_subdet",&tpfjet_twr_subdet_);
   tree->SetBranchAddress("tpfjet_ncandtracks",&tpfjet_ncandtracks_);
   tree->SetBranchAddress("tpfjet_candtrack_px",&tpfjet_candtrack_px_);
@@ -210,6 +213,7 @@ void testRespCorrDiJetsTree()
   tree->SetBranchAddress("ppfjet_twr_hadind",&ppfjet_twr_hadind_);
   tree->SetBranchAddress("ppfjet_twr_elmttype",&ppfjet_twr_elmttype_);
   tree->SetBranchAddress("ppfjet_twr_dR",&ppfjet_twr_dR_);
+  tree->SetBranchAddress("ppfjet_twr_clusterdR",&ppfjet_twr_clusterdR_);
   tree->SetBranchAddress("ppfjet_twr_subdet",&ppfjet_twr_subdet_);
   tree->SetBranchAddress("ppfjet_ncandtracks",&ppfjet_ncandtracks_);
   tree->SetBranchAddress("ppfjet_candtrack_px",&ppfjet_candtrack_px_);
@@ -225,7 +229,7 @@ void testRespCorrDiJetsTree()
   tree->SetBranchAddress("pf_Lumi",&pf_Lumi_);
   tree->SetBranchAddress("pf_Event",&pf_Event_);
 
-  int debugEvent = 1432; //372
+  int debugEvent = 372; //372 1432
 
   // Jet
   TH1D* h_tag_jet_Ediff_ = new TH1D("h_tag_jet_Ediff","tag (rechits - pfjet)/pfjet",200,-1,8);
@@ -234,6 +238,7 @@ void testRespCorrDiJetsTree()
   TH1D* h_tag_jet_Ediff_once_track_HB_ = new TH1D("h_tag_jet_Ediff_once_track_HB","tag (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits in HB",200,0,2);
   TH1D* h_tag_jet_Ediff_once_track_HE_ = new TH1D("h_tag_jet_Ediff_once_track_HE","tag (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits in HE",200,0,2);
   TH1D* h_tag_jet_Ediff_once_track_HF_ = new TH1D("h_tag_jet_Ediff_once_track_HF","tag (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits in HF",200,0,2);
+  TH1D* h_tag_jet_Ediff_once_track_cluster_ = new TH1D("h_tag_jet_Ediff_once_track_cluster","tag (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits",200,0,2);
   TH1D* h_tag_jet_Ediff_once_track_nofrac_ = new TH1D("h_tag_jet_Ediff_once_track_nofrac","tag (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits",200,0,2);
   TH1D* h_tag_jet_Ediff_once_track_nofrac_HB_ = new TH1D("h_tag_jet_Ediff_once_track_nofrac_HB","tag (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits in HB",200,0,2);
   TH1D* h_tag_jet_Ediff_once_track_nofrac_HE_ = new TH1D("h_tag_jet_Ediff_once_track_nofrac_HE","tag (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits in hE",200,0,2);
@@ -252,12 +257,14 @@ void testRespCorrDiJetsTree()
   TH1D* h_tag_jet_frac_HE_ = new TH1D("h_tag_jet_frac_HE","fraction in HE",200,0,1.1);
   TH2D* h_tag_jet_rechitpos_ = new TH2D("h_tag_jet_rechitpos","rechits in tag jet",83,-41.5,41.5,72,-0.5,71.5);
   TH2D* h_tag_jet_rechitpos_R5_ = new TH2D("h_tag_jet_rechitpos_R5","rechits in tag jet #DeltaR < 0.5",83,-41.5,41.5,72,-0.5,71.5);
+  TH2D* h_tag_jet_rechitpos_clusterR5_ = new TH2D("h_tag_jet_rechitpos_clusterR5","clusters in tag jet #DeltaR < 0.5",83,-41.5,41.5,72,-0.5,71.5);
   TH2D* h_tag_jet_candpos_ = new TH2D("h_tag_jet_candpos","candidates in tag jet",167,-41.5,41.5,144,-0.5,71.5);
 
   TH1D* h_probe_jet_Ediff_once_track_ = new TH1D("h_probe_jet_Ediff_once_track","probe (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits",200,0,2);
   TH1D* h_probe_jet_Ediff_once_track_HB_ = new TH1D("h_probe_jet_Ediff_once_track_HB","probe (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits in HB",200,0,2);
   TH1D* h_probe_jet_Ediff_once_track_HE_ = new TH1D("h_probe_jet_Ediff_once_track_HE","probe (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits in HE",200,0,2);
   TH1D* h_probe_jet_Ediff_once_track_HF_ = new TH1D("h_probe_jet_Ediff_once_track_HF","probe (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits in HF",200,0,2);
+  TH1D* h_probe_jet_Ediff_once_track_cluster_ = new TH1D("h_probe_jet_Ediff_once_track_cluster","probe (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits",200,0,2);
   TH1D* h_probe_jet_Ediff_once_track_nofrac_ = new TH1D("h_probe_jet_Ediff_once_track_nofrac","probe (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits",200,0,2);
   TH1D* h_probe_jet_Ediff_once_track_nofrac_HB_ = new TH1D("h_probe_jet_Ediff_once_track_nofrac_HB","probe (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits in HB",200,-1,2);
   TH1D* h_probe_jet_Ediff_once_track_nofrac_HE_ = new TH1D("h_probe_jet_Ediff_once_track_nofrac_HE","probe (rechits - pfjet)/pfjet use rechits once tracks for candidates without rechits in hE",200,-1,2);
@@ -269,6 +276,7 @@ void testRespCorrDiJetsTree()
   TH1D* h_probe_jet_frac_HE_ = new TH1D("h_probe_jet_frac_HE","fraction in HE",200,0,1.1);
   TH2D* h_probe_jet_rechitpos_ = new TH2D("h_probe_jet_rechitpos","rechits in probe jet",83,-41.5,41.5,72,-0.5,71.5);
   TH2D* h_probe_jet_rechitpos_R5_ = new TH2D("h_probe_jet_rechitpos_R5","rechits in probe jet #DeltaR < 0.5",83,-41.5,41.5,72,-0.5,71.5);
+  TH2D* h_probe_jet_rechitpos_clusterR5_ = new TH2D("h_probe_jet_rechitpos_clusterR5","clusters in probe jet #DeltaR < 0.5",83,-41.5,41.5,72,-0.5,71.5);
   TH2D* h_probe_jet_candpos_ = new TH2D("h_probe_jet_candpos","candidates in probe jet",167,-41.5,41.5,144,-0.5,71.5);
 
   TH1D* h_probe_jet_eta_rechits_ = new TH1D("h_probe_jet_eta_rechits","probe #eta with rechits",200,-5,5);
@@ -314,11 +322,13 @@ void testRespCorrDiJetsTree()
 	//if(tpfjet_twr_frac_->at(j) < 0.95) continue;
 	h_tag_jet_rechitpos_->Fill(tpfjet_twr_ieta_->at(j),tpfjet_twr_iphi_->at(j),tpfjet_twr_hade_->at(j));
 	if(tpfjet_twr_dR_->at(j) < 0.5) h_tag_jet_rechitpos_R5_->Fill(tpfjet_twr_ieta_->at(j),tpfjet_twr_iphi_->at(j),tpfjet_twr_hade_->at(j));
+	if(tpfjet_twr_clusterdR_->at(j) < 0.5) h_tag_jet_rechitpos_clusterR5_->Fill(tpfjet_twr_ieta_->at(j),tpfjet_twr_iphi_->at(j),tpfjet_twr_hade_->at(j));
       }
       for(int j=0; j<ppfjet_ntwrs_; j++){
 	//if(ppfjet_twr_frac_->at(j) < 0.95) continue;
 	h_probe_jet_rechitpos_->Fill(ppfjet_twr_ieta_->at(j),ppfjet_twr_iphi_->at(j),ppfjet_twr_hade_->at(j));
 	if(ppfjet_twr_dR_->at(j) < 0.5) h_probe_jet_rechitpos_R5_->Fill(ppfjet_twr_ieta_->at(j),ppfjet_twr_iphi_->at(j),ppfjet_twr_hade_->at(j));
+	if(ppfjet_twr_clusterdR_->at(j) < 0.5) h_probe_jet_rechitpos_clusterR5_->Fill(ppfjet_twr_ieta_->at(j),ppfjet_twr_iphi_->at(j),ppfjet_twr_hade_->at(j));
       }
       for(int i=0; i<tpfjet_had_n_; i++){
 	TLorentzVector tv(tpfjet_had_px_->at(i),tpfjet_had_py_->at(i),tpfjet_had_pz_->at(i),tpfjet_had_E_->at(i));
@@ -337,6 +347,7 @@ void testRespCorrDiJetsTree()
 
     float tag_jet_rechit_E = 0;
     float tag_jet_rechit_E_once = 0;
+    float tag_jet_rechit_E_once_cluster = 0;
     float tag_jet_rechit_E_once_nofrac = 0;
     float tag_jet_rechit_E_once_nofrac_nocut = 0;
     float tag_jet_hadEcalE = 0;
@@ -373,6 +384,14 @@ void testRespCorrDiJetsTree()
 	    }
 	    tag_jet_rechit_E_once_nofrac += tpfjet_twr_hade_->at(j);
 	  }
+	  if(tpfjet_twr_clusterdR_->at(j) < 0.5){
+	    if(tpfjet_twr_frac_->at(j) < 1){
+	      tag_jet_rechit_E_once_cluster += tpfjet_twr_hade_->at(j)*tpfjet_twr_frac_->at(j);
+	    }
+	    else{
+	      tag_jet_rechit_E_once_cluster += tpfjet_twr_hade_->at(j);
+	    }
+	  }
 	}
       }
     }
@@ -392,6 +411,8 @@ void testRespCorrDiJetsTree()
     else{
       h_tag_jet_Ediff_once_track_HF_->Fill(tag_jet_E_once_track/tpfjet_E_);
     }
+    float tag_jet_E_once_track_cluster = tag_jet_rechit_E_once_cluster + tag_jet_hadEcalE + tag_jet_candNoRecHits_E + tpfjet_unkown_E_ + tpfjet_electron_E_ + tpfjet_muon_E_ + tpfjet_photon_E_;
+    h_tag_jet_Ediff_once_track_cluster_->Fill(tag_jet_E_once_track_cluster/tpfjet_E_);
     float tag_jet_E_once_track_nofrac = tag_jet_rechit_E_once_nofrac + tag_jet_hadEcalE + tag_jet_candNoRecHits_E + tpfjet_unkown_E_ + tpfjet_electron_E_ + tpfjet_muon_E_ + tpfjet_photon_E_;
     h_tag_jet_Ediff_once_track_nofrac_->Fill(tag_jet_E_once_track_nofrac/tpfjet_E_);
     if(fabs(tpfjet_eta_) < 1.305){
@@ -409,6 +430,7 @@ void testRespCorrDiJetsTree()
     h_tag_jet_additionalE_->Fill(tag_jet_rechit_E - tag_jet_rechit_E_once);
   
     float probe_jet_rechit_E_once = 0;
+    float probe_jet_rechit_E_once_cluster = 0;
     float probe_jet_rechit_E_once_nofrac = 0;
     float probe_jet_rechit_E_once_nofrac_nocut = 0;
     float probe_jet_hadEcalE = 0;
@@ -442,6 +464,14 @@ void testRespCorrDiJetsTree()
 	      probe_jet_rechit_E_once += ppfjet_twr_hade_->at(j);
 	    }
 	  }
+	  if(ppfjet_twr_clusterdR_->at(j) < 0.5){
+	    if(ppfjet_twr_frac_->at(j) < 1){
+	      probe_jet_rechit_E_once_cluster += ppfjet_twr_hade_->at(j)*ppfjet_twr_frac_->at(j);
+	    }
+	    else{
+	      probe_jet_rechit_E_once_cluster += ppfjet_twr_hade_->at(j);
+	    }
+	  }
 	}
       }
     }
@@ -457,6 +487,8 @@ void testRespCorrDiJetsTree()
     else{
       h_probe_jet_Ediff_once_track_HF_->Fill(probe_jet_E_once_track/ppfjet_E_);
     }
+    float probe_jet_E_once_track_cluster = probe_jet_rechit_E_once_cluster + probe_jet_hadEcalE + probe_jet_candNoRecHits_E + ppfjet_unkown_E_ + ppfjet_electron_E_ + ppfjet_muon_E_ + ppfjet_photon_E_;
+    h_probe_jet_Ediff_once_track_cluster_->Fill(probe_jet_E_once_track_cluster/ppfjet_E_);
     float probe_jet_E_once_track_nofrac = probe_jet_rechit_E_once_nofrac + probe_jet_hadEcalE + probe_jet_candNoRecHits_E + ppfjet_unkown_E_ + ppfjet_electron_E_ + ppfjet_muon_E_ + ppfjet_photon_E_;
     h_probe_jet_Ediff_once_track_nofrac_->Fill(probe_jet_E_once_track_nofrac/ppfjet_E_);
     if(fabs(ppfjet_eta_) < 1.305){
@@ -485,6 +517,7 @@ void testRespCorrDiJetsTree()
   h_tag_jet_Ediff_once_track_HB_->Write();
   h_tag_jet_Ediff_once_track_HE_->Write();
   h_tag_jet_Ediff_once_track_HF_->Write();
+  h_tag_jet_Ediff_once_track_cluster_->Write();
   h_tag_jet_Ediff_once_track_nofrac_->Write();
   h_tag_jet_Ediff_once_track_nofrac_HB_->Write();
   h_tag_jet_Ediff_once_track_nofrac_HE_->Write();
@@ -504,12 +537,14 @@ void testRespCorrDiJetsTree()
   h_tag_jet_frac_HE_->Write();
   h_tag_jet_rechitpos_->Write();
   h_tag_jet_rechitpos_R5_->Write();
+  h_tag_jet_rechitpos_clusterR5_->Write();
   h_tag_jet_candpos_->Write();
 
   h_probe_jet_Ediff_once_track_->Write();
   h_probe_jet_Ediff_once_track_HB_->Write();
   h_probe_jet_Ediff_once_track_HE_->Write();
   h_probe_jet_Ediff_once_track_HF_->Write();
+  h_probe_jet_Ediff_once_track_cluster_->Write();
   h_probe_jet_Ediff_once_track_nofrac_->Write();
   h_probe_jet_Ediff_once_track_nofrac_HB_->Write();
   h_probe_jet_Ediff_once_track_nofrac_HE_->Write();
@@ -521,6 +556,7 @@ void testRespCorrDiJetsTree()
   h_probe_jet_frac_HE_->Write();
   h_probe_jet_rechitpos_->Write();
   h_probe_jet_rechitpos_R5_->Write();
+  h_probe_jet_rechitpos_clusterR5_->Write();
   h_probe_jet_candpos_->Write();
   h_probe_jet_eta_rechits_->Write();
   h_probe_jet_eta_norechits_->Write();
