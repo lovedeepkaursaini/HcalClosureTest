@@ -23,7 +23,7 @@ void testRespCorrDiJetsTree()
   float tpfjet_muon_E_, tpfjet_muon_px_, tpfjet_muon_py_, tpfjet_muon_pz_, tpfjet_muon_EcalE_;
   float tpfjet_photon_E_, tpfjet_photon_px_, tpfjet_photon_py_, tpfjet_photon_pz_, tpfjet_photon_EcalE_;
   int tpfjet_unkown_n_, tpfjet_electron_n_, tpfjet_muon_n_, tpfjet_photon_n_;
-  int tpfjet_had_n_;
+  int tpfjet_had_n_, tpfjet_cluster_n_;
   vector<float>* tpfjet_had_E_;
   vector<float>* tpfjet_had_px_;
   vector<float>* tpfjet_had_py_;
@@ -46,7 +46,10 @@ void testRespCorrDiJetsTree()
   vector<float>* tpfjet_twr_hade_;
   vector<float>* tpfjet_twr_frac_;
   vector<float>* tpfjet_twr_dR_;
-  vector<float>* tpfjet_twr_clusterdR_;
+  vector<int>* tpfjet_twr_clusterind_;
+  vector<float>* tpfjet_cluster_eta_;
+  vector<float>* tpfjet_cluster_phi_;
+  vector<float>* tpfjet_cluster_dR_;
   int tpfjet_ncandtracks_;
   vector<float>* tpfjet_candtrack_px_;
   vector<float>* tpfjet_candtrack_py_;
@@ -60,7 +63,7 @@ void testRespCorrDiJetsTree()
   float ppfjet_muon_E_, ppfjet_muon_px_, ppfjet_muon_py_, ppfjet_muon_pz_, ppfjet_muon_EcalE_;
   float ppfjet_photon_E_, ppfjet_photon_px_, ppfjet_photon_py_, ppfjet_photon_pz_, ppfjet_photon_EcalE_;
   int ppfjet_unkown_n_, ppfjet_electron_n_, ppfjet_muon_n_, ppfjet_photon_n_;
-  int ppfjet_had_n_;
+  int ppfjet_had_n_, ppfjet_cluster_n_;
   vector<float>* ppfjet_had_E_;
   vector<float>* ppfjet_had_px_;
   vector<float>* ppfjet_had_py_;
@@ -83,7 +86,10 @@ void testRespCorrDiJetsTree()
   vector<float>* ppfjet_twr_hade_;
   vector<float>* ppfjet_twr_frac_;
   vector<float>* ppfjet_twr_dR_;
-  vector<float>* ppfjet_twr_clusterdR_;
+  vector<int>* ppfjet_twr_clusterind_;
+  vector<float>* ppfjet_cluster_eta_;
+  vector<float>* ppfjet_cluster_phi_;
+  vector<float>* ppfjet_cluster_dR_;
   int ppfjet_ncandtracks_;
   vector<float>* ppfjet_candtrack_px_;
   vector<float>* ppfjet_candtrack_py_;
@@ -150,7 +156,10 @@ void testRespCorrDiJetsTree()
   tree->SetBranchAddress("tpfjet_twr_hadind",&tpfjet_twr_hadind_);
   tree->SetBranchAddress("tpfjet_twr_elmttype",&tpfjet_twr_elmttype_);
   tree->SetBranchAddress("tpfjet_twr_dR",&tpfjet_twr_dR_);
-  tree->SetBranchAddress("tpfjet_twr_clusterdR",&tpfjet_twr_clusterdR_);
+  tree->SetBranchAddress("tpfjet_twr_clusterind",&tpfjet_twr_clusterind_);
+  tree->SetBranchAddress("tpfjet_cluster_eta",&tpfjet_cluster_eta_);
+  tree->SetBranchAddress("tpfjet_cluster_phi",&tpfjet_cluster_phi_);
+  tree->SetBranchAddress("tpfjet_cluster_dR",&tpfjet_cluster_dR_);
   tree->SetBranchAddress("tpfjet_twr_subdet",&tpfjet_twr_subdet_);
   tree->SetBranchAddress("tpfjet_ncandtracks",&tpfjet_ncandtracks_);
   tree->SetBranchAddress("tpfjet_candtrack_px",&tpfjet_candtrack_px_);
@@ -213,7 +222,10 @@ void testRespCorrDiJetsTree()
   tree->SetBranchAddress("ppfjet_twr_hadind",&ppfjet_twr_hadind_);
   tree->SetBranchAddress("ppfjet_twr_elmttype",&ppfjet_twr_elmttype_);
   tree->SetBranchAddress("ppfjet_twr_dR",&ppfjet_twr_dR_);
-  tree->SetBranchAddress("ppfjet_twr_clusterdR",&ppfjet_twr_clusterdR_);
+  tree->SetBranchAddress("ppfjet_twr_clusterind",&ppfjet_twr_clusterind_);
+  tree->SetBranchAddress("ppfjet_cluster_eta",&ppfjet_cluster_eta_);
+  tree->SetBranchAddress("ppfjet_cluster_phi",&ppfjet_cluster_phi_);
+  tree->SetBranchAddress("ppfjet_cluster_dR",&ppfjet_cluster_dR_);
   tree->SetBranchAddress("ppfjet_twr_subdet",&ppfjet_twr_subdet_);
   tree->SetBranchAddress("ppfjet_ncandtracks",&ppfjet_ncandtracks_);
   tree->SetBranchAddress("ppfjet_candtrack_px",&ppfjet_candtrack_px_);
@@ -329,13 +341,13 @@ void testRespCorrDiJetsTree()
 	//if(tpfjet_twr_frac_->at(j) < 0.95) continue;
 	h_tag_jet_rechitpos_->Fill(tpfjet_twr_ieta_->at(j),tpfjet_twr_iphi_->at(j),tpfjet_twr_hade_->at(j));
 	if(tpfjet_twr_dR_->at(j) < 0.5) h_tag_jet_rechitpos_R5_->Fill(tpfjet_twr_ieta_->at(j),tpfjet_twr_iphi_->at(j),tpfjet_twr_hade_->at(j));
-	if(tpfjet_twr_clusterdR_->at(j) < 0.5) h_tag_jet_rechitpos_clusterR5_->Fill(tpfjet_twr_ieta_->at(j),tpfjet_twr_iphi_->at(j),tpfjet_twr_hade_->at(j));
+	if(tpfjet_twr_clusterind_->at(j) < 0 || tpfjet_cluster_dR_->at(tpfjet_twr_clusterind_->at(j)) < 0.5) h_tag_jet_rechitpos_clusterR5_->Fill(tpfjet_twr_ieta_->at(j),tpfjet_twr_iphi_->at(j),tpfjet_twr_hade_->at(j));
       }
       for(int j=0; j<ppfjet_ntwrs_; j++){
 	//if(ppfjet_twr_frac_->at(j) < 0.95) continue;
 	h_probe_jet_rechitpos_->Fill(ppfjet_twr_ieta_->at(j),ppfjet_twr_iphi_->at(j),ppfjet_twr_hade_->at(j));
 	if(ppfjet_twr_dR_->at(j) < 0.5) h_probe_jet_rechitpos_R5_->Fill(ppfjet_twr_ieta_->at(j),ppfjet_twr_iphi_->at(j),ppfjet_twr_hade_->at(j));
-	if(ppfjet_twr_clusterdR_->at(j) < 0.5) h_probe_jet_rechitpos_clusterR5_->Fill(ppfjet_twr_ieta_->at(j),ppfjet_twr_iphi_->at(j),ppfjet_twr_hade_->at(j));
+	if(ppfjet_twr_clusterind_->at(j) < 0 || ppfjet_cluster_dR_->at(ppfjet_twr_clusterind_->at(j)) < 0.5) h_probe_jet_rechitpos_clusterR5_->Fill(ppfjet_twr_ieta_->at(j),ppfjet_twr_iphi_->at(j),ppfjet_twr_hade_->at(j));
       }
       for(int i=0; i<tpfjet_had_n_; i++){
 	TLorentzVector tv(tpfjet_had_px_->at(i),tpfjet_had_py_->at(i),tpfjet_had_pz_->at(i),tpfjet_had_E_->at(i));
@@ -392,7 +404,7 @@ void testRespCorrDiJetsTree()
 	    }
 	    tag_jet_rechit_E_once_nofrac += tpfjet_twr_hade_->at(j);
 	  }
-	  if(tpfjet_twr_clusterdR_->at(j) < 0.5){
+	  if(tpfjet_twr_clusterind_->at(j) < 0 || tpfjet_cluster_dR_->at(tpfjet_twr_clusterind_->at(j)) < 0.5){
 	    if(tpfjet_twr_frac_->at(j) < 1){
 	      tag_jet_rechit_E_once_cluster += tpfjet_twr_hade_->at(j)*tpfjet_twr_frac_->at(j);
 	    }
@@ -401,7 +413,7 @@ void testRespCorrDiJetsTree()
 	    }
 	  }
 	  for(int k=0; k<25; k++){
-	    if(tpfjet_twr_clusterdR_->at(j) < static_cast<float>(k)/20.0 + 0.3){
+	    if(tpfjet_twr_clusterind_->at(j) < 0 || tpfjet_cluster_dR_->at(tpfjet_twr_clusterind_->at(j)) < static_cast<float>(k)/20.0 + 0.3){
 	      if(tpfjet_twr_frac_->at(j) < 1){
 		tag_jet_rechit_E_once_cluster_arr[k] += tpfjet_twr_hade_->at(j)*tpfjet_twr_frac_->at(j);
 	      }
@@ -487,7 +499,7 @@ void testRespCorrDiJetsTree()
 	      probe_jet_rechit_E_once += ppfjet_twr_hade_->at(j);
 	    }
 	  }
-	  if(ppfjet_twr_clusterdR_->at(j) < 0.5){
+	  if(ppfjet_twr_clusterind_->at(j) < 0 || ppfjet_cluster_dR_->at(ppfjet_twr_clusterind_->at(j)) < 0.5){
 	    if(ppfjet_twr_frac_->at(j) < 1){
 	      probe_jet_rechit_E_once_cluster += ppfjet_twr_hade_->at(j)*ppfjet_twr_frac_->at(j);
 	    }
@@ -496,7 +508,7 @@ void testRespCorrDiJetsTree()
 	    }
 	  }
 	  for(int k=0; k<25; k++){
-	    if(ppfjet_twr_clusterdR_->at(j) < static_cast<float>(k)/20.0 + 0.3){
+	    if(ppfjet_twr_clusterind_->at(j) < 0 || ppfjet_cluster_dR_->at(ppfjet_twr_clusterind_->at(j)) < static_cast<float>(k)/20.0 + 0.3){
 	      if(ppfjet_twr_frac_->at(j) < 1){
 		probe_jet_rechit_E_once_cluster_arr[k] += ppfjet_twr_hade_->at(j)*ppfjet_twr_frac_->at(j);
 	      }

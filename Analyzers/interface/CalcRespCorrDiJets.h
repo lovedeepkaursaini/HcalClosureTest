@@ -183,8 +183,10 @@ class CalcRespCorrDiJets : public edm::EDAnalyzer {
   std::vector<float> tpfjet_had_E_, tpfjet_had_px_, tpfjet_had_py_, tpfjet_had_pz_, tpfjet_had_EcalE_, tpfjet_had_rawHcalE_, tpfjet_had_emf_, tpfjet_had_E_mctruth_;
   std::vector<int> tpfjet_had_id_, tpfjet_had_candtrackind_, tpfjet_had_mcpdgId_, tpfjet_had_ntwrs_;
   int tpfjet_ntwrs_;
-  std::vector<int> tpfjet_twr_ieta_, tpfjet_twr_iphi_, tpfjet_twr_depth_, tpfjet_twr_subdet_, tpfjet_twr_candtrackind_, tpfjet_twr_hadind_, tpfjet_twr_elmttype_;
-  std::vector<float> tpfjet_twr_hade_, tpfjet_twr_frac_, tpfjet_twr_dR_, tpfjet_twr_clusterdR_;
+  std::vector<int> tpfjet_twr_ieta_, tpfjet_twr_iphi_, tpfjet_twr_depth_, tpfjet_twr_subdet_, tpfjet_twr_candtrackind_, tpfjet_twr_hadind_, tpfjet_twr_elmttype_, tpfjet_twr_clusterind_;
+  std::vector<float> tpfjet_twr_hade_, tpfjet_twr_frac_, tpfjet_twr_dR_;
+  int tpfjet_cluster_n_;
+  std::vector<float> tpfjet_cluster_eta_, tpfjet_cluster_phi_, tpfjet_cluster_dR_;
   int tpfjet_ncandtracks_;
   std::vector<float> tpfjet_candtrack_px_, tpfjet_candtrack_py_, tpfjet_candtrack_pz_, tpfjet_candtrack_EcalE_;
   float ppfjet_pt_, ppfjet_p_, ppfjet_E_, ppfjet_eta_, ppfjet_phi_, ppfjet_scale_;
@@ -199,8 +201,10 @@ class CalcRespCorrDiJets : public edm::EDAnalyzer {
   std::vector<float> ppfjet_had_E_, ppfjet_had_px_, ppfjet_had_py_, ppfjet_had_pz_, ppfjet_had_EcalE_, ppfjet_had_rawHcalE_, ppfjet_had_emf_, ppfjet_had_E_mctruth_;
   std::vector<int> ppfjet_had_id_, ppfjet_had_candtrackind_, ppfjet_had_mcpdgId_, ppfjet_had_ntwrs_;
   int ppfjet_ntwrs_;
-  std::vector<int> ppfjet_twr_ieta_, ppfjet_twr_iphi_, ppfjet_twr_depth_, ppfjet_twr_subdet_, ppfjet_twr_candtrackind_, ppfjet_twr_hadind_, ppfjet_twr_elmttype_;
-  std::vector<float> ppfjet_twr_hade_, ppfjet_twr_frac_, ppfjet_twr_dR_, ppfjet_twr_clusterdR_;
+  std::vector<int> ppfjet_twr_ieta_, ppfjet_twr_iphi_, ppfjet_twr_depth_, ppfjet_twr_subdet_, ppfjet_twr_candtrackind_, ppfjet_twr_hadind_, ppfjet_twr_elmttype_, ppfjet_twr_clusterind_;
+  std::vector<float> ppfjet_twr_hade_, ppfjet_twr_frac_, ppfjet_twr_dR_;
+  int ppfjet_cluster_n_;
+  std::vector<float> ppfjet_cluster_eta_, ppfjet_cluster_phi_, ppfjet_cluster_dR_;
   int ppfjet_ncandtracks_;
   std::vector<float> ppfjet_candtrack_px_, ppfjet_candtrack_py_, ppfjet_candtrack_pz_, ppfjet_candtrack_EcalE_;
   float pf_dijet_deta_, pf_dijet_dphi_, pf_dijet_balance_;
