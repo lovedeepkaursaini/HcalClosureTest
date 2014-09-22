@@ -83,6 +83,12 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	<< " could not find GenParticle vector named " << genParticleCollName_ << ".\n";
       return;
     }
+
+    // Get weights
+    //edm::InputTag  _genEventInfoCollection = pset.getParameter<edm::InputTag>("GenEventInfoCollection");
+    edm::Handle<GenEventInfoProduct> genEventInfoProduct;
+    iEvent.getByLabel("GenEventInfoCollection", genEventInfoProduct);
+    pf_weight_ = genEventInfoProduct->weight();
   }
 
   // Run over CaloJets
@@ -1728,6 +1734,7 @@ void CalcRespCorrDiJets::beginJob()
     pf_tree_->Branch("pf_Run",&pf_Run_, "pf_Run/I");
     pf_tree_->Branch("pf_Lumi",&pf_Lumi_, "pf_Lumi/I");
     pf_tree_->Branch("pf_Event",&pf_Event_, "pf_Event/I");
+    pf_tree_->Branch("pf_weight",&pf_weight_, "pf_weight/F");
   }
 
   return;

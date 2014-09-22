@@ -43,6 +43,7 @@
 #include "Geometry/CaloGeometry/interface/CaloSubdetectorGeometry.h"
 #include "Geometry/Records/interface/CaloGeometryRecord.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
+#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 
 // forward declarations
 class TH1D;
@@ -210,6 +211,7 @@ class CalcRespCorrDiJets : public edm::EDAnalyzer {
   float pf_dijet_deta_, pf_dijet_dphi_, pf_dijet_balance_;
   float pf_thirdjet_px_, pf_thirdjet_py_;
   int pf_Run_, pf_Lumi_, pf_Event_;
+  float pf_weight_;
 
   // helper functions
   double deltaR(const reco::Jet* j1, const reco::Jet* j2);
