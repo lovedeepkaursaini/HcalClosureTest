@@ -117,6 +117,7 @@ class CalcRespCorrDiJets : public edm::EDAnalyzer {
   std::string pfJetCorrName_;       // label for the PF jet correction service
   std::string genJetCollName_;      // label for the genjet collection
   std::string genParticleCollName_; // label for the genparticle collection
+  std::string genEventInfoName_;    // label for the generator event info collection
   std::string hbheRecHitName_;      // label for HBHERecHits collection
   std::string hfRecHitName_;        // label for HFRecHit collection
   std::string hoRecHitName_;        // label for HORecHit collection
