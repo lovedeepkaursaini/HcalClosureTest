@@ -22,6 +22,10 @@ process.calcrespcorrdijets.doCaloJets = cms.bool(False)
 #process.calcrespcorrdijets.doPFJets = cms.bool(False)
 #process.calcrespcorrdijets.doGenJets = cms.bool(False)
 #process.calcrespcorrdijets.debug = cms.untracked.bool(True)
+#process.calcrespcorrdijets.maxDeltaEta = cms.double(0.5)
+#process.calcrespcorrdijets.minJetEt = cms.double(10.)
+#process.calcrespcorrdijets.minSumJetEt = cms.double(20.)
+#process.calcrespcorrdijets.maxThirdJetEt = cms.double(20.)
 
 #import FWCore.Python.FileUtils as FileUtils
 #readFiles = cms.untracked.vstring( FileUtils.loadListFromFile ('Pion_Pt-50.list') )
