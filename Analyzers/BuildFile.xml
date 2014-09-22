@@ -7,4 +7,5 @@
 <use   name="JetMETCorrections/Objects"/>
 <use   name="Geometry/CaloGeometry"/>
 <use   name="Geometry/Records"/>
+<use   name="SimDataFormats/GeneratorProducts"/>
 <use   name="root"/>

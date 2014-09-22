@@ -36,6 +36,7 @@ CalcRespCorrDiJets::CalcRespCorrDiJets(const edm::ParameterSet& iConfig)
   pfJetCorrName_       = iConfig.getParameter<std::string>("pfJetCorrName");
   genJetCollName_      = iConfig.getParameter<std::string>("genJetCollName");
   genParticleCollName_ = iConfig.getParameter<std::string>("genParticleCollName");
+  genEventInfoName_    = iConfig.getParameter<std::string>("genEventInfoName");
   hbheRecHitName_      = iConfig.getParameter<std::string>("hbheRecHitName");
   hfRecHitName_        = iConfig.getParameter<std::string>("hfRecHitName");
   hoRecHitName_        = iConfig.getParameter<std::string>("hoRecHitName");
@@ -83,6 +84,16 @@ CalcRespCorrDiJets::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
 	<< " could not find GenParticle vector named " << genParticleCollName_ << ".\n";
       return;
     }
+
+    // Get weights
+    edm::Handle<GenEventInfoProduct> genEventInfoProduct;
+    iEvent.getByLabel(genEventInfoName_, genEventInfoProduct);
+    if(!genEventInfoProduct.isValid()){
+      throw edm::Exception(edm::errors::ProductNotFound)
+	<< " could not find GenEventInfoProduct named " << genEventInfoName_ << " \n";
+      return;
+    }
+    pf_weight_ = genEventInfoProduct->weight();
   }
 
   // Run over CaloJets
@@ -1728,6 +1739,9 @@ void CalcRespCorrDiJets::beginJob()
     pf_tree_->Branch("pf_Run",&pf_Run_, "pf_Run/I");
     pf_tree_->Branch("pf_Lumi",&pf_Lumi_, "pf_Lumi/I");
     pf_tree_->Branch("pf_Event",&pf_Event_, "pf_Event/I");
+    if(doGenJets_){    
+      pf_tree_->Branch("pf_weight",&pf_weight_, "pf_weight/F");
+    }
   }
 
   return;
