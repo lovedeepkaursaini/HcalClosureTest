@@ -19,6 +19,11 @@ DijetRespCorrDatum::DijetRespCorrDatum() {
 
 DijetRespCorrDatum::~DijetRespCorrDatum() {}
 
+Double_t DijetRespCorrDatum::GetWeight(void) const
+{
+  return fWeight;
+}
+
 Double_t DijetRespCorrDatum::GetTagEta(void) const
 {
   return fTagEta;
@@ -86,6 +91,12 @@ Double_t DijetRespCorrDatum::GetThirdJetPy(void) const
 Int_t DijetRespCorrDatum::GetCandTrackN(void) const
 {
   return fCandTrackN;
+}
+
+void DijetRespCorrDatum::SetWeight(Double_t v)
+{
+  fWeight = v;
+  return;
 }
 
 void DijetRespCorrDatum::SetTagEta(Double_t v)
@@ -416,7 +427,7 @@ void DijetRespCorrData::GetBalance(const DijetRespCorrDatum& datum, const TArray
   Double_t petcorr = std::sqrt(ppx*ppx + ppy*ppy);
 
   balance_ = 2*(tetcorr-petcorr)/(tetcorr+petcorr);
-  resolution_ = 1.0;
+  resolution_ = 0.035/datum.GetWeight();
   return;
 }
 

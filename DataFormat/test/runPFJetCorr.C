@@ -60,6 +60,7 @@ void runPFJetCorr()
   vector<float>* pjet_candtrack_EcalE_;
   float thirdjet_px_, thirdjet_py_;
   float dijet_deta_;
+  float weight_;
 
   tree->SetBranchAddress("tpfjet_eta",&tjet_eta_);
   tree->SetBranchAddress("tpfjet_phi",&tjet_phi_);
@@ -114,6 +115,7 @@ void runPFJetCorr()
   tree->SetBranchAddress("pf_thirdjet_px",&thirdjet_px_);
   tree->SetBranchAddress("pf_thirdjet_py",&thirdjet_py_);
   tree->SetBranchAddress("pf_dijet_deta",&dijet_deta_);
+  tree->SetBranchAddress("pf_weight",&weight_);
 
   TH1D* h_PassSel_ = new TH1D("h_PassSelection", "Selection Pass Failures",256,-0.5,255.5);
   int fails = 0;
@@ -150,6 +152,7 @@ void runPFJetCorr()
     DijetRespCorrDatum datum;
     
     // Fill datum
+    datum.SetWeight(weight_);
 
     float sumt = 0;
     datum.SetTagEta(tjet_eta_);

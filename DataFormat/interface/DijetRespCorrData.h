@@ -42,6 +42,7 @@ class DijetRespCorrDatum : public TObject
   DijetRespCorrDatum();
   ~DijetRespCorrDatum();
 
+  Double_t GetWeight(void) const;
   Double_t GetTagEta(void) const;
   Double_t GetTagPhi(void) const;
   Double_t GetTagHcalE(Int_t ieta);
@@ -56,6 +57,7 @@ class DijetRespCorrDatum : public TObject
   Double_t GetThirdJetPy(void) const;
   Int_t    GetCandTrackN(void) const;
   
+  void SetWeight(Double_t);
   void SetTagEta(Double_t);
   void SetTagPhi(Double_t);
   void SetTagHcalE(Double_t, Int_t ieta);
@@ -82,6 +84,9 @@ class DijetRespCorrDatum : public TObject
   void GetTrackVariables(const TArrayD& respcorr, const Int_t index_,  Double_t& TrackP_, Double_t& EcalE_, Double_t& HcalE_) const;
 
  private:
+  // event weight
+  Double_t fWeight;
+
   // tag jet info
   Double_t fTagEta, fTagPhi;
   std::map<Int_t, Double_t> fTagHcalE;
