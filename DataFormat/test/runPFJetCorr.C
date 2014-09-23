@@ -160,7 +160,7 @@ void runPFJetCorr()
 	sumt += tjet_twr_hade_->at(i)*tjet_twr_frac_->at(i);
       }
     }
-    datum.SetCandTrackN(tjet_ncandtracks_);
+    /*datum.SetCandTrackN(tjet_ncandtracks_);
     for(int i=0; i<tjet_ncandtracks_; i++){
       datum.AddCandTrackP(sqrt(tjet_candtrack_px_->at(i)*tjet_candtrack_px_->at(i) + tjet_candtrack_py_->at(i)*tjet_candtrack_py_->at(i) + tjet_candtrack_pz_->at(i)*tjet_candtrack_pz_->at(i)));
       datum.AddCandTrackEcalE(tjet_candtrack_EcalE_->at(i));
@@ -175,7 +175,7 @@ void runPFJetCorr()
 	}
       }
       datum.AddCandTrackHcalE(clusterEnergies);
-    }
+      }*/
     float tjet_had_EcalE_total = 0;
     float tjet_had_candNoRecHits_E = 0;
     for(int iHad=0; iHad<tjet_had_n_; iHad++){
@@ -196,7 +196,7 @@ void runPFJetCorr()
 	sump += pjet_twr_hade_->at(i)*pjet_twr_frac_->at(i);
       }
     }
-    datum.SetCandTrackN(pjet_ncandtracks_);
+    /*datum.SetCandTrackN(pjet_ncandtracks_);
     for(int i=0; i<pjet_ncandtracks_; i++){
       datum.AddCandTrackP(sqrt(pjet_candtrack_px_->at(i)*pjet_candtrack_px_->at(i) + pjet_candtrack_py_->at(i)*pjet_candtrack_py_->at(i) + pjet_candtrack_pz_->at(i)*pjet_candtrack_pz_->at(i)));
       datum.AddCandTrackEcalE(pjet_candtrack_EcalE_->at(i));
@@ -211,14 +211,14 @@ void runPFJetCorr()
 	}
       }
       datum.AddCandTrackHcalE(clusterEnergies);
-    }
+      }*/
     float pjet_had_EcalE_total = 0;
-    //float pjet_had_candNoRecHits_E = 0;
+    float pjet_had_candNoRecHits_E = 0;
     for(int iHad=0; iHad<pjet_had_n_; iHad++){
       if(pjet_had_id_->at(iHad) < 2) pjet_had_EcalE_total += pjet_had_EcalE_->at(iHad);
-      //if(pjet_had_ntwrs_->at(iHad) == 0 && pjet_had_candtrackind_->at(iHad) > -1){
-      //pjet_had_candNoRecHits_E += sqrt(pjet_candtrack_px_->at(pjet_had_candtrackind_->at(iHad))*pjet_candtrack_px_->at(pjet_had_candtrackind_->at(iHad)) + pjet_candtrack_py_->at(pjet_had_candtrackind_->at(iHad))*pjet_candtrack_py_->at(pjet_had_candtrackind_->at(iHad)) + pjet_candtrack_pz_->at(pjet_had_candtrackind_->at(iHad))*pjet_candtrack_pz_->at(pjet_had_candtrackind_->at(iHad))) - pjet_had_EcalE_->at(iHad);
-      //}
+      if(pjet_had_ntwrs_->at(iHad) == 0 && pjet_had_candtrackind_->at(iHad) > -1){
+	pjet_had_candNoRecHits_E += sqrt(pjet_candtrack_px_->at(pjet_had_candtrackind_->at(iHad))*pjet_candtrack_px_->at(pjet_had_candtrackind_->at(iHad)) + pjet_candtrack_py_->at(pjet_had_candtrackind_->at(iHad))*pjet_candtrack_py_->at(pjet_had_candtrackind_->at(iHad)) + pjet_candtrack_pz_->at(pjet_had_candtrackind_->at(iHad))*pjet_candtrack_pz_->at(pjet_had_candtrackind_->at(iHad))) - pjet_had_EcalE_->at(iHad);
+      }
     }
     datum.SetProbeEcalE(pjet_unkown_E_ + pjet_electron_E_ + pjet_muon_E_ + pjet_photon_E_ + pjet_had_EcalE_total);
 
@@ -241,7 +241,7 @@ void runPFJetCorr()
   data.SetDoCandTrackEnergyDiff(false);
   cout << "Do CandTrack? " << data.GetDoCandTrackEnergyDiff() << endl;
 
-  return;
+  //return;
   
   TH1D* hist = data.doFit("h_corr","Response Corrections");
   hist->GetXaxis()->SetTitle("ieta");
