@@ -7,13 +7,9 @@ void runPFJetCorr()
   
 
   TChain* tree = new TChain("pf_dijettree");
-  //TString input = "/uscms_data/d3/dgsheffi/HCal/test.root";
-  //TString input = "/uscms_data/d3/dgsheffi/HCal/Trees/Pion_Pt-50_noHF.root";
-  TString input = "/uscms_data/d3/dgsheffi/HCal/Trees/QCD_Pt-15to3000_0030487D5E5F.root";
+  TString input = "/eos/uscms/store/user/dgsheffi/QCD_Pt-15to3000_TuneD6T_Flat_8TeV_pythia6/DijetCalibration_dEta-1p5_Et-10_3rdEt-50/e02441adc4b1f61e7a01cc47fa7cba8d/tree_10_1_WgX.root";
   tree->Add(input);
 
-  //TString output = "/uscms_data/d3/dgsheffi/HCal/pfJetCorr.root";
-  //TString output = "/uscms_data/d3/dgsheffi/HCal/pfJetCorr_noHF_freeHF.root";
   TString output = "/uscms_data/d3/dgsheffi/HCal/pfJetCorr_test.root";
 
   DijetRespCorrData data;
@@ -21,7 +17,7 @@ void runPFJetCorr()
   const int MAXIETA = 41;
   const int NUMTOWERS = 83;
 
-  float tjet_eta_, tjet_phi_;
+  float tjet_eta_, tjet_phi_, tjet_E_;
   float tjet_unkown_E_, tjet_electron_E_, tjet_muon_E_, tjet_photon_E_;
   int tjet_had_n_;
   vector<float>* tjet_had_EcalE_;
@@ -36,7 +32,7 @@ void runPFJetCorr()
   vector<float>* tjet_candtrack_py_;
   vector<float>* tjet_candtrack_pz_;
   vector<float>* tjet_candtrack_EcalE_;
-  float pjet_eta_, pjet_phi_;
+  float pjet_eta_, pjet_phi_, pjet_E_;
   float pjet_unkown_E_, pjet_electron_E_, pjet_muon_E_, pjet_photon_E_;
   int pjet_had_n_;
   vector<float>* pjet_had_EcalE_;
@@ -52,9 +48,11 @@ void runPFJetCorr()
   vector<float>* pjet_candtrack_pz_;
   vector<float>* pjet_candtrack_EcalE_;
   float thirdjet_px_, thirdjet_py_;
+  float dijet_deta_;
 
   tree->SetBranchAddress("tpfjet_eta",&tjet_eta_);
   tree->SetBranchAddress("tpfjet_phi",&tjet_phi_);
+  tree->SetBranchAddress("tpfjet_E",&tjet_E_);
   tree->SetBranchAddress("tpfjet_unkown_E",&tjet_unkown_E_);
   tree->SetBranchAddress("tpfjet_electron_E",&tjet_electron_E_);
   tree->SetBranchAddress("tpfjet_muon_E",&tjet_muon_E_);
@@ -74,6 +72,7 @@ void runPFJetCorr()
   tree->SetBranchAddress("tpfjet_candtrack_EcalE",&tjet_candtrack_EcalE_);
   tree->SetBranchAddress("ppfjet_eta",&pjet_eta_);
   tree->SetBranchAddress("ppfjet_phi",&pjet_phi_);
+  tree->SetBranchAddress("ppfjet_E",&pjet_E_);
   tree->SetBranchAddress("ppfjet_unkown_E",&pjet_unkown_E_);
   tree->SetBranchAddress("ppfjet_electron_E",&pjet_electron_E_);
   tree->SetBranchAddress("ppfjet_muon_E",&pjet_muon_E_);
@@ -93,7 +92,9 @@ void runPFJetCorr()
   tree->SetBranchAddress("ppfjet_candtrack_EcalE",&pjet_candtrack_EcalE_);
   tree->SetBranchAddress("pf_thirdjet_px",&thirdjet_px_);
   tree->SetBranchAddress("pf_thirdjet_py",&thirdjet_py_);
+  tree->SetBranchAddress("pf_dijet_deta",&dijet_deta_);
 
+  TH1D* h_PassSel_ = new TH1D("h_PassSelection", "Selection Pass Failures",256,-0.5,255.5);
   int fails = 0;
 
   int nEvents = tree->GetEntries();
@@ -105,11 +106,25 @@ void runPFJetCorr()
     }
     tree->GetEntry(iEvent);
 
+    int passSel = 0;
+
     if(tjet_ntwrs_ == 0 || pjet_ntwrs_ == 0){
       fails++;
+      passSel | 0x80;
       //cout << "Fails: " << iEvent << " " << tjet_ntwrs_ << " " << pjet_ntwrs_ << endl;
-      continue;
+      //continue;
     }
+    float tjet_Et = tjet_E_/cosh(tjet_eta_);
+    float pjet_Et = pjet_E_/cosh(pjet_eta_);
+    float minSumJetEt_ = 40.0;
+    float minJetEt_ = 20.0;
+    float maxThirdJetEt_ = 15.0;
+    if(tjet_Et + pjet_Et < minSumJetEt_) passSel |= 0x1;
+    if(tjet_Et < minJetEt_ || pjet_Et < minJetEt_) passSel |= 0x2;
+    if(sqrt(thirdjet_px_*thirdjet_px_ + thirdjet_py_*thirdjet_py_) > maxThirdJetEt_) passSel |= 0x4;
+    
+    h_PassSel_->Fill(passSel);
+    if(passSel) continue;
 
     DijetRespCorrDatum datum;
     
@@ -193,16 +208,19 @@ void runPFJetCorr()
   
   cout << "Passes: " << nEvents - fails << " Fails: " << fails << endl;
   cout << "Do CandTrack? " << data.GetDoCandTrackEnergyDiff() << endl;
-  data.SetDoCandTrackEnergyDiff(true);
+  data.SetDoCandTrackEnergyDiff(false);
   cout << "Do CandTrack? " << data.GetDoCandTrackEnergyDiff() << endl;
+
+  return;
   
-  TH1D* hist = data.doFit("hcorr","Response Corrections");
+  TH1D* hist = data.doFit("h_corr","Response Corrections");
   hist->GetXaxis()->SetTitle("ieta");
   hist->GetYaxis()->SetTitle("response corrections");
 
   TFile* fout = new TFile(output,"RECREATE");
   fout->cd();
   hist->Write();
+  h_PassSel_->Write();
   fout->Close();
 
   cout << "Passes: " << nEvents - fails << " Fails: " << fails << endl;
