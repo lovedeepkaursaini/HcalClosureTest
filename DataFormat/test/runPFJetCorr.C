@@ -8,6 +8,7 @@ void runPFJetCorr()
 
   TChain* tree = new TChain("pf_dijettree");
   TString input = "/eos/uscms/store/user/dgsheffi/QCD_Pt-15to3000_TuneD6T_Flat_8TeV_pythia6/DijetCalibration_dEta-1p5_Et-10_3rdEt-50/e02441adc4b1f61e7a01cc47fa7cba8d/tree_10_1_WgX.root";
+  cout << "Opening file: " << input << endl;
   tree->Add(input);
 
   TString output = "/uscms_data/d3/dgsheffi/HCal/pfJetCorr_test.root";
@@ -21,12 +22,17 @@ void runPFJetCorr()
   float tjet_unkown_E_, tjet_electron_E_, tjet_muon_E_, tjet_photon_E_;
   int tjet_had_n_;
   vector<float>* tjet_had_EcalE_;
-  vector<float>* tjet_had_id_;
+  vector<int>* tjet_had_id_;
+  vector<int>* tjet_had_ntwrs_;
+  vector<int>* tjet_had_candtrackind_;
   int tjet_ntwrs_;
   vector<int>* tjet_twr_ieta_;
   vector<int>* tjet_twr_candtrackind_;
+  vector<int>* tjet_twr_clusterind_;
   vector<float>* tjet_twr_hade_;
   vector<float>* tjet_twr_frac_;
+  int tjet_cluster_n_;
+  vector<float>* tjet_cluster_dR_;
   int tjet_ncandtracks_;
   vector<float>* tjet_candtrack_px_;
   vector<float>* tjet_candtrack_py_;
@@ -36,12 +42,17 @@ void runPFJetCorr()
   float pjet_unkown_E_, pjet_electron_E_, pjet_muon_E_, pjet_photon_E_;
   int pjet_had_n_;
   vector<float>* pjet_had_EcalE_;
-  vector<float>* pjet_had_id_;
+  vector<int>* pjet_had_id_;
+  vector<int>* pjet_had_ntwrs_;
+  vector<int>* pjet_had_candtrackind_;
   int pjet_ntwrs_;
   vector<int>* pjet_twr_ieta_;
   vector<int>* pjet_twr_candtrackind_;
+  vector<int>* pjet_twr_clusterind_;
   vector<float>* pjet_twr_hade_;
   vector<float>* pjet_twr_frac_;
+  int pjet_cluster_n_;
+  vector<float>* pjet_cluster_dR_;
   int pjet_ncandtracks_;
   vector<float>* pjet_candtrack_px_;
   vector<float>* pjet_candtrack_py_;
@@ -60,11 +71,16 @@ void runPFJetCorr()
   tree->SetBranchAddress("tpfjet_had_n",&tjet_had_n_);
   tree->SetBranchAddress("tpfjet_had_EcalE",&tjet_had_EcalE_);
   tree->SetBranchAddress("tpfjet_had_id",&tjet_had_id_);
+  tree->SetBranchAddress("tpfjet_had_ntwrs",&tjet_had_ntwrs_);
+  tree->SetBranchAddress("tpfjet_had_candtrackind",&tjet_had_candtrackind_);
   tree->SetBranchAddress("tpfjet_ntwrs",&tjet_ntwrs_);
   tree->SetBranchAddress("tpfjet_twr_ieta",&tjet_twr_ieta_);
   tree->SetBranchAddress("tpfjet_twr_hade",&tjet_twr_hade_);
   tree->SetBranchAddress("tpfjet_twr_frac",&tjet_twr_frac_);
   tree->SetBranchAddress("tpfjet_twr_candtrackind",&tjet_twr_candtrackind_);
+  tree->SetBranchAddress("tpfjet_twr_clusterind",&tjet_twr_clusterind_);
+  tree->SetBranchAddress("tpfjet_cluster_n",&tjet_cluster_n_);
+  tree->SetBranchAddress("tpfjet_cluster_dR",&tjet_cluster_dR_);
   tree->SetBranchAddress("tpfjet_ncandtracks",&tjet_ncandtracks_);
   tree->SetBranchAddress("tpfjet_candtrack_px",&tjet_candtrack_px_);
   tree->SetBranchAddress("tpfjet_candtrack_py",&tjet_candtrack_py_);
@@ -80,11 +96,16 @@ void runPFJetCorr()
   tree->SetBranchAddress("ppfjet_had_n",&pjet_had_n_);
   tree->SetBranchAddress("ppfjet_had_EcalE",&pjet_had_EcalE_);
   tree->SetBranchAddress("ppfjet_had_id",&pjet_had_id_);
+  tree->SetBranchAddress("ppfjet_had_ntwrs",&pjet_had_ntwrs_);
+  tree->SetBranchAddress("ppfjet_had_candtrackind",&pjet_had_candtrackind_);
   tree->SetBranchAddress("ppfjet_ntwrs",&pjet_ntwrs_);
   tree->SetBranchAddress("ppfjet_twr_ieta",&pjet_twr_ieta_);
   tree->SetBranchAddress("ppfjet_twr_hade",&pjet_twr_hade_);
   tree->SetBranchAddress("ppfjet_twr_frac",&pjet_twr_frac_);
   tree->SetBranchAddress("ppfjet_twr_candtrackind",&pjet_twr_candtrackind_);
+  tree->SetBranchAddress("ppfjet_twr_clusterind",&pjet_twr_clusterind_);
+  tree->SetBranchAddress("ppfjet_cluster_n",&pjet_cluster_n_);
+  tree->SetBranchAddress("ppfjet_cluster_dR",&pjet_cluster_dR_);
   tree->SetBranchAddress("ppfjet_ncandtracks",&pjet_ncandtracks_);
   tree->SetBranchAddress("ppfjet_candtrack_px",&pjet_candtrack_px_);
   tree->SetBranchAddress("ppfjet_candtrack_py",&pjet_candtrack_py_);
@@ -98,7 +119,7 @@ void runPFJetCorr()
   int fails = 0;
 
   int nEvents = tree->GetEntries();
-  nEvents = 5;
+  nEvents = 100;
   cout << "Running over " << nEvents << " events" << endl;
   for(int iEvent=0; iEvent<nEvents; iEvent++){
     if(iEvent % 1000 == 0){
@@ -134,7 +155,7 @@ void runPFJetCorr()
     datum.SetTagEta(tjet_eta_);
     datum.SetTagPhi(tjet_phi_);
     for(int i=0; i<tjet_ntwrs_; i++){
-      if(tjet_twr_hade_->at(i) > 0.0){
+      if(tjet_twr_hade_->at(i) > 0.0 && (tjet_twr_clusterind_->at(i) || tjet_cluster_dR_->at(tjet_twr_clusterind_->at(i)))){
 	datum.AddTagHcalE(tjet_twr_hade_->at(i)*tjet_twr_frac_->at(i),tjet_twr_ieta_->at(i));
 	sumt += tjet_twr_hade_->at(i)*tjet_twr_frac_->at(i);
       }
@@ -156,16 +177,21 @@ void runPFJetCorr()
       datum.AddCandTrackHcalE(clusterEnergies);
     }
     float tjet_had_EcalE_total = 0;
+    float tjet_had_candNoRecHits_E = 0;
     for(int iHad=0; iHad<tjet_had_n_; iHad++){
       if(tjet_had_id_->at(iHad) < 2) tjet_had_EcalE_total += tjet_had_EcalE_->at(iHad);
+      if(tjet_had_ntwrs_->at(iHad) == 0 && tjet_had_candtrackind_->at(iHad) > -1){
+	tjet_had_candNoRecHits_E += sqrt(tjet_candtrack_px_->at(tjet_had_candtrackind_->at(iHad))*tjet_candtrack_px_->at(tjet_had_candtrackind_->at(iHad)) + tjet_candtrack_py_->at(tjet_had_candtrackind_->at(iHad))*tjet_candtrack_py_->at(tjet_had_candtrackind_->at(iHad)) + tjet_candtrack_pz_->at(tjet_had_candtrackind_->at(iHad))*tjet_candtrack_pz_->at(tjet_had_candtrackind_->at(iHad))) - tjet_had_EcalE_->at(iHad);
+      }
     }
-    datum.SetTagEcalE(tjet_unkown_E_ + tjet_electron_E_ + tjet_muon_E_ + tjet_photon_E_ + tjet_had_EcalE_total);
+    datum.SetTagEcalE(tjet_unkown_E_ + tjet_electron_E_ + tjet_muon_E_ + tjet_photon_E_ + tjet_had_EcalE_total + tjet_had_candNoRecHits_E);
 
     float sump = 0;
     datum.SetProbeEta(pjet_eta_);
     datum.SetProbePhi(pjet_phi_);
     for(int i=0; i<pjet_ntwrs_; i++){
-      if(pjet_twr_hade_->at(i) > 0.0){
+      //cout << pjet_twr_clusterind_->size() << " " << pjet_twr_clusterind_->at(i) << " " << pjet_cluster_n_ << endl;
+      if(pjet_twr_hade_->at(i) > 0.0 && (pjet_twr_clusterind_->at(i) || pjet_cluster_dR_->at(pjet_twr_clusterind_->at(i)))){
 	datum.AddProbeHcalE(pjet_twr_hade_->at(i)*pjet_twr_frac_->at(i),pjet_twr_ieta_->at(i));
 	sump += pjet_twr_hade_->at(i)*pjet_twr_frac_->at(i);
       }
@@ -187,8 +213,12 @@ void runPFJetCorr()
       datum.AddCandTrackHcalE(clusterEnergies);
     }
     float pjet_had_EcalE_total = 0;
+    //float pjet_had_candNoRecHits_E = 0;
     for(int iHad=0; iHad<pjet_had_n_; iHad++){
       if(pjet_had_id_->at(iHad) < 2) pjet_had_EcalE_total += pjet_had_EcalE_->at(iHad);
+      //if(pjet_had_ntwrs_->at(iHad) == 0 && pjet_had_candtrackind_->at(iHad) > -1){
+      //pjet_had_candNoRecHits_E += sqrt(pjet_candtrack_px_->at(pjet_had_candtrackind_->at(iHad))*pjet_candtrack_px_->at(pjet_had_candtrackind_->at(iHad)) + pjet_candtrack_py_->at(pjet_had_candtrackind_->at(iHad))*pjet_candtrack_py_->at(pjet_had_candtrackind_->at(iHad)) + pjet_candtrack_pz_->at(pjet_had_candtrackind_->at(iHad))*pjet_candtrack_pz_->at(pjet_had_candtrackind_->at(iHad))) - pjet_had_EcalE_->at(iHad);
+      //}
     }
     datum.SetProbeEcalE(pjet_unkown_E_ + pjet_electron_E_ + pjet_muon_E_ + pjet_photon_E_ + pjet_had_EcalE_total);
 
