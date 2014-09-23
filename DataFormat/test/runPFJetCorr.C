@@ -121,7 +121,7 @@ void runPFJetCorr()
   int fails = 0;
 
   int nEvents = tree->GetEntries();
-  nEvents = 100;
+  //nEvents = 100;
   cout << "Running over " << nEvents << " events" << endl;
   for(int iEvent=0; iEvent<nEvents; iEvent++){
     if(iEvent % 1000 == 0){
@@ -142,9 +142,11 @@ void runPFJetCorr()
     float minSumJetEt_ = 40.0;
     float minJetEt_ = 20.0;
     float maxThirdJetEt_ = 15.0;
+    float maxDeltaEta_ = 0.5;
     if(tjet_Et + pjet_Et < minSumJetEt_) passSel |= 0x1;
     if(tjet_Et < minJetEt_ || pjet_Et < minJetEt_) passSel |= 0x2;
     if(sqrt(thirdjet_px_*thirdjet_px_ + thirdjet_py_*thirdjet_py_) > maxThirdJetEt_) passSel |= 0x4;
+    if(dijet_deta_ > maxDeltaEta_) passSel |= 0x8;
     
     h_PassSel_->Fill(passSel);
     if(passSel) continue;
