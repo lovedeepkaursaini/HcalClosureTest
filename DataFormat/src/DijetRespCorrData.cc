@@ -267,7 +267,7 @@ DijetRespCorrData::DijetRespCorrData()
   fPrintLevel=5;
   fParStep=0.10;
   fParMin=0.0;
-  fParMax=0.0;
+  fParMax=100.0;//0.0;
   fEcalRes=0.07;
   fHcalRes=1.15;
   fHfRes=1.35;
@@ -348,7 +348,7 @@ TH1D* DijetRespCorrData::doFit(const char* name, const char* title)
 void DijetRespCorrData::doFit(TArrayD& respcorr, TArrayD& respcorre)
 {
   // setup the initial response corrections
-  const int maxIetaFixed=20;
+  const int maxIetaFixed=1;//20;
   //  Double_t array[NUMTOWERS] = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.26437, 1.27885, 1.252, 1.26742, 1.32585, 1.27661, 1.29944, 1.451, 1.2652, 1.25045, 1.29709, 1.23643, 1.11458, 1.14601, 1.20513, 1.15064, 1.11951, 1.16586, 1.15791, 1.13728, 1.14483, 1.1412, 1.11142, 0, 1.15833, 1.14589, 1.15, 1.14048, 1.22407, 1.09756, 1.07979, 1.14484, 1.22885, 1.20833, 1.21161, 1.18929, 1.17783, 1.27585, 1.29167, 1.25481, 1.26563, 1.35172, 1.2816, 1.25988, 1.22321, 1.21111, 1.175, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 };
   Double_t array[NUMTOWERS] = { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
 				//1.151630, 1.148890, 1.144870, 1.161240, 1.195630, 1.190690, 1.162400, 1.130190, 1.128810, 1.114070, 1.109850, 1.098620, 1.099950, 1.096140, 1.087350, 1.076980, 1.095540, 1.092960, 1.091500, 1.087100, 1.0, 1.085640, 1.094110, 1.089310, 1.089260, 1.079420, 1.089310, 1.093900, 1.104690, 1.098890, 1.109600, 1.115400, 1.144240, 1.125160, 1.148010, 1.204180, 1.197330, 1.150100, 1.154010, 1.143610, 1.159000,
@@ -427,7 +427,7 @@ void DijetRespCorrData::GetBalance(const DijetRespCorrDatum& datum, const TArray
   Double_t petcorr = std::sqrt(ppx*ppx + ppy*ppy);
 
   balance_ = 2*(tetcorr-petcorr)/(tetcorr+petcorr);
-  resolution_ = 0.035/datum.GetWeight();
+  resolution_ = 0.035/datum.GetWeight(); //0.035
   return;
 }
 

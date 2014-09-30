@@ -7,11 +7,13 @@ void runPFJetCorr()
   
 
   TChain* tree = new TChain("pf_dijettree");
-  TString input = "/eos/uscms/store/user/dgsheffi/QCD_Pt-15to3000_TuneD6T_Flat_8TeV_pythia6/DijetCalibration_dEta-1p5_Et-10_3rdEt-50/e02441adc4b1f61e7a01cc47fa7cba8d/tree_10_1_WgX.root";
+  TString input = "/eos/uscms/store/user/dgsheffi/QCD_Pt-15to3000_TuneD6T_Flat_8TeV_pythia6/DijetCalibration_dEta-1p5_Et-10_3rdEt-50/e02441adc4b1f61e7a01cc47fa7cba8d/tree_*.root";
+  //  TString input = "/eos/uscms/store/user/dgsheffi/QCD_Pt-15to3000_TuneD6T_Flat_8TeV_pythia6/DijetCalibration_dEta-1p5_Et-10_3rdEt-50/e02441adc4b1f61e7a01cc47fa7cba8d/tree_10_1_WgX.root";
   cout << "Opening file: " << input << endl;
   tree->Add(input);
+  cout << "File opened." << endl;
 
-  TString output = "/uscms_data/d3/dgsheffi/HCal/pfJetCorr_test.root";
+  TString output = "/uscms_data/d3/dgsheffi/HCal/corrections/QCD_Pt-15to3000_TuneD6R_Flat_8TeV_pythia6_dEta-0p5_Et-20_3rdEt-15_weight0p035.root";
 
   DijetRespCorrData data;
 
@@ -139,10 +141,10 @@ void runPFJetCorr()
     }
     float tjet_Et = tjet_E_/cosh(tjet_eta_);
     float pjet_Et = pjet_E_/cosh(pjet_eta_);
-    float minSumJetEt_ = 40.0;
-    float minJetEt_ = 20.0;
-    float maxThirdJetEt_ = 15.0;
-    float maxDeltaEta_ = 0.5;
+    float minSumJetEt_ = 40.0;//40.0;
+    float minJetEt_ = 20.0;//20.0;
+    float maxThirdJetEt_ = 15.0;//15.0;
+    float maxDeltaEta_ = 0.5;//0.5;
     if(tjet_Et + pjet_Et < minSumJetEt_) passSel |= 0x1;
     if(tjet_Et < minJetEt_ || pjet_Et < minJetEt_) passSel |= 0x2;
     if(sqrt(thirdjet_px_*thirdjet_px_ + thirdjet_py_*thirdjet_py_) > maxThirdJetEt_) passSel |= 0x4;
@@ -259,6 +261,7 @@ void runPFJetCorr()
   fout->Close();
 
   cout << "Passes: " << nEvents - fails << " Fails: " << fails << endl;
+  cout << "Events that passed cuts: " << h_PassSel_->GetBinContent(1) << endl;
 
   return;
 }
