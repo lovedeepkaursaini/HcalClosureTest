@@ -1,9 +1,11 @@
-#include <vector>
+#include "HcalClosureTest/DataFormat/interface/runPFJetCorr.h"
 
-void runPFJetCorr()
+using namespace std;
+
+int main()
 {
-  gSystem->Load("../../../../lib/slc5_amd64_gcc462/libHcalClosureTestDataFormat.so");
-  gROOT->ProcessLine(".L loader.C+");
+  //gSystem->Load("../../../../lib/slc5_amd64_gcc462/libHcalClosureTestDataFormat.so");
+  //gROOT->ProcessLine(".L loader.C+");
   
 
   TChain* tree = new TChain("pf_dijettree");
@@ -13,53 +15,54 @@ void runPFJetCorr()
   tree->Add(input);
   cout << "File opened." << endl;
 
-  TString output = "/uscms_data/d3/dgsheffi/HCal/corrections/QCD_Pt-15to3000_TuneD6R_Flat_8TeV_pythia6_dEta-0p5_Et-20_3rdEt-15_weight0p035.root";
+  TString output = "/uscms_data/d3/dgsheffi/HCal/corrections/test.root";
+  //TString output = "/uscms_data/d3/dgsheffi/HCal/corrections/QCD_Pt-15to3000_TuneD6R_Flat_8TeV_pythia6_dEta-0p5_Et-20_3rdEt-15_weight0p035.root";
 
   DijetRespCorrData data;
 
-  const int MAXIETA = 41;
-  const int NUMTOWERS = 83;
+  //const int MAXIETA = 41;
+  //const int NUMTOWERS = 83;
 
   float tjet_eta_, tjet_phi_, tjet_E_;
   float tjet_unkown_E_, tjet_electron_E_, tjet_muon_E_, tjet_photon_E_;
   int tjet_had_n_;
   vector<float>* tjet_had_EcalE_;
-  vector<int>* tjet_had_id_;
-  vector<int>* tjet_had_ntwrs_;
-  vector<int>* tjet_had_candtrackind_;
+  vector<int>* tjet_had_id_ = 0;
+  vector<int>* tjet_had_ntwrs_ = 0;
+  vector<int>* tjet_had_candtrackind_ = 0;
   int tjet_ntwrs_;
-  vector<int>* tjet_twr_ieta_;
-  vector<int>* tjet_twr_candtrackind_;
-  vector<int>* tjet_twr_clusterind_;
-  vector<float>* tjet_twr_hade_;
-  vector<float>* tjet_twr_frac_;
+  vector<int>* tjet_twr_ieta_ = 0;
+  vector<int>* tjet_twr_candtrackind_ = 0;
+  vector<int>* tjet_twr_clusterind_ = 0;
+  vector<float>* tjet_twr_hade_ = 0;
+  vector<float>* tjet_twr_frac_ = 0;
   int tjet_cluster_n_;
-  vector<float>* tjet_cluster_dR_;
+  vector<float>* tjet_cluster_dR_ = 0;
   int tjet_ncandtracks_;
-  vector<float>* tjet_candtrack_px_;
-  vector<float>* tjet_candtrack_py_;
-  vector<float>* tjet_candtrack_pz_;
-  vector<float>* tjet_candtrack_EcalE_;
+  vector<float>* tjet_candtrack_px_ = 0;
+  vector<float>* tjet_candtrack_py_ = 0;
+  vector<float>* tjet_candtrack_pz_ = 0;
+  vector<float>* tjet_candtrack_EcalE_ = 0;
   float pjet_eta_, pjet_phi_, pjet_E_;
   float pjet_unkown_E_, pjet_electron_E_, pjet_muon_E_, pjet_photon_E_;
   int pjet_had_n_;
-  vector<float>* pjet_had_EcalE_;
-  vector<int>* pjet_had_id_;
-  vector<int>* pjet_had_ntwrs_;
-  vector<int>* pjet_had_candtrackind_;
+  vector<float>* pjet_had_EcalE_ = 0;
+  vector<int>* pjet_had_id_ = 0;
+  vector<int>* pjet_had_ntwrs_ = 0;
+  vector<int>* pjet_had_candtrackind_ = 0;
   int pjet_ntwrs_;
-  vector<int>* pjet_twr_ieta_;
-  vector<int>* pjet_twr_candtrackind_;
-  vector<int>* pjet_twr_clusterind_;
-  vector<float>* pjet_twr_hade_;
-  vector<float>* pjet_twr_frac_;
+  vector<int>* pjet_twr_ieta_ = 0;
+  vector<int>* pjet_twr_candtrackind_ = 0;
+  vector<int>* pjet_twr_clusterind_ = 0;
+  vector<float>* pjet_twr_hade_ = 0;
+  vector<float>* pjet_twr_frac_ = 0;
   int pjet_cluster_n_;
-  vector<float>* pjet_cluster_dR_;
+  vector<float>* pjet_cluster_dR_ = 0;
   int pjet_ncandtracks_;
-  vector<float>* pjet_candtrack_px_;
-  vector<float>* pjet_candtrack_py_;
-  vector<float>* pjet_candtrack_pz_;
-  vector<float>* pjet_candtrack_EcalE_;
+  vector<float>* pjet_candtrack_px_ = 0;
+  vector<float>* pjet_candtrack_py_ = 0;
+  vector<float>* pjet_candtrack_pz_ = 0;
+  vector<float>* pjet_candtrack_EcalE_ = 0;
   float thirdjet_px_, thirdjet_py_;
   float dijet_deta_;
   float weight_;
@@ -123,7 +126,7 @@ void runPFJetCorr()
   int fails = 0;
 
   int nEvents = tree->GetEntries();
-  //nEvents = 100;
+  nEvents = 100;
   cout << "Running over " << nEvents << " events" << endl;
   for(int iEvent=0; iEvent<nEvents; iEvent++){
     if(iEvent % 1000 == 0){
@@ -135,7 +138,7 @@ void runPFJetCorr()
 
     if(tjet_ntwrs_ == 0 || pjet_ntwrs_ == 0){
       fails++;
-      passSel | 0x80;
+      passSel |= 0x80;
       //cout << "Fails: " << iEvent << " " << tjet_ntwrs_ << " " << pjet_ntwrs_ << endl;
       //continue;
     }
@@ -248,7 +251,7 @@ void runPFJetCorr()
   data.SetDoCandTrackEnergyDiff(false);
   cout << "Do CandTrack? " << data.GetDoCandTrackEnergyDiff() << endl;
 
-  //return;
+  return 0;
   
   TH1D* hist = data.doFit("h_corr","Response Corrections");
   hist->GetXaxis()->SetTitle("ieta");
@@ -263,5 +266,5 @@ void runPFJetCorr()
   cout << "Passes: " << nEvents - fails << " Fails: " << fails << endl;
   cout << "Events that passed cuts: " << h_PassSel_->GetBinContent(1) << endl;
 
-  return;
+  return 0;
 }
