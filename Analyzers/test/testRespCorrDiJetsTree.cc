@@ -1,11 +1,9 @@
-#include <vector>
-#include <map>
+#include "HcalClosureTest/Analyzers/interface/testRespCorrDiJetsTree.h"
 
-void testRespCorrDiJetsTree()
+using namespace std;
+
+int main()
 {
-  //gROOT->ProcessLine(".L loader.C+");
-  gROOT->ProcessLine(".L deltaR.C+");
-
   TChain* tree = new TChain("pf_dijettree");
   TString input = "/uscms_data/d3/dgsheffi/HCal/Trees/QCD_Pt-15to3000_0030487D5E5F_cluster.root";
   //TString input = "/uscms_data/d3/dgsheffi/HCal/Trees/Pion_Pt-50.root";
@@ -17,7 +15,7 @@ void testRespCorrDiJetsTree()
 
   float tpfjet_pt_, tpfjet_p_, tpfjet_E_, tpfjet_eta_, tpfjet_phi_, tpfjet_scale_;
   float tpfjet_gendr_, tpfjet_genpt_, tpfjet_genp_, tpfjet_genE_;
-  float tpfjet_EBE_, tpfjet_EEE_, tpfjet_HBE_, tpfjet_HEE_, tpfjet_HFE_;
+  //float tpfjet_EBE_, tpfjet_EEE_, tpfjet_HBE_, tpfjet_HEE_, tpfjet_HFE_;
   float tpfjet_unkown_E_, tpfjet_unkown_px_, tpfjet_unkown_py_, tpfjet_unkown_pz_, tpfjet_unkown_EcalE_;
   float tpfjet_electron_E_, tpfjet_electron_px_, tpfjet_electron_py_, tpfjet_electron_pz_, tpfjet_electron_EcalE_;
   float tpfjet_muon_E_, tpfjet_muon_px_, tpfjet_muon_py_, tpfjet_muon_pz_, tpfjet_muon_EcalE_;
@@ -57,7 +55,7 @@ void testRespCorrDiJetsTree()
   vector<float>* tpfjet_candtrack_EcalE_;
   float ppfjet_pt_, ppfjet_p_, ppfjet_E_, ppfjet_eta_, ppfjet_phi_, ppfjet_scale_;
   float ppfjet_gendr_, ppfjet_genpt_, ppfjet_genp_, ppfjet_genE_;
-  float ppfjet_EBE_, ppfjet_EEE_, ppfjet_HBE_, ppfjet_HEE_, ppfjet_HFE_;
+  //float ppfjet_EBE_, ppfjet_EEE_, ppfjet_HBE_, ppfjet_HEE_, ppfjet_HFE_;
   float ppfjet_unkown_E_, ppfjet_unkown_px_, ppfjet_unkown_py_, ppfjet_unkown_pz_, ppfjet_unkown_EcalE_;
   float ppfjet_electron_E_, ppfjet_electron_px_, ppfjet_electron_py_, ppfjet_electron_pz_, ppfjet_electron_EcalE_;
   float ppfjet_muon_E_, ppfjet_muon_px_, ppfjet_muon_py_, ppfjet_muon_pz_, ppfjet_muon_EcalE_;
@@ -157,6 +155,7 @@ void testRespCorrDiJetsTree()
   tree->SetBranchAddress("tpfjet_twr_elmttype",&tpfjet_twr_elmttype_);
   tree->SetBranchAddress("tpfjet_twr_dR",&tpfjet_twr_dR_);
   tree->SetBranchAddress("tpfjet_twr_clusterind",&tpfjet_twr_clusterind_);
+  tree->SetBranchAddress("tpfjet_cluster_n",&tpfjet_cluster_n_);
   tree->SetBranchAddress("tpfjet_cluster_eta",&tpfjet_cluster_eta_);
   tree->SetBranchAddress("tpfjet_cluster_phi",&tpfjet_cluster_phi_);
   tree->SetBranchAddress("tpfjet_cluster_dR",&tpfjet_cluster_dR_);
@@ -223,6 +222,7 @@ void testRespCorrDiJetsTree()
   tree->SetBranchAddress("ppfjet_twr_elmttype",&ppfjet_twr_elmttype_);
   tree->SetBranchAddress("ppfjet_twr_dR",&ppfjet_twr_dR_);
   tree->SetBranchAddress("ppfjet_twr_clusterind",&ppfjet_twr_clusterind_);
+  tree->SetBranchAddress("ppfjet_cluster_n",&ppfjet_cluster_n_);
   tree->SetBranchAddress("ppfjet_cluster_eta",&ppfjet_cluster_eta_);
   tree->SetBranchAddress("ppfjet_cluster_phi",&ppfjet_cluster_phi_);
   tree->SetBranchAddress("ppfjet_cluster_dR",&ppfjet_cluster_dR_);
@@ -588,12 +588,12 @@ void testRespCorrDiJetsTree()
   }
 
   for(int k=0; k<25; k++){
-    TH1D* tmpthist = h_tag_jet_Ediff_once_track_cluster_2d_->ProfileX(" ",k+1,k+1);
+    TH1D* tmpthist = (TH1D*)h_tag_jet_Ediff_once_track_cluster_2d_->ProfileX(" ",k+1,k+1);
     //cout << k << ": " << tmpthist->GetMean() << " " << tmpthist->GetRMS() << endl;
     h_tag_jet_Ediff_once_track_cluster_range_->SetBinContent(k+1,tmpthist->GetMean());
     h_tag_jet_Ediff_once_track_cluster_range_->SetBinError(k+1,tmpthist->GetRMS());
 
-    TH1D* tmpphist = h_probe_jet_Ediff_once_track_cluster_2d_->ProfileX(" ",k+1,k+1);
+    TH1D* tmpphist = (TH1D*)h_probe_jet_Ediff_once_track_cluster_2d_->ProfileX(" ",k+1,k+1);
     h_probe_jet_Ediff_once_track_cluster_range_->SetBinContent(k+1,tmpphist->GetMean());
     h_probe_jet_Ediff_once_track_cluster_range_->SetBinError(k+1,tmpphist->GetRMS());
   }
@@ -671,6 +671,6 @@ void testRespCorrDiJetsTree()
   cout << "Events without probe rechits: " << nEventsNoProbeRecHits << "/" << nEvents << " = " << (double)nEventsNoProbeRecHits/(double)nEvents << endl;
   cout << "Events without any rechits: " << nEventsNoRecHits << "/" << nEvents << " = " << (double)nEventsNoRecHits/(double)nEvents << endl;
 
-  return;
+  return 0;
 }
 
