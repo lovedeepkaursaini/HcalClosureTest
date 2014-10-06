@@ -267,7 +267,7 @@ DijetRespCorrData::DijetRespCorrData()
   fPrintLevel=5;
   fParStep=0.10;
   fParMin=0.0;
-  fParMax=100.0;//0.0;
+  fParMax=0.0;//0.0;
   fEcalRes=0.07;
   fHcalRes=1.15;
   fHfRes=1.35;
