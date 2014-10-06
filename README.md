@@ -5,7 +5,7 @@ Code to calibrate CMS's HCAL in eta using dijet balance. Created by J. P. Chou (
 
 Runs in CMSSW_5_3_18.
 
-# Creating the Tree
+# Creating the tree
 
 Running Analyzers/test/testRespCorrDiJets_cfg.py creates a tree containing the information needed for dijet balancing. It is set by default to run over CaloJets, PFJets, and GenJets. Any of these can be shut off by adding the lines
 
@@ -17,6 +17,10 @@ process.calcrespcorrdijets.doGenJets  = cms.bool(False)
 
 When using PFJets, the dataset being run over must be RECO as AOD does not save the necessary PF block information. When using GenJets, the dataset must contain SIM information.
 
+# Testing the results
+
+The source code Analyzers/test/testRespCorrDiJetsTree.cc creates an executable CMSSW_5_3_18/test/slc5_amd64_gcc462/testRespCorrDiJetsTree that creates plots to validate the tree.
+
 # Getting response corrections
 
-The macro DataFormat/test/runCaloJetCorr.C takes the tree and determines the response corrections.
+The source code  DataFormat/test/runCaloJetCorr.cc creates an excecutable CMSSW_5_3_18/test/slc5_amd64_gcc462/runPFJetCorr that takes the tree and determines the response corrections.
