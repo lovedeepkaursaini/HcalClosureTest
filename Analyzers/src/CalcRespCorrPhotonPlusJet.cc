@@ -129,7 +129,8 @@ void CalcRespCorrPhotonPlusJet::analyze(const edm::Event& iEvent, const edm::Eve
       else if (counter==2) photon_2nd = photon;
     }
     
-if(photon_tag.photon()){
+if(!photon_tag.photon())return;
+
     // fill tag photon variables
     tagPho_et_    = photon_tag.photon()->pt();
     //pho_2nd_pt_   = photon_2nd.photon()->pt();
@@ -145,7 +146,7 @@ tagPho_EcalIsoDR04_ = photon_tag.photon()->ecalRecHitSumEtConeDR04();
 tagPho_HcalIsoDR04_ = photon_tag.photon()->hcalTowerSumEtConeDR04();
 tagPho_HcalIsoDR0412_ = photon_tag.photon()->hcalTowerSumEtConeDR04() + (photon_tag.photon()->hadronicOverEm() - photon_tag.photon()->hadTowOverEm())*(photon_tag.photon()->energy()/cosh((photon_tag.photon()->eta())));
 
-}
+
 
 
     // Get PFJets
@@ -230,6 +231,10 @@ tagPho_HcalIsoDR0412_ = photon_tag.photon()->hcalTowerSumEtConeDR04() + (photon_
     std::set<PFJetCorretPair, PFJetCorretPairComp> pfjetcorretpairset;
     for(reco::PFJetCollection::const_iterator it=pfjets->begin(); it!=pfjets->end(); ++it) {
       const reco::PFJet* jet=&(*it);
+      double minDr=99999;
+      if(deltaR(photon_tag.photon()->eta(),photon_tag.photon()->phi(),jet->eta(), jet->phi())<minDr)
+	minDr=deltaR(photon_tag.photon()->eta(),photon_tag.photon()->phi(),jet->eta(), jet->phi());
+      if(minDr<0.5)continue;
       pfjetcorretpairset.insert( PFJetCorretPair(jet, correctorPF->correction(jet->p4())) );
     }
 
