@@ -14,6 +14,7 @@
 #include "TH2D.h"
 #include "TClonesArray.h"
 
+#include <iostream>
 #include <vector>
 #include <set>
 #include <map>
@@ -51,10 +52,18 @@ CalcRespCorrPhotonPlusJet::~CalcRespCorrPhotonPlusJet()
 void CalcRespCorrPhotonPlusJet::analyze(const edm::Event& iEvent, const edm::EventSetup& evSetup)
 { 
 
-//cout<<"in analyze method...."<<endl;
+  //  cout<<"in analyze method...."<<endl;
+  tagPho_pfiso_mycharged03.clear();
 
   edm::Handle<std::vector<reco::GenJet>> genjets;
   edm::Handle<std::vector<reco::GenParticle> > genparticles;
+
+  edm::Handle<reco::PFCandidateCollection> pfHandle;
+  iEvent.getByLabel("particleFlow", pfHandle);
+
+  edm::Handle<reco::VertexCollection> vtxHandle;
+  iEvent.getByLabel("offlinePrimaryVertices", vtxHandle);
+
   if(doGenJets_){
     // Get GenJets
     iEvent.getByLabel(genJetCollName_,genjets);
@@ -82,6 +91,7 @@ void CalcRespCorrPhotonPlusJet::analyze(const edm::Event& iEvent, const edm::Eve
     }
     pf_weight_ = genEventInfoProduct->weight();
   }
+
 
   // Run over PFJets //
   
@@ -133,7 +143,7 @@ if(!photon_tag.photon())return;
 
     // fill tag photon variables
     tagPho_et_    = photon_tag.photon()->pt();
-    //pho_2nd_pt_   = photon_2nd.photon()->pt();
+    ////////pho_2nd_pt_   = photon_2nd.photon()->pt();
     tagPho_energy_     = photon_tag.photon()->energy();
     tagPho_eta_   = photon_tag.photon()->eta();
     tagPho_phi_   = photon_tag.photon()->phi();
@@ -141,13 +151,14 @@ if(!photon_tag.photon())return;
     tagPho_HoE_   = photon_tag.photon()->hadTowOverEm();
     tagPho_r9_    = photon_tag.photon()->r9();
     tagPho_pixelSeed_ = photon_tag.photon()->hasPixelSeed();
-tagPho_TrkIsoHollowDR04_ =  photon_tag.photon()->trkSumPtHollowConeDR04();
-tagPho_EcalIsoDR04_ = photon_tag.photon()->ecalRecHitSumEtConeDR04();
-tagPho_HcalIsoDR04_ = photon_tag.photon()->hcalTowerSumEtConeDR04();
-tagPho_HcalIsoDR0412_ = photon_tag.photon()->hcalTowerSumEtConeDR04() + (photon_tag.photon()->hadronicOverEm() - photon_tag.photon()->hadTowOverEm())*(photon_tag.photon()->energy()/cosh((photon_tag.photon()->eta())));
-
-
-
+    tagPho_TrkIsoHollowDR04_ =  photon_tag.photon()->trkSumPtHollowConeDR04();
+    tagPho_EcalIsoDR04_ = photon_tag.photon()->ecalRecHitSumEtConeDR04();
+    tagPho_HcalIsoDR04_ = photon_tag.photon()->hcalTowerSumEtConeDR04();
+    tagPho_HcalIsoDR0412_ = photon_tag.photon()->hcalTowerSumEtConeDR04() + (photon_tag.photon()->hadronicOverEm() - photon_tag.photon()->hadTowOverEm())*(photon_tag.photon()->energy()/cosh((photon_tag.photon()->eta())));
+    
+    tagPho_pfiso_myphoton03_  = pfEcalIso(photon_tag.photon(), pfHandle, 0.3, 0.0, 0.070, 0.015, 0.0, 0.0, 0.0, reco::PFCandidate::gamma);
+    tagPho_pfiso_myneutral03_ = pfHcalIso(photon_tag.photon(), pfHandle, 0.3, 0.0, reco::PFCandidate::h0);
+    tagPho_pfiso_mycharged03.push_back(pfTkIsoWithVertex(photon_tag.photon(), pfHandle, vtxHandle, 0.3, 0.02, 0.02, 0.0, 0.2, 0.1, reco::PFCandidate::h));
 
     // Get PFJets
     edm::Handle<reco::PFJetCollection> pfjets;
@@ -853,6 +864,10 @@ void CalcRespCorrPhotonPlusJet::beginJob()
     pf_tree_->Branch("tagPho_EcalIsoDR04",&tagPho_EcalIsoDR04_, "tagPho_EcalIsoDR04/F");
     pf_tree_->Branch("tagPho_HcalIsoDR04",&tagPho_HcalIsoDR04_, "tagPho_HcalIsoDR04/F");
     pf_tree_->Branch("tagPho_HcalIsoDR0412",&tagPho_HcalIsoDR0412_, "tagPho_HcalIsoDR0412/F");
+    pf_tree_->Branch("tagPho_pfiso_myphoton03",&tagPho_pfiso_myphoton03_, "tagPho_pfiso_myphoton03/F");
+    pf_tree_->Branch("tagPho_pfiso_myneutral03",&tagPho_pfiso_myneutral03_, "tagPho_pfiso_myneutral03/F");
+    pf_tree_->Branch("tagPho_pfiso_mycharged03","std::vector<std::vector<float> >", &tagPho_pfiso_mycharged03);
+
     pf_tree_->Branch("ppfjet_pt",&ppfjet_pt_, "ppfjet_pt/F");
     pf_tree_->Branch("ppfjet_p",&ppfjet_p_, "ppfjet_p/F");
     pf_tree_->Branch("ppfjet_E",&ppfjet_E_, "ppfjet_E/F");
@@ -966,6 +981,118 @@ CalcRespCorrPhotonPlusJet::endJob() {
 }
 
 // helper function
+
+float CalcRespCorrPhotonPlusJet::pfEcalIso(const reco::Photon* localPho1, edm::Handle<reco::PFCandidateCollection> pfHandle, float dRmax, float dRVetoBarrel, float dRVetoEndcap, float etaStripBarrel, float etaStripEndcap, float energyBarrel, float energyEndcap, reco::PFCandidate::ParticleType pfToUse) {
+  //std::cout << "Inside pfEcalIso" << std::endl;
+  reco::Photon* localPho = localPho1->clone();
+  float dRVeto;
+  float etaStrip;
+
+  if (localPho->isEB()) {
+    dRVeto = dRVetoBarrel;
+    etaStrip = etaStripBarrel;
+  } else {
+    dRVeto = dRVetoEndcap;
+    etaStrip = etaStripEndcap;
+  }
+  const reco::PFCandidateCollection* forIsolation = pfHandle.product();
+  int nsize = forIsolation->size();
+  float sum = 0;
+  for (int i=0; i<nsize; i++) {
+    const reco::PFCandidate& pfc = (*forIsolation)[i];
+    if (pfc.particleId() ==  pfToUse) {
+      // Do not include the PFCandidate associated by SC Ref to the reco::Photon                                                       
+      if(pfc.superClusterRef().isNonnull() && localPho->superCluster().isNonnull()) {
+        if (pfc.superClusterRef() == localPho->superCluster())
+          continue;
+      }
+
+      if (localPho->isEB()) {
+        if (fabs(pfc.pt()) < energyBarrel)
+          continue;
+      } else {
+        if (fabs(pfc.energy()) < energyEndcap)
+          continue;
+      }
+      // Shift the photon direction vector according to the PF vertex                                                                  
+      math::XYZPoint pfvtx = pfc.vertex();
+      math::XYZVector photon_directionWrtVtx(localPho->superCluster()->x() - pfvtx.x(),
+                                             localPho->superCluster()->y() - pfvtx.y(),
+                                             localPho->superCluster()->z() - pfvtx.z());
+
+      float dEta = fabs(photon_directionWrtVtx.Eta() - pfc.momentum().Eta());
+      float dR = deltaR(photon_directionWrtVtx.Eta(), photon_directionWrtVtx.Phi(), pfc.momentum().Eta(), pfc.momentum().Phi());
+
+      if (dEta < etaStrip)
+        continue;
+
+      if(dR > dRmax || dR < dRVeto)
+        continue;
+
+      sum += pfc.pt();
+    }
+  }
+  return sum;
+}
+
+
+float CalcRespCorrPhotonPlusJet::pfHcalIso(const reco::Photon* localPho,edm::Handle<reco::PFCandidateCollection> pfHandle,float dRmax, float dRveto,reco::PFCandidate::ParticleType pfToUse) {
+  //std::cout << "Inside pfHcalIso" << std::endl;
+  return pfEcalIso(localPho, pfHandle, dRmax, dRveto, dRveto, 0.0, 0.0, 0.0, 0.0, pfToUse);
+
+}
+
+std::vector<float> CalcRespCorrPhotonPlusJet::pfTkIsoWithVertex(const reco::Photon* localPho, edm::Handle<reco::PFCandidateCollection> pfHandle, edm::Handle<reco::VertexCollection> vtxHandle, float dRmax, float dRvetoBarrel, float dRvetoEndcap, float ptMin, float dzMax, float dxyMax, reco::PFCandidate::ParticleType pfToUse) {
+
+  ////  std::cout << "Inside pfTkIsoWithVertex()" << std::endl;
+
+  float dRveto;
+  if (localPho->isEB())
+    dRveto = dRvetoBarrel;
+  else
+    dRveto = dRvetoEndcap;
+
+  std::vector<float> result;
+  const reco::PFCandidateCollection* forIsolation = pfHandle.product();
+
+  //Calculate isolation sum separately for each vertex                                                                                 
+  for(unsigned int ivtx=0; ivtx<vtxHandle->size(); ++ivtx) {
+
+    // Shift the photon according to the vertex                                                                                        
+    reco::VertexRef vtx(vtxHandle, ivtx);
+    math::XYZVector photon_directionWrtVtx(localPho->superCluster()->x() - vtx->x(),
+                                           localPho->superCluster()->y() - vtx->y(),
+                                           localPho->superCluster()->z() - vtx->z());
+
+    float sum = 0;
+    // Loop over the PFCandidates                                                                                                      
+    for(unsigned i=0; i<forIsolation->size(); i++) {
+
+      const reco::PFCandidate& pfc = (*forIsolation)[i];
+
+      //require that PFCandidate is a charged hadron                                                                                   
+      if (pfc.particleId() == pfToUse) {
+        if (pfc.pt() < ptMin)
+          continue;
+
+        float dz = fabs(pfc.trackRef()->dz(vtx->position()));
+        if (dz > dzMax) continue;
+
+        float dxy = fabs(pfc.trackRef()->dxy(vtx->position()));
+        if(fabs(dxy) > dxyMax) continue;
+        float dR = deltaR(photon_directionWrtVtx.Eta(), photon_directionWrtVtx.Phi(), pfc.momentum().Eta(), pfc.momentum().Phi());
+        if(dR > dRmax || dR < dRveto) continue;
+
+        sum += pfc.pt();
+      }
+    }
+
+    result.push_back(sum);
+  }
+
+  return result;
+}
+
 
 double CalcRespCorrPhotonPlusJet::deltaR(const reco::Jet* j1, const reco::Jet* j2)
 {
