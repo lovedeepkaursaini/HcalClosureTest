@@ -3,10 +3,16 @@
 #include "DataFormats/JetReco/interface/CaloJetCollection.h"
 #include "DataFormats/JetReco/interface/PFJetCollection.h"
 #include "DataFormats/JetReco/interface/GenJetCollection.h"
+#include "DataFormats/TrackReco/interface/Track.h"
+#include "DataFormats/TrackReco/interface/TrackExtra.h"
 #include "JetMETCorrections/Objects/interface/JetCorrector.h"
 #include "FWCore/Utilities/interface/EDMException.h"
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
 #include "RecoEgamma/EgammaElectronAlgos/interface/ElectronHcalHelper.h"
+#include "RecoEgamma/EgammaTools/interface/ConversionTools.h"
+#include "RecoEgamma/EgammaTools/interface/ConversionFinder.h"
+#include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
+
 
 #include "TTree.h"
 #include "TFile.h"
@@ -63,6 +69,16 @@ void CalcRespCorrPhotonPlusJet::analyze(const edm::Event& iEvent, const edm::Eve
 
   edm::Handle<reco::VertexCollection> vtxHandle;
   iEvent.getByLabel("offlinePrimaryVertices", vtxHandle);
+
+  edm::Handle<reco::GsfElectronCollection> gsfElectronHandle;
+  iEvent.getByLabel("gsfElectrons", gsfElectronHandle);
+
+  edm::Handle<reco::ConversionCollection> convH;
+  iEvent.getByLabel("ConvertedPhotonColl", convH);
+
+  edm::Handle<reco::BeamSpot> beamSpotHandle;
+  iEvent.getByLabel("BeamSpot", beamSpotHandle);
+
 
   if(doGenJets_){
     // Get GenJets
@@ -159,6 +175,10 @@ if(!photon_tag.photon())return;
     tagPho_pfiso_myphoton03_  = pfEcalIso(photon_tag.photon(), pfHandle, 0.3, 0.0, 0.070, 0.015, 0.0, 0.0, 0.0, reco::PFCandidate::gamma);
     tagPho_pfiso_myneutral03_ = pfHcalIso(photon_tag.photon(), pfHandle, 0.3, 0.0, reco::PFCandidate::h0);
     tagPho_pfiso_mycharged03.push_back(pfTkIsoWithVertex(photon_tag.photon(), pfHandle, vtxHandle, 0.3, 0.02, 0.02, 0.0, 0.2, 0.1, reco::PFCandidate::h));
+
+    tagPho_ConvSafeEleVeto_ = ((int)ConversionTools::hasMatchedPromptElectron(photon_tag.photon()->superCluster(), gsfElectronHandle, convH, beamSpotHandle->position()));
+
+
 
     // Get PFJets
     edm::Handle<reco::PFJetCollection> pfjets;
@@ -867,7 +887,7 @@ void CalcRespCorrPhotonPlusJet::beginJob()
     pf_tree_->Branch("tagPho_pfiso_myphoton03",&tagPho_pfiso_myphoton03_, "tagPho_pfiso_myphoton03/F");
     pf_tree_->Branch("tagPho_pfiso_myneutral03",&tagPho_pfiso_myneutral03_, "tagPho_pfiso_myneutral03/F");
     pf_tree_->Branch("tagPho_pfiso_mycharged03","std::vector<std::vector<float> >", &tagPho_pfiso_mycharged03);
-
+    pf_tree_->Branch("tagPho_ConvSafeEleVeto", tagPho_ConvSafeEleVeto_, "tagPho_ConvSafeEleVeto/I");
     pf_tree_->Branch("ppfjet_pt",&ppfjet_pt_, "ppfjet_pt/F");
     pf_tree_->Branch("ppfjet_p",&ppfjet_p_, "ppfjet_p/F");
     pf_tree_->Branch("ppfjet_E",&ppfjet_E_, "ppfjet_E/F");

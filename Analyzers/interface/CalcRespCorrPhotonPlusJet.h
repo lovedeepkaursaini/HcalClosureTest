@@ -13,6 +13,9 @@
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/Framework/interface/ESHandle.h"
+#include "RecoEgamma/EgammaTools/interface/ggPFClusters.h"
+#include "RecoEgamma/EgammaTools/interface/ggPFESClusters.h"
+#include "RecoEgamma/EgammaTools/interface/ggPFTracks.h"
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "DataFormats/EgammaCandidates/interface/PhotonFwd.h"
@@ -38,6 +41,7 @@
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidateFwd.h"
+
 
 // forward declarations
 class TH1D;
@@ -178,6 +182,7 @@ class CalcRespCorrPhotonPlusJet : public edm::EDAnalyzer {
   float tagPho_et_, pho_2nd_pt_, tagPho_energy_, tagPho_eta_, tagPho_phi_, tagPho_sieie_;
   float tagPho_HoE_, tagPho_r9_, tagPho_EcalIsoDR04_, tagPho_HcalIsoDR04_, tagPho_HcalIsoDR0412_, tagPho_TrkIsoHollowDR04_, tagPho_pfiso_myphoton03_;
   float tagPho_pfiso_myneutral03_;
+  int tagPho_ConvSafeEleVeto_;
   
 
 int tagPho_pixelSeed_;  
