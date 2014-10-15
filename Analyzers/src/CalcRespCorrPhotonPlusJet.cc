@@ -73,11 +73,13 @@ void CalcRespCorrPhotonPlusJet::analyze(const edm::Event& iEvent, const edm::Eve
   edm::Handle<reco::GsfElectronCollection> gsfElectronHandle;
   iEvent.getByLabel("gsfElectrons", gsfElectronHandle);
 
+  ///  std::cout << "getting convH" << std::endl;
   edm::Handle<reco::ConversionCollection> convH;
-  iEvent.getByLabel("ConvertedPhotonColl", convH);
+  iEvent.getByLabel("allConversions", convH);
 
+  /////  std::cout << "getting beamSpotHandle" << std::endl;
   edm::Handle<reco::BeamSpot> beamSpotHandle;
-  iEvent.getByLabel("BeamSpot", beamSpotHandle);
+  iEvent.getByLabel("offlineBeamSpot", beamSpotHandle);
 
 
   if(doGenJets_){
@@ -846,6 +848,9 @@ if(pfjet_probe.jet()){
 // ------------ method called once each job just before starting event loop  ------------
 void CalcRespCorrPhotonPlusJet::beginJob()
 {
+
+  ///  std::cout << "Start beginJob()" << std::endl;
+
   // book histograms
   rootfile_ = new TFile(rootHistFilename_.c_str(), "RECREATE");
 
@@ -887,7 +892,7 @@ void CalcRespCorrPhotonPlusJet::beginJob()
     pf_tree_->Branch("tagPho_pfiso_myphoton03",&tagPho_pfiso_myphoton03_, "tagPho_pfiso_myphoton03/F");
     pf_tree_->Branch("tagPho_pfiso_myneutral03",&tagPho_pfiso_myneutral03_, "tagPho_pfiso_myneutral03/F");
     pf_tree_->Branch("tagPho_pfiso_mycharged03","std::vector<std::vector<float> >", &tagPho_pfiso_mycharged03);
-    pf_tree_->Branch("tagPho_ConvSafeEleVeto", tagPho_ConvSafeEleVeto_, "tagPho_ConvSafeEleVeto/I");
+    pf_tree_->Branch("tagPho_ConvSafeEleVeto", &tagPho_ConvSafeEleVeto_, "tagPho_ConvSafeEleVeto/I");
     pf_tree_->Branch("ppfjet_pt",&ppfjet_pt_, "ppfjet_pt/F");
     pf_tree_->Branch("ppfjet_p",&ppfjet_p_, "ppfjet_p/F");
     pf_tree_->Branch("ppfjet_E",&ppfjet_E_, "ppfjet_E/F");
@@ -969,11 +974,13 @@ void CalcRespCorrPhotonPlusJet::beginJob()
   }
 
   return;
+  ////  std::cout << "End beginJob()" << std::endl;
 }  
 
 // ------------ method called once each job just after ending the event loop  ------------
 void 
 CalcRespCorrPhotonPlusJet::endJob() {
+  ///  std::cout << "Start endJob()" << std::endl;
   // write histograms
   rootfile_->cd();
 
@@ -997,13 +1004,13 @@ CalcRespCorrPhotonPlusJet::endJob() {
     pf_tree_->Write();
   }
   rootfile_->Close();
-
+  ////  std::cout << "End endJob()" << std::endl;
 }
 
 // helper function
 
 float CalcRespCorrPhotonPlusJet::pfEcalIso(const reco::Photon* localPho1, edm::Handle<reco::PFCandidateCollection> pfHandle, float dRmax, float dRVetoBarrel, float dRVetoEndcap, float etaStripBarrel, float etaStripEndcap, float energyBarrel, float energyEndcap, reco::PFCandidate::ParticleType pfToUse) {
-  //std::cout << "Inside pfEcalIso" << std::endl;
+  ////std::cout << "Inside pfEcalIso" << std::endl;
   reco::Photon* localPho = localPho1->clone();
   float dRVeto;
   float etaStrip;
@@ -1057,14 +1064,15 @@ float CalcRespCorrPhotonPlusJet::pfEcalIso(const reco::Photon* localPho1, edm::H
 
 
 float CalcRespCorrPhotonPlusJet::pfHcalIso(const reco::Photon* localPho,edm::Handle<reco::PFCandidateCollection> pfHandle,float dRmax, float dRveto,reco::PFCandidate::ParticleType pfToUse) {
-  //std::cout << "Inside pfHcalIso" << std::endl;
+  //// std::cout << "Inside pfHcalIso" << std::endl;
   return pfEcalIso(localPho, pfHandle, dRmax, dRveto, dRveto, 0.0, 0.0, 0.0, 0.0, pfToUse);
 
 }
 
-std::vector<float> CalcRespCorrPhotonPlusJet::pfTkIsoWithVertex(const reco::Photon* localPho, edm::Handle<reco::PFCandidateCollection> pfHandle, edm::Handle<reco::VertexCollection> vtxHandle, float dRmax, float dRvetoBarrel, float dRvetoEndcap, float ptMin, float dzMax, float dxyMax, reco::PFCandidate::ParticleType pfToUse) {
+std::vector<float> CalcRespCorrPhotonPlusJet::pfTkIsoWithVertex(const reco::Photon* localPho1, edm::Handle<reco::PFCandidateCollection> pfHandle, edm::Handle<reco::VertexCollection> vtxHandle, float dRmax, float dRvetoBarrel, float dRvetoEndcap, float ptMin, float dzMax, float dxyMax, reco::PFCandidate::ParticleType pfToUse) {
 
-  ////  std::cout << "Inside pfTkIsoWithVertex()" << std::endl;
+  //  std::cout << "Inside pfTkIsoWithVertex()" << std::endl;
+  reco::Photon* localPho = localPho1->clone();
 
   float dRveto;
   if (localPho->isEB())
@@ -1075,23 +1083,29 @@ std::vector<float> CalcRespCorrPhotonPlusJet::pfTkIsoWithVertex(const reco::Phot
   std::vector<float> result;
   const reco::PFCandidateCollection* forIsolation = pfHandle.product();
 
-  //Calculate isolation sum separately for each vertex                                                                                 
-  for(unsigned int ivtx=0; ivtx<vtxHandle->size(); ++ivtx) {
-
+  //Calculate isolation sum separately for each vertex
+  //  std::cout << "vtxHandle->size() = " << vtxHandle->size() << std::endl;
+  for(unsigned int ivtx=0; ivtx<(vtxHandle->size()); ++ivtx) {
+    //std::cout << "Vtx " << ivtx << std::endl;
     // Shift the photon according to the vertex                                                                                        
     reco::VertexRef vtx(vtxHandle, ivtx);
     math::XYZVector photon_directionWrtVtx(localPho->superCluster()->x() - vtx->x(),
                                            localPho->superCluster()->y() - vtx->y(),
                                            localPho->superCluster()->z() - vtx->z());
-
+    //std::cout << "pfTkIsoWithVertex :: Will Loop over the PFCandidates" << std::endl;
     float sum = 0;
     // Loop over the PFCandidates                                                                                                      
     for(unsigned i=0; i<forIsolation->size(); i++) {
-
+      //    std::cout << "inside loop" << std::endl; 
       const reco::PFCandidate& pfc = (*forIsolation)[i];
 
-      //require that PFCandidate is a charged hadron                                                                                   
+      //require that PFCandidate is a charged hadron
+      // std::cout << "pfToUse=" << pfToUse << std::endl;
+      //  std::cout<< "pfc.particleId()=" << pfc.particleId() << std::endl;
+
       if (pfc.particleId() == pfToUse) {
+	//std::cout << "\n ***** HERE pfc.particleId() == pfToUse " << std::endl;
+	//std::cout << "pfc.pt()=" << pfc.pt() << std::endl;
         if (pfc.pt() < ptMin)
           continue;
 
@@ -1102,15 +1116,18 @@ std::vector<float> CalcRespCorrPhotonPlusJet::pfTkIsoWithVertex(const reco::Phot
         if(fabs(dxy) > dxyMax) continue;
         float dR = deltaR(photon_directionWrtVtx.Eta(), photon_directionWrtVtx.Phi(), pfc.momentum().Eta(), pfc.momentum().Phi());
         if(dR > dRmax || dR < dRveto) continue;
-
         sum += pfc.pt();
+	//	std::cout << "pt=" << pfc.pt() << std::endl;
       }
     }
-
+    //    std::cout << "sum=" << sum << std::endl;
+    sum = sum*1.0;
     result.push_back(sum);
   }
-
+  //  std::cout << "Will return result" << std::endl;
+  // std::cout << "result" << &result << std::endl;
   return result;
+  //std::cout << "Result returned" << std::endl;
 }
 
 
