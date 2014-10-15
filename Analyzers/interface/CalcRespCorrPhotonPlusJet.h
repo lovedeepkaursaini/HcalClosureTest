@@ -184,9 +184,11 @@ class CalcRespCorrPhotonPlusJet : public edm::EDAnalyzer {
   float tagPho_pfiso_myneutral03_;
   int tagPho_ConvSafeEleVeto_;
   
-
-int tagPho_pixelSeed_;  
-  float pcalojet_pt_, calo_2ndjet_pt_, pcalojet_p_, pcalojet_eta_, pcalojet_phi_, pcalojet_emf_, pcalojet_scale_;
+  
+  int tagPho_pixelSeed_;  
+  float pcalojet_pt_, calo_2ndjet_pt_, pcalojet_p_, pcalojet_eta_, pcalojet_phi_, pcalojet_emf_, pcalojet_scale_, ppfjet_NeutralHadronFrac_, ppfjet_NeutralEMFrac_; 
+  int ppfjet_nConstituents_;
+  float ppfjet_ChargedHadronFrac_, ppfjet_ChargedEMFrac_, ppfjet_ChargedMultiplicity_  ;
   float pcalojet_gendr_, pcalojet_genpt_, pcalojet_genp_;
   float pcalojet_EBE_, pcalojet_EEE_, pcalojet_HBE_, pcalojet_HEE_, pcalojet_HFE_;
   int pcalojet_ntwrs_;

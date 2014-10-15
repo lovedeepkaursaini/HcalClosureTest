@@ -336,51 +336,57 @@ if(!photon_tag.photon())return;
     h_ntypes_->Fill(ntypes);
     
     // fill probe jet variables
-if(pfjet_probe.jet()){
-    ppfjet_pt_    = pfjet_probe.jet()->pt();
-    if(pf_2ndjet.jet())pf_2ndjet_pt_ = pf_2ndjet.jet()->pt();
-	else pf_2ndjet_pt_ = -1;
-    ppfjet_p_     = pfjet_probe.jet()->p();
-    ppfjet_E_     = pfjet_probe.jet()->energy();
-    ppfjet_eta_   = pfjet_probe.jet()->eta();
-    ppfjet_phi_   = pfjet_probe.jet()->phi();
-    ppfjet_scale_ = pfjet_probe.scale();
-    ppfjet_ntwrs_=0;
-    ppfjet_ncandtracks_=0;
-    
-    if(iEvent.id().event() == debugEvent){
-      std::cout << "Probe eta: " << ppfjet_eta_ << " phi: " << ppfjet_phi_ << std::endl;
-    }
-    //std::cout << "Probe eta: " << ppfjet_eta_ << " phi: " << ppfjet_phi_ << std::endl; //debug
-    
-    // Get PF constituents and fill HCAL towers
-    std::vector<reco::PFCandidatePtr> probeconst=pfjet_probe.jet()->getPFConstituents();
-    for(std::vector<reco::PFCandidatePtr>::const_iterator it=probeconst.begin(); it!=probeconst.end(); ++it){
-      bool hasTrack = false;
-      reco::PFCandidate::ParticleType candidateType = (*it)->particleId();
-      switch(candidateType){
-      case reco::PFCandidate::X:
-	ppfjet_unkown_E_ += (*it)->energy();
-	ppfjet_unkown_px_ += (*it)->px();
-	ppfjet_unkown_py_ += (*it)->py();
-	ppfjet_unkown_pz_ += (*it)->pz();
-	ppfjet_unkown_EcalE_ += (*it)->ecalEnergy();
-	ppfjet_unkown_n_++;
-	continue;
-      case reco::PFCandidate::h:
-	{
-	  ppfjet_had_E_.push_back((*it)->energy());
-	  ppfjet_had_px_.push_back((*it)->px());
-	  ppfjet_had_py_.push_back((*it)->py());
-	  ppfjet_had_pz_.push_back((*it)->pz());
-	  ppfjet_had_EcalE_.push_back((*it)->ecalEnergy());
-	  ppfjet_had_rawHcalE_.push_back((*it)->rawHcalEnergy());
-	  ppfjet_had_id_.push_back(0);
-	  ppfjet_had_ntwrs_.push_back(0);
+    if(pfjet_probe.jet()){
+      ppfjet_pt_    = pfjet_probe.jet()->pt();
+      if(pf_2ndjet.jet())pf_2ndjet_pt_ = pf_2ndjet.jet()->pt();
+      else pf_2ndjet_pt_ = -1;
+      ppfjet_p_     = pfjet_probe.jet()->p();
+      ppfjet_E_     = pfjet_probe.jet()->energy();
+      ppfjet_eta_   = pfjet_probe.jet()->eta();
+      ppfjet_phi_   = pfjet_probe.jet()->phi();
+      ppfjet_NeutralHadronFrac_  = pfjet_probe.jet()->neutralHadronEnergyFraction();
+      ppfjet_NeutralEMFrac_      = pfjet_probe.jet()->neutralEmEnergyFraction();
+      ppfjet_nConstituents_      = pfjet_probe.jet()->nConstituents();
+      ppfjet_ChargedHadronFrac_  = pfjet_probe.jet()->chargedHadronEnergyFraction();
+      ppfjet_ChargedMultiplicity_= pfjet_probe.jet()->chargedMultiplicity();
+      ppfjet_ChargedEMFrac_      = pfjet_probe.jet()->chargedEmEnergyFraction();
+      ppfjet_scale_ = pfjet_probe.scale();
+      ppfjet_ntwrs_=0;
+      ppfjet_ncandtracks_=0;
+      
+      if(iEvent.id().event() == debugEvent){
+	std::cout << "Probe eta: " << ppfjet_eta_ << " phi: " << ppfjet_phi_ << std::endl;
+      }
+      //std::cout << "Probe eta: " << ppfjet_eta_ << " phi: " << ppfjet_phi_ << std::endl; //debug
+      
+      // Get PF constituents and fill HCAL towers
+      std::vector<reco::PFCandidatePtr> probeconst=pfjet_probe.jet()->getPFConstituents();
+      for(std::vector<reco::PFCandidatePtr>::const_iterator it=probeconst.begin(); it!=probeconst.end(); ++it){
+	bool hasTrack = false;
+	reco::PFCandidate::ParticleType candidateType = (*it)->particleId();
+	switch(candidateType){
+	case reco::PFCandidate::X:
+	  ppfjet_unkown_E_ += (*it)->energy();
+	  ppfjet_unkown_px_ += (*it)->px();
+	  ppfjet_unkown_py_ += (*it)->py();
+	  ppfjet_unkown_pz_ += (*it)->pz();
+	  ppfjet_unkown_EcalE_ += (*it)->ecalEnergy();
+	  ppfjet_unkown_n_++;
+	  continue;
+	case reco::PFCandidate::h:
+	  {
+	    ppfjet_had_E_.push_back((*it)->energy());
+	    ppfjet_had_px_.push_back((*it)->px());
+	    ppfjet_had_py_.push_back((*it)->py());
+	    ppfjet_had_pz_.push_back((*it)->pz());
+	    ppfjet_had_EcalE_.push_back((*it)->ecalEnergy());
+	    ppfjet_had_rawHcalE_.push_back((*it)->rawHcalEnergy());
+	    ppfjet_had_id_.push_back(0);
+	    ppfjet_had_ntwrs_.push_back(0);
 	    ppfjet_had_n_++;
 	    
 	    if(doGenJets_){
- //cout<<"38%"<<endl;
+	      //cout<<"38%"<<endl;
 	      float gendr = 99999;
 	      float genE = 0;
 	      int genpdgId = 0;
@@ -899,6 +905,12 @@ void CalcRespCorrPhotonPlusJet::beginJob()
     pf_tree_->Branch("ppfjet_eta",&ppfjet_eta_, "ppfjet_eta/F");
     pf_tree_->Branch("ppfjet_phi",&ppfjet_phi_, "ppfjet_phi/F");
     pf_tree_->Branch("ppfjet_scale",&ppfjet_scale_, "ppfjet_scale/F");
+    pf_tree_->Branch("ppfjet_NeutralHadronFrac", &ppfjet_NeutralHadronFrac_, "ppfjet_NeutralHadronFrac/F");
+    pf_tree_->Branch("ppfjet_NeutralEMFrac", &ppfjet_NeutralEMFrac_, "ppfjet_NeutralEMFrac/F");
+    pf_tree_->Branch("ppfjet_nConstituents", &ppfjet_nConstituents_, "ppfjet_nConstituents/I");
+    pf_tree_->Branch("ppfjet_ChargedHadronFrac", &ppfjet_ChargedHadronFrac_, "ppfjet_ChargedHadronFrac/F");
+    pf_tree_->Branch("ppfjet_ChargedMultiplicity", &ppfjet_ChargedMultiplicity_, "ppfjet_ChargedMultiplicity/F");
+    pf_tree_->Branch("ppfjet_ChargedEMFrac", &ppfjet_ChargedEMFrac_, "ppfjet_ChargedEMFrac/F");
     if(doGenJets_){
       pf_tree_->Branch("ppfjet_genpt",&ppfjet_genpt_, "ppfjet_genpt/F");
       pf_tree_->Branch("ppfjet_genp",&ppfjet_genp_, "ppfjet_genp/F");
