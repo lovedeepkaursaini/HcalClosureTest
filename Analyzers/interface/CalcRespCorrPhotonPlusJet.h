@@ -13,6 +13,9 @@
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/Framework/interface/ESHandle.h"
+#include "RecoEgamma/EgammaTools/interface/ggPFClusters.h"
+#include "RecoEgamma/EgammaTools/interface/ggPFESClusters.h"
+#include "RecoEgamma/EgammaTools/interface/ggPFTracks.h"
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "DataFormats/EgammaCandidates/interface/PhotonFwd.h"
@@ -34,6 +37,11 @@
 #include "Geometry/Records/interface/CaloGeometryRecord.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
+#include "DataFormats/VertexReco/interface/Vertex.h"
+#include "DataFormats/VertexReco/interface/VertexFwd.h"
+#include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
+#include "DataFormats/ParticleFlowCandidate/interface/PFCandidateFwd.h"
+
 
 // forward declarations
 class TH1D;
@@ -113,6 +121,12 @@ class CalcRespCorrPhotonPlusJet : public edm::EDAnalyzer {
  public:
   explicit CalcRespCorrPhotonPlusJet(const edm::ParameterSet&);
   ~CalcRespCorrPhotonPlusJet();
+
+  float  pfEcalIso(const reco::Photon*, edm::Handle<reco::PFCandidateCollection>, float, float, float, float, float, float, float,       reco::PFCandidate::ParticleType);
+
+  float  pfHcalIso(const reco::Photon*, edm::Handle<reco::PFCandidateCollection>, float, float, reco::PFCandidate::ParticleType);
+
+  std::vector<float> pfTkIsoWithVertex(const reco::Photon*, edm::Handle<reco::PFCandidateCollection>, edm::Handle<reco::VertexCollection>, float, float, float, float, float, float, reco::PFCandidate::ParticleType);
   
   
  private:
@@ -163,12 +177,18 @@ class CalcRespCorrPhotonPlusJet : public edm::EDAnalyzer {
   TTree* photon_tree_;
   TTree* calo_tree_;
   TTree* pf_tree_;
-  
-  float tagPho_et_, pho_2nd_pt_, tagPho_energy_, tagPho_eta_, tagPho_phi_, tagPho_sieie_;
-float tagPho_HoE_, tagPho_r9_, tagPho_EcalIsoDR04_, tagPho_HcalIsoDR04_, tagPho_HcalIsoDR0412_, tagPho_TrkIsoHollowDR04_;
+  std::vector<std::vector<float> >  tagPho_pfiso_mycharged03 ;
 
-int tagPho_pixelSeed_;  
-  float pcalojet_pt_, calo_2ndjet_pt_, pcalojet_p_, pcalojet_eta_, pcalojet_phi_, pcalojet_emf_, pcalojet_scale_;
+  float tagPho_et_, pho_2nd_pt_, tagPho_energy_, tagPho_eta_, tagPho_phi_, tagPho_sieie_;
+  float tagPho_HoE_, tagPho_r9_, tagPho_EcalIsoDR04_, tagPho_HcalIsoDR04_, tagPho_HcalIsoDR0412_, tagPho_TrkIsoHollowDR04_, tagPho_pfiso_myphoton03_;
+  float tagPho_pfiso_myneutral03_;
+  int tagPho_ConvSafeEleVeto_;
+  
+  
+  int tagPho_pixelSeed_;  
+  float pcalojet_pt_, calo_2ndjet_pt_, pcalojet_p_, pcalojet_eta_, pcalojet_phi_, pcalojet_emf_, pcalojet_scale_, ppfjet_NeutralHadronFrac_, ppfjet_NeutralEMFrac_; 
+  int ppfjet_nConstituents_;
+  float ppfjet_ChargedHadronFrac_, ppfjet_ChargedEMFrac_, ppfjet_ChargedMultiplicity_  ;
   float pcalojet_gendr_, pcalojet_genpt_, pcalojet_genp_;
   float pcalojet_EBE_, pcalojet_EEE_, pcalojet_HBE_, pcalojet_HEE_, pcalojet_HFE_;
   int pcalojet_ntwrs_;

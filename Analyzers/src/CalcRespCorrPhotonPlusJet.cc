@@ -3,10 +3,16 @@
 #include "DataFormats/JetReco/interface/CaloJetCollection.h"
 #include "DataFormats/JetReco/interface/PFJetCollection.h"
 #include "DataFormats/JetReco/interface/GenJetCollection.h"
+#include "DataFormats/TrackReco/interface/Track.h"
+#include "DataFormats/TrackReco/interface/TrackExtra.h"
 #include "JetMETCorrections/Objects/interface/JetCorrector.h"
 #include "FWCore/Utilities/interface/EDMException.h"
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
 #include "RecoEgamma/EgammaElectronAlgos/interface/ElectronHcalHelper.h"
+#include "RecoEgamma/EgammaTools/interface/ConversionTools.h"
+#include "RecoEgamma/EgammaTools/interface/ConversionFinder.h"
+#include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
+
 
 #include "TTree.h"
 #include "TFile.h"
@@ -14,6 +20,7 @@
 #include "TH2D.h"
 #include "TClonesArray.h"
 
+#include <iostream>
 #include <vector>
 #include <set>
 #include <map>
@@ -51,10 +58,30 @@ CalcRespCorrPhotonPlusJet::~CalcRespCorrPhotonPlusJet()
 void CalcRespCorrPhotonPlusJet::analyze(const edm::Event& iEvent, const edm::EventSetup& evSetup)
 { 
 
-//cout<<"in analyze method...."<<endl;
+  //  cout<<"in analyze method...."<<endl;
+  tagPho_pfiso_mycharged03.clear();
 
   edm::Handle<std::vector<reco::GenJet>> genjets;
   edm::Handle<std::vector<reco::GenParticle> > genparticles;
+
+  edm::Handle<reco::PFCandidateCollection> pfHandle;
+  iEvent.getByLabel("particleFlow", pfHandle);
+
+  edm::Handle<reco::VertexCollection> vtxHandle;
+  iEvent.getByLabel("offlinePrimaryVertices", vtxHandle);
+
+  edm::Handle<reco::GsfElectronCollection> gsfElectronHandle;
+  iEvent.getByLabel("gsfElectrons", gsfElectronHandle);
+
+  ///  std::cout << "getting convH" << std::endl;
+  edm::Handle<reco::ConversionCollection> convH;
+  iEvent.getByLabel("allConversions", convH);
+
+  /////  std::cout << "getting beamSpotHandle" << std::endl;
+  edm::Handle<reco::BeamSpot> beamSpotHandle;
+  iEvent.getByLabel("offlineBeamSpot", beamSpotHandle);
+
+
   if(doGenJets_){
     // Get GenJets
     iEvent.getByLabel(genJetCollName_,genjets);
@@ -82,6 +109,7 @@ void CalcRespCorrPhotonPlusJet::analyze(const edm::Event& iEvent, const edm::Eve
     }
     pf_weight_ = genEventInfoProduct->weight();
   }
+
 
   // Run over PFJets //
   
@@ -133,7 +161,7 @@ if(!photon_tag.photon())return;
 
     // fill tag photon variables
     tagPho_et_    = photon_tag.photon()->pt();
-    //pho_2nd_pt_   = photon_2nd.photon()->pt();
+    ////////pho_2nd_pt_   = photon_2nd.photon()->pt();
     tagPho_energy_     = photon_tag.photon()->energy();
     tagPho_eta_   = photon_tag.photon()->eta();
     tagPho_phi_   = photon_tag.photon()->phi();
@@ -141,11 +169,16 @@ if(!photon_tag.photon())return;
     tagPho_HoE_   = photon_tag.photon()->hadTowOverEm();
     tagPho_r9_    = photon_tag.photon()->r9();
     tagPho_pixelSeed_ = photon_tag.photon()->hasPixelSeed();
-tagPho_TrkIsoHollowDR04_ =  photon_tag.photon()->trkSumPtHollowConeDR04();
-tagPho_EcalIsoDR04_ = photon_tag.photon()->ecalRecHitSumEtConeDR04();
-tagPho_HcalIsoDR04_ = photon_tag.photon()->hcalTowerSumEtConeDR04();
-tagPho_HcalIsoDR0412_ = photon_tag.photon()->hcalTowerSumEtConeDR04() + (photon_tag.photon()->hadronicOverEm() - photon_tag.photon()->hadTowOverEm())*(photon_tag.photon()->energy()/cosh((photon_tag.photon()->eta())));
+    tagPho_TrkIsoHollowDR04_ =  photon_tag.photon()->trkSumPtHollowConeDR04();
+    tagPho_EcalIsoDR04_ = photon_tag.photon()->ecalRecHitSumEtConeDR04();
+    tagPho_HcalIsoDR04_ = photon_tag.photon()->hcalTowerSumEtConeDR04();
+    tagPho_HcalIsoDR0412_ = photon_tag.photon()->hcalTowerSumEtConeDR04() + (photon_tag.photon()->hadronicOverEm() - photon_tag.photon()->hadTowOverEm())*(photon_tag.photon()->energy()/cosh((photon_tag.photon()->eta())));
+    
+    tagPho_pfiso_myphoton03_  = pfEcalIso(photon_tag.photon(), pfHandle, 0.3, 0.0, 0.070, 0.015, 0.0, 0.0, 0.0, reco::PFCandidate::gamma);
+    tagPho_pfiso_myneutral03_ = pfHcalIso(photon_tag.photon(), pfHandle, 0.3, 0.0, reco::PFCandidate::h0);
+    tagPho_pfiso_mycharged03.push_back(pfTkIsoWithVertex(photon_tag.photon(), pfHandle, vtxHandle, 0.3, 0.02, 0.02, 0.0, 0.2, 0.1, reco::PFCandidate::h));
 
+    tagPho_ConvSafeEleVeto_ = ((int)ConversionTools::hasMatchedPromptElectron(photon_tag.photon()->superCluster(), gsfElectronHandle, convH, beamSpotHandle->position()));
 
 
 
@@ -303,51 +336,57 @@ tagPho_HcalIsoDR0412_ = photon_tag.photon()->hcalTowerSumEtConeDR04() + (photon_
     h_ntypes_->Fill(ntypes);
     
     // fill probe jet variables
-if(pfjet_probe.jet()){
-    ppfjet_pt_    = pfjet_probe.jet()->pt();
-    if(pf_2ndjet.jet())pf_2ndjet_pt_ = pf_2ndjet.jet()->pt();
-	else pf_2ndjet_pt_ = -1;
-    ppfjet_p_     = pfjet_probe.jet()->p();
-    ppfjet_E_     = pfjet_probe.jet()->energy();
-    ppfjet_eta_   = pfjet_probe.jet()->eta();
-    ppfjet_phi_   = pfjet_probe.jet()->phi();
-    ppfjet_scale_ = pfjet_probe.scale();
-    ppfjet_ntwrs_=0;
-    ppfjet_ncandtracks_=0;
-    
-    if(iEvent.id().event() == debugEvent){
-      std::cout << "Probe eta: " << ppfjet_eta_ << " phi: " << ppfjet_phi_ << std::endl;
-    }
-    //std::cout << "Probe eta: " << ppfjet_eta_ << " phi: " << ppfjet_phi_ << std::endl; //debug
-    
-    // Get PF constituents and fill HCAL towers
-    std::vector<reco::PFCandidatePtr> probeconst=pfjet_probe.jet()->getPFConstituents();
-    for(std::vector<reco::PFCandidatePtr>::const_iterator it=probeconst.begin(); it!=probeconst.end(); ++it){
-      bool hasTrack = false;
-      reco::PFCandidate::ParticleType candidateType = (*it)->particleId();
-      switch(candidateType){
-      case reco::PFCandidate::X:
-	ppfjet_unkown_E_ += (*it)->energy();
-	ppfjet_unkown_px_ += (*it)->px();
-	ppfjet_unkown_py_ += (*it)->py();
-	ppfjet_unkown_pz_ += (*it)->pz();
-	ppfjet_unkown_EcalE_ += (*it)->ecalEnergy();
-	ppfjet_unkown_n_++;
-	continue;
-      case reco::PFCandidate::h:
-	{
-	  ppfjet_had_E_.push_back((*it)->energy());
-	  ppfjet_had_px_.push_back((*it)->px());
-	  ppfjet_had_py_.push_back((*it)->py());
-	  ppfjet_had_pz_.push_back((*it)->pz());
-	  ppfjet_had_EcalE_.push_back((*it)->ecalEnergy());
-	  ppfjet_had_rawHcalE_.push_back((*it)->rawHcalEnergy());
-	  ppfjet_had_id_.push_back(0);
-	  ppfjet_had_ntwrs_.push_back(0);
+    if(pfjet_probe.jet()){
+      ppfjet_pt_    = pfjet_probe.jet()->pt();
+      if(pf_2ndjet.jet())pf_2ndjet_pt_ = pf_2ndjet.jet()->pt();
+      else pf_2ndjet_pt_ = -1;
+      ppfjet_p_     = pfjet_probe.jet()->p();
+      ppfjet_E_     = pfjet_probe.jet()->energy();
+      ppfjet_eta_   = pfjet_probe.jet()->eta();
+      ppfjet_phi_   = pfjet_probe.jet()->phi();
+      ppfjet_NeutralHadronFrac_  = pfjet_probe.jet()->neutralHadronEnergyFraction();
+      ppfjet_NeutralEMFrac_      = pfjet_probe.jet()->neutralEmEnergyFraction();
+      ppfjet_nConstituents_      = pfjet_probe.jet()->nConstituents();
+      ppfjet_ChargedHadronFrac_  = pfjet_probe.jet()->chargedHadronEnergyFraction();
+      ppfjet_ChargedMultiplicity_= pfjet_probe.jet()->chargedMultiplicity();
+      ppfjet_ChargedEMFrac_      = pfjet_probe.jet()->chargedEmEnergyFraction();
+      ppfjet_scale_ = pfjet_probe.scale();
+      ppfjet_ntwrs_=0;
+      ppfjet_ncandtracks_=0;
+      
+      if(iEvent.id().event() == debugEvent){
+	std::cout << "Probe eta: " << ppfjet_eta_ << " phi: " << ppfjet_phi_ << std::endl;
+      }
+      //std::cout << "Probe eta: " << ppfjet_eta_ << " phi: " << ppfjet_phi_ << std::endl; //debug
+      
+      // Get PF constituents and fill HCAL towers
+      std::vector<reco::PFCandidatePtr> probeconst=pfjet_probe.jet()->getPFConstituents();
+      for(std::vector<reco::PFCandidatePtr>::const_iterator it=probeconst.begin(); it!=probeconst.end(); ++it){
+	bool hasTrack = false;
+	reco::PFCandidate::ParticleType candidateType = (*it)->particleId();
+	switch(candidateType){
+	case reco::PFCandidate::X:
+	  ppfjet_unkown_E_ += (*it)->energy();
+	  ppfjet_unkown_px_ += (*it)->px();
+	  ppfjet_unkown_py_ += (*it)->py();
+	  ppfjet_unkown_pz_ += (*it)->pz();
+	  ppfjet_unkown_EcalE_ += (*it)->ecalEnergy();
+	  ppfjet_unkown_n_++;
+	  continue;
+	case reco::PFCandidate::h:
+	  {
+	    ppfjet_had_E_.push_back((*it)->energy());
+	    ppfjet_had_px_.push_back((*it)->px());
+	    ppfjet_had_py_.push_back((*it)->py());
+	    ppfjet_had_pz_.push_back((*it)->pz());
+	    ppfjet_had_EcalE_.push_back((*it)->ecalEnergy());
+	    ppfjet_had_rawHcalE_.push_back((*it)->rawHcalEnergy());
+	    ppfjet_had_id_.push_back(0);
+	    ppfjet_had_ntwrs_.push_back(0);
 	    ppfjet_had_n_++;
 	    
 	    if(doGenJets_){
- //cout<<"38%"<<endl;
+	      //cout<<"38%"<<endl;
 	      float gendr = 99999;
 	      float genE = 0;
 	      int genpdgId = 0;
@@ -815,6 +854,9 @@ if(pfjet_probe.jet()){
 // ------------ method called once each job just before starting event loop  ------------
 void CalcRespCorrPhotonPlusJet::beginJob()
 {
+
+  ///  std::cout << "Start beginJob()" << std::endl;
+
   // book histograms
   rootfile_ = new TFile(rootHistFilename_.c_str(), "RECREATE");
 
@@ -853,12 +895,22 @@ void CalcRespCorrPhotonPlusJet::beginJob()
     pf_tree_->Branch("tagPho_EcalIsoDR04",&tagPho_EcalIsoDR04_, "tagPho_EcalIsoDR04/F");
     pf_tree_->Branch("tagPho_HcalIsoDR04",&tagPho_HcalIsoDR04_, "tagPho_HcalIsoDR04/F");
     pf_tree_->Branch("tagPho_HcalIsoDR0412",&tagPho_HcalIsoDR0412_, "tagPho_HcalIsoDR0412/F");
+    pf_tree_->Branch("tagPho_pfiso_myphoton03",&tagPho_pfiso_myphoton03_, "tagPho_pfiso_myphoton03/F");
+    pf_tree_->Branch("tagPho_pfiso_myneutral03",&tagPho_pfiso_myneutral03_, "tagPho_pfiso_myneutral03/F");
+    pf_tree_->Branch("tagPho_pfiso_mycharged03","std::vector<std::vector<float> >", &tagPho_pfiso_mycharged03);
+    pf_tree_->Branch("tagPho_ConvSafeEleVeto", &tagPho_ConvSafeEleVeto_, "tagPho_ConvSafeEleVeto/I");
     pf_tree_->Branch("ppfjet_pt",&ppfjet_pt_, "ppfjet_pt/F");
     pf_tree_->Branch("ppfjet_p",&ppfjet_p_, "ppfjet_p/F");
     pf_tree_->Branch("ppfjet_E",&ppfjet_E_, "ppfjet_E/F");
     pf_tree_->Branch("ppfjet_eta",&ppfjet_eta_, "ppfjet_eta/F");
     pf_tree_->Branch("ppfjet_phi",&ppfjet_phi_, "ppfjet_phi/F");
     pf_tree_->Branch("ppfjet_scale",&ppfjet_scale_, "ppfjet_scale/F");
+    pf_tree_->Branch("ppfjet_NeutralHadronFrac", &ppfjet_NeutralHadronFrac_, "ppfjet_NeutralHadronFrac/F");
+    pf_tree_->Branch("ppfjet_NeutralEMFrac", &ppfjet_NeutralEMFrac_, "ppfjet_NeutralEMFrac/F");
+    pf_tree_->Branch("ppfjet_nConstituents", &ppfjet_nConstituents_, "ppfjet_nConstituents/I");
+    pf_tree_->Branch("ppfjet_ChargedHadronFrac", &ppfjet_ChargedHadronFrac_, "ppfjet_ChargedHadronFrac/F");
+    pf_tree_->Branch("ppfjet_ChargedMultiplicity", &ppfjet_ChargedMultiplicity_, "ppfjet_ChargedMultiplicity/F");
+    pf_tree_->Branch("ppfjet_ChargedEMFrac", &ppfjet_ChargedEMFrac_, "ppfjet_ChargedEMFrac/F");
     if(doGenJets_){
       pf_tree_->Branch("ppfjet_genpt",&ppfjet_genpt_, "ppfjet_genpt/F");
       pf_tree_->Branch("ppfjet_genp",&ppfjet_genp_, "ppfjet_genp/F");
@@ -934,11 +986,13 @@ void CalcRespCorrPhotonPlusJet::beginJob()
   }
 
   return;
+  ////  std::cout << "End beginJob()" << std::endl;
 }  
 
 // ------------ method called once each job just after ending the event loop  ------------
 void 
 CalcRespCorrPhotonPlusJet::endJob() {
+  ///  std::cout << "Start endJob()" << std::endl;
   // write histograms
   rootfile_->cd();
 
@@ -962,10 +1016,132 @@ CalcRespCorrPhotonPlusJet::endJob() {
     pf_tree_->Write();
   }
   rootfile_->Close();
-
+  ////  std::cout << "End endJob()" << std::endl;
 }
 
 // helper function
+
+float CalcRespCorrPhotonPlusJet::pfEcalIso(const reco::Photon* localPho1, edm::Handle<reco::PFCandidateCollection> pfHandle, float dRmax, float dRVetoBarrel, float dRVetoEndcap, float etaStripBarrel, float etaStripEndcap, float energyBarrel, float energyEndcap, reco::PFCandidate::ParticleType pfToUse) {
+  ////std::cout << "Inside pfEcalIso" << std::endl;
+  reco::Photon* localPho = localPho1->clone();
+  float dRVeto;
+  float etaStrip;
+
+  if (localPho->isEB()) {
+    dRVeto = dRVetoBarrel;
+    etaStrip = etaStripBarrel;
+  } else {
+    dRVeto = dRVetoEndcap;
+    etaStrip = etaStripEndcap;
+  }
+  const reco::PFCandidateCollection* forIsolation = pfHandle.product();
+  int nsize = forIsolation->size();
+  float sum = 0;
+  for (int i=0; i<nsize; i++) {
+    const reco::PFCandidate& pfc = (*forIsolation)[i];
+    if (pfc.particleId() ==  pfToUse) {
+      // Do not include the PFCandidate associated by SC Ref to the reco::Photon                                                       
+      if(pfc.superClusterRef().isNonnull() && localPho->superCluster().isNonnull()) {
+        if (pfc.superClusterRef() == localPho->superCluster())
+          continue;
+      }
+
+      if (localPho->isEB()) {
+        if (fabs(pfc.pt()) < energyBarrel)
+          continue;
+      } else {
+        if (fabs(pfc.energy()) < energyEndcap)
+          continue;
+      }
+      // Shift the photon direction vector according to the PF vertex                                                                  
+      math::XYZPoint pfvtx = pfc.vertex();
+      math::XYZVector photon_directionWrtVtx(localPho->superCluster()->x() - pfvtx.x(),
+                                             localPho->superCluster()->y() - pfvtx.y(),
+                                             localPho->superCluster()->z() - pfvtx.z());
+
+      float dEta = fabs(photon_directionWrtVtx.Eta() - pfc.momentum().Eta());
+      float dR = deltaR(photon_directionWrtVtx.Eta(), photon_directionWrtVtx.Phi(), pfc.momentum().Eta(), pfc.momentum().Phi());
+
+      if (dEta < etaStrip)
+        continue;
+
+      if(dR > dRmax || dR < dRVeto)
+        continue;
+
+      sum += pfc.pt();
+    }
+  }
+  return sum;
+}
+
+
+float CalcRespCorrPhotonPlusJet::pfHcalIso(const reco::Photon* localPho,edm::Handle<reco::PFCandidateCollection> pfHandle,float dRmax, float dRveto,reco::PFCandidate::ParticleType pfToUse) {
+  //// std::cout << "Inside pfHcalIso" << std::endl;
+  return pfEcalIso(localPho, pfHandle, dRmax, dRveto, dRveto, 0.0, 0.0, 0.0, 0.0, pfToUse);
+
+}
+
+std::vector<float> CalcRespCorrPhotonPlusJet::pfTkIsoWithVertex(const reco::Photon* localPho1, edm::Handle<reco::PFCandidateCollection> pfHandle, edm::Handle<reco::VertexCollection> vtxHandle, float dRmax, float dRvetoBarrel, float dRvetoEndcap, float ptMin, float dzMax, float dxyMax, reco::PFCandidate::ParticleType pfToUse) {
+
+  //  std::cout << "Inside pfTkIsoWithVertex()" << std::endl;
+  reco::Photon* localPho = localPho1->clone();
+
+  float dRveto;
+  if (localPho->isEB())
+    dRveto = dRvetoBarrel;
+  else
+    dRveto = dRvetoEndcap;
+
+  std::vector<float> result;
+  const reco::PFCandidateCollection* forIsolation = pfHandle.product();
+
+  //Calculate isolation sum separately for each vertex
+  //  std::cout << "vtxHandle->size() = " << vtxHandle->size() << std::endl;
+  for(unsigned int ivtx=0; ivtx<(vtxHandle->size()); ++ivtx) {
+    //std::cout << "Vtx " << ivtx << std::endl;
+    // Shift the photon according to the vertex                                                                                        
+    reco::VertexRef vtx(vtxHandle, ivtx);
+    math::XYZVector photon_directionWrtVtx(localPho->superCluster()->x() - vtx->x(),
+                                           localPho->superCluster()->y() - vtx->y(),
+                                           localPho->superCluster()->z() - vtx->z());
+    //std::cout << "pfTkIsoWithVertex :: Will Loop over the PFCandidates" << std::endl;
+    float sum = 0;
+    // Loop over the PFCandidates                                                                                                      
+    for(unsigned i=0; i<forIsolation->size(); i++) {
+      //    std::cout << "inside loop" << std::endl; 
+      const reco::PFCandidate& pfc = (*forIsolation)[i];
+
+      //require that PFCandidate is a charged hadron
+      // std::cout << "pfToUse=" << pfToUse << std::endl;
+      //  std::cout<< "pfc.particleId()=" << pfc.particleId() << std::endl;
+
+      if (pfc.particleId() == pfToUse) {
+	//std::cout << "\n ***** HERE pfc.particleId() == pfToUse " << std::endl;
+	//std::cout << "pfc.pt()=" << pfc.pt() << std::endl;
+        if (pfc.pt() < ptMin)
+          continue;
+
+        float dz = fabs(pfc.trackRef()->dz(vtx->position()));
+        if (dz > dzMax) continue;
+
+        float dxy = fabs(pfc.trackRef()->dxy(vtx->position()));
+        if(fabs(dxy) > dxyMax) continue;
+        float dR = deltaR(photon_directionWrtVtx.Eta(), photon_directionWrtVtx.Phi(), pfc.momentum().Eta(), pfc.momentum().Phi());
+        if(dR > dRmax || dR < dRveto) continue;
+        sum += pfc.pt();
+	//	std::cout << "pt=" << pfc.pt() << std::endl;
+      }
+    }
+    //    std::cout << "sum=" << sum << std::endl;
+    sum = sum*1.0;
+    result.push_back(sum);
+  }
+  //  std::cout << "Will return result" << std::endl;
+  // std::cout << "result" << &result << std::endl;
+  return result;
+  //std::cout << "Result returned" << std::endl;
+}
+
 
 double CalcRespCorrPhotonPlusJet::deltaR(const reco::Jet* j1, const reco::Jet* j2)
 {
