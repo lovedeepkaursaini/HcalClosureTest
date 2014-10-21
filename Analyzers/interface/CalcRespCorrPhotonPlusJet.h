@@ -137,6 +137,7 @@ class CalcRespCorrPhotonPlusJet : public edm::EDAnalyzer {
   
   // parameters
   bool debug_;                      // print debug statements
+  edm::InputTag rhoCollection; 
   std::string photonCollName_;      // label for the photon collection
   std::string caloJetCollName_;     // label for the calo jet collection
   std::string caloJetCorrName_;     // label for the calo jet correction service
@@ -178,7 +179,7 @@ class CalcRespCorrPhotonPlusJet : public edm::EDAnalyzer {
   TTree* calo_tree_;
   TTree* pf_tree_;
   std::vector<std::vector<float> >  tagPho_pfiso_mycharged03 ;
-
+  float rho2012_;
   float tagPho_et_, pho_2nd_pt_, tagPho_energy_, tagPho_eta_, tagPho_phi_, tagPho_sieie_;
   float tagPho_HoE_, tagPho_r9_, tagPho_EcalIsoDR04_, tagPho_HcalIsoDR04_, tagPho_HcalIsoDR0412_, tagPho_TrkIsoHollowDR04_, tagPho_pfiso_myphoton03_;
   float tagPho_pfiso_myneutral03_;

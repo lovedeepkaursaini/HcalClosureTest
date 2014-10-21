@@ -29,6 +29,7 @@ using namespace std;
 CalcRespCorrPhotonPlusJet::CalcRespCorrPhotonPlusJet(const edm::ParameterSet& iConfig)
 {
   // set parameters
+  rhoCollection        = iConfig.getParameter<edm::InputTag>("rhoColl");
   caloJetCollName_     = iConfig.getParameter<std::string>("caloJetCollName");
   photonCollName_      = iConfig.getParameter<std::string>("photonCollName");
   caloJetCorrName_     = iConfig.getParameter<std::string>("caloJetCorrName");
@@ -72,6 +73,10 @@ void CalcRespCorrPhotonPlusJet::analyze(const edm::Event& iEvent, const edm::Eve
 
   edm::Handle<reco::GsfElectronCollection> gsfElectronHandle;
   iEvent.getByLabel("gsfElectrons", gsfElectronHandle);
+
+  edm::Handle<double> rhoHandle_2012;
+  iEvent.getByLabel(rhoCollection, rhoHandle_2012);
+  rho2012_ = *(rhoHandle_2012.product());
 
   ///  std::cout << "getting convH" << std::endl;
   edm::Handle<reco::ConversionCollection> convH;
@@ -881,7 +886,7 @@ void CalcRespCorrPhotonPlusJet::beginJob()
     //////// Particle Flow ////////
 
     pf_tree_ = new TTree("pf_dijettree", "tree for dijet balancing using PFJets");
-
+    pf_tree_->Branch("rho2012", &rho2012_, "rho2012/F");
     pf_tree_->Branch("tagPho_et",    &tagPho_et_,    "tagPho_et/F");
     pf_tree_->Branch("tagPho_energy",     &tagPho_energy_,     "tagPho_energy/F");
     pf_tree_->Branch("pho_2nd_pt",   &pho_2nd_pt_,   "pho_2nd_pt/F");

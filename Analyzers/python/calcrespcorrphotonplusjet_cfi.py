@@ -4,6 +4,7 @@ import FWCore.ParameterSet.Config as cms
 calcrespcorrphotonplusjet = cms.EDAnalyzer(
     'CalcRespCorrPhotonPlusJet',
     caloJetCollName     = cms.string('ak5CaloJets'),
+    rhoColl             = cms.InputTag("kt6PFJets","rho"),
     photonCollName      = cms.string('photons'),
     caloJetCorrName     = cms.string('ak5CaloL2L3'),
     pfJetCollName       = cms.string('ak5PFJets'),
