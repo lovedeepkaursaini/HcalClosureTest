@@ -9,4 +9,7 @@
 <use   name="Geometry/CaloGeometry"/>
 <use   name="Geometry/Records"/>
 <use   name="SimDataFormats/GeneratorProducts"/>
+<use   name="DataFormats/Common"/>
+<use   name="HLTrigger/HLTcore"/>
+<use   name="FWCore/Common"/>
 <use   name="root"/>
