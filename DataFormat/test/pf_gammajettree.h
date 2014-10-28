@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Tue Oct 28 11:38:01 2014 by ROOT version 5.34/09
+// Tue Oct 28 11:21:11 2014 by ROOT version 5.34/09
 // from TTree pf_gammajettree/tree for gamma+jet balancing using PFJets
 // found on file: /media/ssd/ntuple-data-20141028/PhoJet_tree_Summer12DR53X_GPt170to300.root
 //////////////////////////////////////////////////////////
@@ -11,49 +11,26 @@
 #include <TROOT.h>
 #include <TChain.h>
 #include <TFile.h>
+#include <TString.h>
 
 // Header file for the classes stored in the TTree if any.
 #include <vector>
-#include <vector>
+
+// Other classes
+#include <iostream>
+#include <stdarg.h>
+
+//extern const int MAXIETA = 41;
 
 // Fixed size dimensions of array or collections stored in the TTree if any.
 
 class pf_gammajettree {
 public :
-   TTree          *fChain;   //!pointer to the analyzed TTree or TChain
+  //TTree          *fChain;   //!pointer to the analyzed TTree or TChain
+   TChain          *fChain;   //!pointer to the analyzed TTree or TChain
    Int_t           fCurrent; //!current Tree number in a TChain
 
    // Declaration of leaf types
-   vector<int>     *photonTrig_fired;
-   vector<int>     *photonTrig_prescale;
-   vector<int>     *jetTrig_fired;
-   vector<int>     *jetTrig_prescale;
-   Int_t           RunNumber;
-   Int_t           LumiBlock;
-   Int_t           EventNumber;
-   Float_t         EventWeight;
-   Float_t         rho2012;
-   Float_t         tagPho_pt;
-   Float_t         pho_2nd_pt;
-   Float_t         tagPho_energy;
-   Float_t         tagPho_eta;
-   Float_t         tagPho_phi;
-   Float_t         tagPho_sieie;
-   Float_t         tagPho_HoE;
-   Float_t         tagPho_r9;
-   Float_t         tagPho_EcalIsoDR04;
-   Float_t         tagPho_HcalIsoDR04;
-   Float_t         tagPho_HcalIsoDR0412;
-   Float_t         tagPho_TrkIsoHollowDR04;
-   Float_t         tagPho_pfiso_myphoton03;
-   Float_t         tagPho_pfiso_myneutral03;
-   vector<vector<float> > *tagPho_pfiso_mycharged03;
-   Int_t           tagPho_pixelSeed;
-   Int_t           tagPho_ConvSafeEleVeto;
-   Int_t           tagPho_idTight;
-   Int_t           tagPho_idLoose;
-   Int_t           nPhotons;
-   Int_t           nGenJets;
    vector<int>     *photonTrig_fired;
    vector<int>     *photonTrig_prescale;
    vector<int>     *jetTrig_fired;
@@ -274,36 +251,6 @@ public :
    TBranch        *b_tagPho_idLoose;   //!
    TBranch        *b_nPhotons;   //!
    TBranch        *b_nGenJets;   //!
-   TBranch        *b_photonTrig_fired;   //!
-   TBranch        *b_photonTrig_prescale;   //!
-   TBranch        *b_jetTrig_fired;   //!
-   TBranch        *b_jetTrig_prescale;   //!
-   TBranch        *b_RunNumber;   //!
-   TBranch        *b_LumiBlock;   //!
-   TBranch        *b_EventNumber;   //!
-   TBranch        *b_EventWeight;   //!
-   TBranch        *b_rho2012;   //!
-   TBranch        *b_tagPho_pt;   //!
-   TBranch        *b_pho_2nd_pt;   //!
-   TBranch        *b_tagPho_energy;   //!
-   TBranch        *b_tagPho_eta;   //!
-   TBranch        *b_tagPho_phi;   //!
-   TBranch        *b_tagPho_sieie;   //!
-   TBranch        *b_tagPho_HoE;   //!
-   TBranch        *b_tagPho_r9;   //!
-   TBranch        *b_tagPho_EcalIsoDR04;   //!
-   TBranch        *b_tagPho_HcalIsoDR04;   //!
-   TBranch        *b_tagPho_HcalIsoDR0412;   //!
-   TBranch        *b_tagPho_TrkIsoHollowDR04;   //!
-   TBranch        *b_tagPho_pfiso_myphoton03;   //!
-   TBranch        *b_tagPho_pfiso_myneutral03;   //!
-   TBranch        *b_tagPho_pfiso_mycharged03;   //!
-   TBranch        *b_tagPho_pixelSeed;   //!
-   TBranch        *b_tagPho_ConvSafeEleVeto;   //!
-   TBranch        *b_tagPho_idTight;   //!
-   TBranch        *b_tagPho_idLoose;   //!
-   TBranch        *b_nPhotons;   //!
-   TBranch        *b_nGenJets;   //!
    TBranch        *b_nPFJets;   //!
    TBranch        *b_ppfjet_pt;   //!
    TBranch        *b_ppfjet_p;   //!
@@ -463,33 +410,56 @@ public :
    TBranch        *b_pf_thirdjet_phi;   //!
    TBranch        *b_pf_thirdjet_scale;   //!
 
-   pf_gammajettree(TTree *tree=0);
+   pf_gammajettree(TString fname="");
    virtual ~pf_gammajettree();
    virtual Int_t    Cut(Long64_t entry);
    virtual Int_t    GetEntry(Long64_t entry);
    virtual Long64_t LoadTree(Long64_t entry);
-   virtual void     Init(TTree *tree);
+   virtual int      Init(const TString &fname);
    virtual void     Loop();
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
+
+   // Added methods
+   void DeactivateBranches();
+   void ActivateBranches(int count, ...); // list n branch names
+   void ActivateBranches(const std::vector<TString> &brV); // list of branch names
+   void ActivateBranches_forRecHitsEnergyCalc();
+   void ActivateBranches_forFitSkim();
+
+   friend
+     std::ostream& operator<<(std::ostream &out, pf_gammajettree &obj) {
+     if (out==std::cout) obj.Show();
+     else out << "cannot print pf_gammajettree\n";
+     return out;
+   }
+
+   void PrintSelectedFields(int selection=0);
+   Double_t getSumEcalE(int tag, int includeOthers=1) const;
+   Double_t getSumHcalE_trackDiffEcal(int leadingJet=1) const;
+   std::map<Int_t,Double_t> getHcalEMap(int leadingJet=1,
+					double thrContrib=1e-4) const;
+
 };
 
 #endif
 
+// -------------------------------------------------------------
+// Implementations
+// ---------------------------------------------
+
 #ifdef pf_gammajettree_cxx
-pf_gammajettree::pf_gammajettree(TTree *tree) : fChain(0) 
+pf_gammajettree::pf_gammajettree(TString fname) :
+  fChain(new TChain("pf_gammajettree"))
 {
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
-   if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/media/ssd/ntuple-data-20141028/PhoJet_tree_Summer12DR53X_GPt170to300.root");
-      if (!f || !f->IsOpen()) {
-         f = new TFile("/media/ssd/ntuple-data-20141028/PhoJet_tree_Summer12DR53X_GPt170to300.root");
-      }
-      f->GetObject("pf_gammajettree",tree);
-
-   }
-   Init(tree);
+  if (fname.Length()==0) {
+    fname="/media/ssd/ntuple-data-20141028/PhoJet_tree_Summer12DR53X_GPt170to300.root";
+  }
+  if (!this->Init(fname)) {
+    std::cout << "Initialization failed in constructor" << std::endl;
+  }
 }
 
 pf_gammajettree::~pf_gammajettree()
@@ -517,8 +487,14 @@ Long64_t pf_gammajettree::LoadTree(Long64_t entry)
    return centry;
 }
 
-void pf_gammajettree::Init(TTree *tree)
+int pf_gammajettree::Init(const TString &fname)
 {
+  if (fname.Length()==0) {
+    std::cout << "dijet_PFNtuple::Init: non-empty fname is expected\n";
+    return 0;
+  }
+  fChain->Add(fname);
+
    // The Init() function is called when the selector needs to initialize
    // a new tree or chain. Typically here the branch addresses and branch
    // pointers of the tree will be set.
@@ -599,8 +575,8 @@ void pf_gammajettree::Init(TTree *tree)
    pfjet2_candtrack_pz = 0;
    pfjet2_candtrack_EcalE = 0;
    // Set branch addresses and branch pointers
-   if (!tree) return;
-   fChain = tree;
+   //if (!tree) return;
+   //fChain = tree;
    fCurrent = -1;
    fChain->SetMakeClass(1);
 
@@ -634,36 +610,6 @@ void pf_gammajettree::Init(TTree *tree)
    fChain->SetBranchAddress("tagPho_idLoose", &tagPho_idLoose, &b_tagPho_idLoose);
    fChain->SetBranchAddress("nPhotons", &nPhotons, &b_nPhotons);
    fChain->SetBranchAddress("nGenJets", &nGenJets, &b_nGenJets);
-//    fChain->SetBranchAddress("photonTrig_fired", &photonTrig_fired, &b_photonTrig_fired);
-//    fChain->SetBranchAddress("photonTrig_prescale", &photonTrig_prescale, &b_photonTrig_prescale);
-//    fChain->SetBranchAddress("jetTrig_fired", &jetTrig_fired, &b_jetTrig_fired);
-//    fChain->SetBranchAddress("jetTrig_prescale", &jetTrig_prescale, &b_jetTrig_prescale);
-//    fChain->SetBranchAddress("RunNumber", &RunNumber, &b_RunNumber);
-//    fChain->SetBranchAddress("LumiBlock", &LumiBlock, &b_LumiBlock);
-//    fChain->SetBranchAddress("EventNumber", &EventNumber, &b_EventNumber);
-//    fChain->SetBranchAddress("EventWeight", &EventWeight, &b_EventWeight);
-//    fChain->SetBranchAddress("rho2012", &rho2012, &b_rho2012);
-//    fChain->SetBranchAddress("tagPho_pt", &tagPho_pt, &b_tagPho_pt);
-//    fChain->SetBranchAddress("pho_2nd_pt", &pho_2nd_pt, &b_pho_2nd_pt);
-//    fChain->SetBranchAddress("tagPho_energy", &tagPho_energy, &b_tagPho_energy);
-//    fChain->SetBranchAddress("tagPho_eta", &tagPho_eta, &b_tagPho_eta);
-//    fChain->SetBranchAddress("tagPho_phi", &tagPho_phi, &b_tagPho_phi);
-//    fChain->SetBranchAddress("tagPho_sieie", &tagPho_sieie, &b_tagPho_sieie);
-//    fChain->SetBranchAddress("tagPho_HoE", &tagPho_HoE, &b_tagPho_HoE);
-//    fChain->SetBranchAddress("tagPho_r9", &tagPho_r9, &b_tagPho_r9);
-//    fChain->SetBranchAddress("tagPho_EcalIsoDR04", &tagPho_EcalIsoDR04, &b_tagPho_EcalIsoDR04);
-//    fChain->SetBranchAddress("tagPho_HcalIsoDR04", &tagPho_HcalIsoDR04, &b_tagPho_HcalIsoDR04);
-//    fChain->SetBranchAddress("tagPho_HcalIsoDR0412", &tagPho_HcalIsoDR0412, &b_tagPho_HcalIsoDR0412);
-//    fChain->SetBranchAddress("tagPho_TrkIsoHollowDR04", &tagPho_TrkIsoHollowDR04, &b_tagPho_TrkIsoHollowDR04);
-//    fChain->SetBranchAddress("tagPho_pfiso_myphoton03", &tagPho_pfiso_myphoton03, &b_tagPho_pfiso_myphoton03);
-//    fChain->SetBranchAddress("tagPho_pfiso_myneutral03", &tagPho_pfiso_myneutral03, &b_tagPho_pfiso_myneutral03);
-//    fChain->SetBranchAddress("tagPho_pfiso_mycharged03", &tagPho_pfiso_mycharged03, &b_tagPho_pfiso_mycharged03);
-//    fChain->SetBranchAddress("tagPho_pixelSeed", &tagPho_pixelSeed, &b_tagPho_pixelSeed);
-//    fChain->SetBranchAddress("tagPho_ConvSafeEleVeto", &tagPho_ConvSafeEleVeto, &b_tagPho_ConvSafeEleVeto);
-//    fChain->SetBranchAddress("tagPho_idTight", &tagPho_idTight, &b_tagPho_idTight);
-//    fChain->SetBranchAddress("tagPho_idLoose", &tagPho_idLoose, &b_tagPho_idLoose);
-//    fChain->SetBranchAddress("nPhotons", &nPhotons, &b_nPhotons);
-//    fChain->SetBranchAddress("nGenJets", &nGenJets, &b_nGenJets);
    fChain->SetBranchAddress("nPFJets", &nPFJets, &b_nPFJets);
    fChain->SetBranchAddress("ppfjet_pt", &ppfjet_pt, &b_ppfjet_pt);
    fChain->SetBranchAddress("ppfjet_p", &ppfjet_p, &b_ppfjet_p);
@@ -823,6 +769,7 @@ void pf_gammajettree::Init(TTree *tree)
    fChain->SetBranchAddress("pf_thirdjet_phi", &pf_thirdjet_phi, &b_pf_thirdjet_phi);
    fChain->SetBranchAddress("pf_thirdjet_scale", &pf_thirdjet_scale, &b_pf_thirdjet_scale);
    Notify();
+   return 1;
 }
 
 Bool_t pf_gammajettree::Notify()
@@ -848,6 +795,36 @@ Int_t pf_gammajettree::Cut(Long64_t entry)
 // This function may be called from Loop.
 // returns  1 if entry is accepted.
 // returns -1 otherwise.
+  if (0) std::cout << "entry=" << entry << "\n"; // satisfy the compiler
    return 1;
+}
+
+// a few useful methods
+void pf_gammajettree::DeactivateBranches() {
+  fChain->SetBranchStatus("*",0);
+}
+
+void pf_gammajettree::ActivateBranches(int count, ...) {
+  va_list vl;
+  va_start(vl,count);
+  std::cout << "ActivateBranches(" << count << "): ";
+  for (int i=0; i<count; ++i) {
+    typedef const char* constCharPtr;
+    TString brName= TString(va_arg(vl,constCharPtr));
+    fChain->SetBranchStatus(brName,1);
+    std::cout << " <" << brName << ">";
+  }
+  std::cout << "\n";
+  va_end(vl);
+}
+
+void pf_gammajettree::ActivateBranches(const std::vector<TString> &brV) {
+  unsigned int count=brV.size();
+  std::cout << "ActivateBranches(" << count << "): ";
+  for (unsigned int i=0; i<count; ++i) {
+    fChain->SetBranchStatus(brV[i],1);
+    std::cout << " <" << brV[i] << ">";
+  }
+  std::cout << "\n";
 }
 #endif // #ifdef pf_gammajettree_cxx
