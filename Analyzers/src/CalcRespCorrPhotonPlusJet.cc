@@ -1376,7 +1376,7 @@ void CalcRespCorrPhotonPlusJet::beginJob()
   //
   // Photon and event info. Duplicate into the trees
   //
-  for (int iJet=0; iJet<=2; iJet++) {
+  for (int iJet=0; iJet<2; iJet++) {
     bool doJet=(iJet==0) ? doCaloJets_ : doPFJets_;
     if (!doJet) continue;
     TTree *tree= (iJet==0) ? calo_tree_ : pf_tree_;
