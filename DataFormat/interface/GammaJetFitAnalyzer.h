@@ -4,7 +4,7 @@
 #ifdef __localRun
 #  include "../interface/GammaJetFitData.h"
 #else
-#  include "DataFormat/interface/GammaJetFitData.h"
+#  include "HcalClosureTest/DataFormat/interface/GammaJetFitData.h"
 #endif
 
 #include <TH2D.h>
@@ -34,7 +34,8 @@ class GammaJetFitAnalyzer_t {
   TH2D* plot_TowerFitProfile(const char *hName, const char *hTitle,
 			     int normalized,
 			     int nBins=50,
-			     double cfMin=0., double cfMax=2.) const;
+			     double cfMin=0., double cfMax=2.,
+			     const std::vector<double> *setCfs=NULL) const;
 };
 
 // --------------------------------------------------------------

@@ -1,7 +1,7 @@
 #ifdef __localRun
 #  include "../interface/GammaJetFitData.h"
 #else
-#  include "DataFormat/interface/GammaJetFitData.h"
+#  include "HcalClosureTest/DataFormat/interface/GammaJetFitData.h"
 #endif
 
 #ifdef __localRun

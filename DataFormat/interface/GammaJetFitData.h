@@ -15,6 +15,8 @@
 #include <TMinuit.h>
 #include <TH1D.h>
 #include <TString.h>
+#include <cmath>
+#include <algorithm> // std::find
 
 #include <map>
 #include <vector>
@@ -24,8 +26,10 @@
 //  numerical constants
 //
 
+#ifndef __DIJET_RESP_CORR_DATA_H__
 const int MAXIETA = 41;
 const int NUMTOWERS = 83;
+#endif
 
 // --------------------------------------------------------
 

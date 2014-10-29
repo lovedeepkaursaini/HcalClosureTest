@@ -3,8 +3,8 @@
 #  include "../interface/GammaJetFitData.h"
 #  include "../interface/GammaJetFitAnalyzer.h"
 #else
-#  include "DataFormat/interface/GammaJetFitData.h"
-#  include "DataFormat/interface/GammaJetFitAnalyzer.h"
+#  include "HcalClosureTest/DataFormat/interface/GammaJetFitData.h"
+#  include "HcalClosureTest/DataFormat/interface/GammaJetFitAnalyzer.h"
 #endif
 
 
@@ -67,21 +67,27 @@ TH2D* GammaJetFitAnalyzer_t::plot_TowerEn(const char *hNameBase,
 
 // ----------------------------------------------------
 
-TH2D* GammaJetFitAnalyzer_t::plot_TowerFitProfile(const char *hName,
-						  const char *hTitle,
-						  int normalized,
-			 int nBins, double cfMin, double cfMax) const
+TH2D* GammaJetFitAnalyzer_t::plot_TowerFitProfile
+    (const char *hName, const char *hTitle,
+     int normalized,
+     int nBins, double cfMin, double cfMax,
+     const std::vector<double> *setCfs) const
 {
 
   TString hTitleMdf= hTitle + TString(";Cf_{iEta};iEta");
   TH2D* h2= new TH2D(hName,hTitleMdf,
 		     nBins,cfMin,cfMax,
-		     NUMTOWERS+2, -MAXIETA-1, MAXIETA+1);
+		     NUMTOWERS+1, -MAXIETA-1, MAXIETA+1);
   h2->SetStats(0);
   h2->SetDirectory(0);
 
   TArrayD cfArr(NUMTOWERS);
-  cfArr.Reset(1.);
+  cfArr.Reset(1);
+  if (setCfs) {
+    for (unsigned int i=0; i<setCfs->size(); ++i) {
+      cfArr[i] = setCfs->at(i);
+    }
+  }
 
   TAxis *ax= h2->GetXaxis();
   TAxis *ay= h2->GetYaxis();
@@ -96,16 +102,17 @@ TH2D* GammaJetFitAnalyzer_t::plot_TowerFitProfile(const char *hName,
     double minVal=1e9, maxVal=-1e9;
     for (int ibin=1; ibin<=h2->GetNbinsX(); ++ibin) {
       double cfVal= ax->GetBinCenter(ibin);
+      double storeVal= cfArr[idx];
       cfArr[idx]=cfVal;
       //std::cout << "cfArr= " << cfArr << "\n";
       double fitVal= fData->GetFitValue(cfArr);
       if (fitVal<minVal) minVal=fitVal;
       if (fitVal>maxVal) maxVal=fitVal;
       h2->SetBinContent(ibin,jbin, fitVal);
-      cfArr[idx]=1.;
+      cfArr[idx]=storeVal;
     }
-    std::cout << "GammaJetFitAnalyzer_t::plot_TowerFitProfile: minVal="
-	      << minVal << ", maxVal=" << maxVal << "\n";
+    //std::cout << "GammaJetFitAnalyzer_t::plot_TowerFitProfile: minVal="
+    //	      << minVal << ", maxVal=" << maxVal << "\n";
     if (normalized) {
       double norm=fabs(maxVal);
       if (fabs(minVal)>norm) norm=fabs(minVal);
