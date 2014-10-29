@@ -110,4 +110,15 @@ void runGammaJetFitter(const TString fname="gjet_toy1_model2.root",
     cEt1->Update();
   }
 
+  if (1) {
+    GammaJetFitAnalyzer_t anObj(&fitter);
+    TH2D* h2=anObj.plot_TowerFitProfile("h2TowFittedProfile",
+					"tower fit profile",
+					0, 20, 0., 2., &hcalCorrCf);
+    TCanvas *cx=new TCanvas("cxTFPfitted","cxTFPfitted",600,600);
+    h2->Draw("COLZ");
+    cx->Update();
+    //return;
+  }
+
 }
