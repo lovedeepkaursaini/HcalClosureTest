@@ -23,11 +23,27 @@ process.calcrespcorrphotonplusjet.rootHistFilename = cms.string('PhoJet_tree.roo
 process.calcrespcorrphotonplusjet.doCaloJets = cms.bool(False)
 process.calcrespcorrphotonplusjet.doPFJets = cms.bool(True)
 process.calcrespcorrphotonplusjet.doGenJets = cms.bool(True)
+process.calcrespcorrphotonplusjet.photonTriggers = cms.vstring(
+    'HLT_Photon20_CaloIdVL_IsoL','HLT_Photon30_CaloIdVL_IsoL',
+    'HLT_Photon50_CaloIdVL_IsoL','HLT_Photon75_CaloIdVL_IsoL',
+    'HLT_Photon90_CaloIdVL_IsoL','HLT_Photon135',
+    'HLT_Photon150','HLT_Photon160')
+
+# Load file list
+# Summer12_DR53X production G_Pt_XtoY
+import FWCore.Utilities.FileUtils as FileUtils
+listFileName='fileinfo_GJet/makepy_Summer12_DR53X_G_Pt_170to300.txt'
+#listFileName='selection_tmp.txt'
+mylist = FileUtils.loadListFromFile(listFileName)
+mylist.extend( FileUtils.loadListFromFile(listFileName) )
+readFiles = cms.untracked.vstring( *mylist )
+
 
 ##process.source = cms.Source("PoolSource", fileNames = cms.untracked.vstring('/store/relval/CMSSW_5_3_16/RelValPyquen_GammaJet_pt20_2760GeV/GEN-SIM-RECO/PU_STARTHI53_LV1_mar03-v2/00000/20FE26F4-65A3-E311-B12C-0025904C6378.root'))
 
 process.source = cms.Source("PoolSource", 
-fileNames = cms.untracked.vstring('file:/uscms/home/lovedeep/eos/RelValPhotonJets_Pt_10_CMSSW_5_3_12_patch2_A4609359-9E2B-E311-B331-0025905964A6.root')
+#fileNames = cms.untracked.vstring('file:/uscms/home/lovedeep/eos/RelValPhotonJets_Pt_10_CMSSW_5_3_12_patch2_A4609359-9E2B-E311-B331-0025905964A6.root')
+                            fileNames= readFiles
 
 ##fileNames = cms.untracked.vstring(
 ##    '/store/mc/Summer12_DR53X/G_Pt-170to300_TuneZ2star_8TeV_pythia6/GEN-SIM-RECO/PU_S10_START53_V7A-v1/00000/5846302F-1A18-E211-A060-00266CF2AE10.root',
