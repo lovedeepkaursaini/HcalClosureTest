@@ -27,6 +27,7 @@ calcrespcorrphotonplusjet = cms.EDAnalyzer(
     jet3EtMax            = cms.double(50.),
     photonTriggers      = cms.vstring(''), #HLT_Photon20_*, HLT_Photon135*'),
     jetTriggers         = cms.vstring(''), #HLT_Jet30*'),
+    writeTriggerPrescale= cms.bool(False),
 ##    maxDeltaEta         = cms.double(1.5),
 ##    minTagJetEta        = cms.double(0.0),
 ##    maxTagJetEta        = cms.double(5.0),

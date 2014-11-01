@@ -176,6 +176,7 @@ class CalcRespCorrPhotonPlusJet : public edm::EDAnalyzer {
   double jet3EtMax_;     // largest value of the third jet ET
   std::vector<std::string> photonTrigNamesV_; // photon trigger names
   std::vector<std::string> jetTrigNamesV_; // jet trigger names
+  bool writeTriggerPrescale_; // whether attempt to record the prescale
 
   //bool doPhotons_;                  // use Photons
   bool doCaloJets_;                 // use CaloJets

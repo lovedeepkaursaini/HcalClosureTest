@@ -123,6 +123,7 @@ CalcRespCorrPhotonPlusJet::CalcRespCorrPhotonPlusJet(const edm::ParameterSet& iC
   jet3EtMax_           = iConfig.getParameter<double>("jet3EtMax");
   photonTrigNamesV_    = iConfig.getParameter<std::vector<std::string>>("photonTriggers");
   jetTrigNamesV_       = iConfig.getParameter<std::vector<std::string>>("jetTriggers");
+  writeTriggerPrescale_= iConfig.getParameter<bool>("writeTriggerPrescale");
 
   doCaloJets_          = iConfig.getParameter<bool>("doCaloJets");
   doPFJets_            = iConfig.getParameter<bool>("doPFJets");
@@ -270,17 +271,30 @@ void CalcRespCorrPhotonPlusJet::analyze(const edm::Event& iEvent, const edm::Eve
     size_t id = 0;
     for (size_t i=0; i<photonTrigNamesV_.size(); ++i) {
       const std::string trigName=photonTrigNamesV_.at(i);
+    //for (size_t i=0; i<evTrigNames.triggerNames().size(); i++) {
+    //  std::string trigName= evTrigNames.triggerNames().at(i);
+    //  if (trigName.find("_Photon")==std::string::npos) continue;
       id= helper_findTrigger(evTrigNames.triggerNames(),trigName);
       if (id==evTrigNames.size()) {
 	photonTrigFired_.push_back(0);
 	photonTrigPrescale_.push_back(-1);
+	// we may want to debug the names of the used triggers
+	//throw edm::Exception(edm::errors::ProductNotFound)
+	//  << " could not find trigger " << trigName << "\n";
+	//return;
 	continue;
       }
       int fired= triggerResults->accept(id);
       if (fired) photonTrigFlag=true;
+      //std::cout << "trigger " << trigName << " fired=" << fired << "\n";
+      //std::cout << "identified as " << evTrigNames.triggerNames().at(id) << "\n";
       photonTrigFired_.push_back(fired);
-      std::pair<int,int> prescaleVals= hltConfig_.prescaleValues(iEvent,evSetup, evTrigNames.triggerName(id));
-      photonTrigPrescale_.push_back(prescaleVals.first * prescaleVals.second);
+      if (!writeTriggerPrescale_) photonTrigPrescale_.push_back(-1);
+      else {
+	// for triggers with two L1 seeds this fails
+	std::pair<int,int> prescaleVals= hltConfig_.prescaleValues(iEvent,evSetup, evTrigNames.triggerName(id));
+	photonTrigPrescale_.push_back(prescaleVals.first * prescaleVals.second);
+      }
     }
     for (size_t i=0; i<jetTrigNamesV_.size(); ++i) {
       const std::string trigName=jetTrigNamesV_.at(i);
@@ -811,7 +825,7 @@ void CalcRespCorrPhotonPlusJet::analyze(const edm::Event& iEvent, const edm::Eve
 	iPF++;
 
 	// some debug print
-	if ((*it)->hoEnergy()>0.1) std::cout << " hoEn: " << (*it)->hoEnergy() << ": raw=" << (*it)->rawHoEnergy() << "\n";
+	//if ((*it)->hoEnergy()>0.1) std::cout << " hoEn: " << (*it)->hoEnergy() << ": raw=" << (*it)->rawHoEnergy() << "\n";
 
 	if (0 && (candidateType==reco::PFCandidate::h)) {
 	  std::cout << iPF << "hadron PF info:\n";
@@ -1322,7 +1336,7 @@ void CalcRespCorrPhotonPlusJet::analyze(const edm::Event& iEvent, const edm::Eve
 void CalcRespCorrPhotonPlusJet::beginJob()
 {
 
-    std::cout << "Start beginJob()" << std::endl;
+  //std::cout << "Start beginJob()" << std::endl;
 
   // book histograms
   rootfile_ = new TFile(rootHistFilename_.c_str(), "RECREATE");
