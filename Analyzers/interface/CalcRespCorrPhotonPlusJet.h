@@ -229,6 +229,8 @@ class CalcRespCorrPhotonPlusJet : public edm::EDAnalyzer {
   int tagPho_pixelSeed_;
   int tagPho_ConvSafeEleVeto_;
   int tagPho_idTight_, tagPho_idLoose_;
+  float tagPho_genPt_, tagPho_genEnergy_, tagPho_genEta_, tagPho_genPhi_;
+  float tagPho_genDeltaR_;
 
   // Calo jets
   float tcalojet_et_;

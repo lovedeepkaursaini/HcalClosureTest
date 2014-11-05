@@ -414,6 +414,11 @@ void CalcRespCorrPhotonPlusJet::analyze(const edm::Event& iEvent, const edm::Eve
     tagPho_ConvSafeEleVeto_=0;
     tagPho_idTight_=0;
     tagPho_idLoose_=0;
+    tagPho_genPt_=0;
+    tagPho_genEnergy_=0;
+    tagPho_genEta_=0;
+    tagPho_genPhi_=0;
+    tagPho_genDeltaR_=0;
   }
   else {
   tagPho_pt_    = photon_tag.photon()->pt();
@@ -440,6 +445,29 @@ void CalcRespCorrPhotonPlusJet::analyze(const edm::Event& iEvent, const edm::Eve
   tagPho_idLoose_ = (loosePhotonQual.isValid()) ? (*loosePhotonQual)[photonRef] : -1;
   tagPho_idTight_ = (tightPhotonQual.isValid()) ? (*tightPhotonQual)[photonRef] : -1;
   //std::cout << "photon tag ID = " << tagPho_idLoose_ << " and " << tagPho_idTight_ << std::endl;
+
+  tagPho_genPt_=0;
+  tagPho_genEnergy_=0;
+  tagPho_genEta_=0;
+  tagPho_genPhi_=0;
+  tagPho_genDeltaR_=0;
+  if (doGenJets_) {
+    tagPho_genDeltaR_=9999.;
+    for (std::vector<reco::GenParticle>::const_iterator itmc=genparticles->begin();
+	 itmc!=genparticles->end(); itmc++) {
+      if (itmc->status() == 1 && itmc->pdgId()==22) {
+	float dR= deltaR(tagPho_eta_,tagPho_phi_,
+			 itmc->eta(),itmc->phi());
+	if (dR < tagPho_genDeltaR_) {
+	  tagPho_genPt_     = itmc->pt();
+	  tagPho_genEnergy_ = itmc->energy();
+	  tagPho_genEta_    = itmc->eta();
+	  tagPho_genPhi_    = itmc->phi();
+	  tagPho_genDeltaR_ = dR;
+	}
+      }
+    }
+  }
   }
 
   // Run over caloJets //
@@ -1428,6 +1456,15 @@ void CalcRespCorrPhotonPlusJet::beginJob()
     tree->Branch("tagPho_ConvSafeEleVeto", &tagPho_ConvSafeEleVeto_, "tagPho_ConvSafeEleVeto/I");
     tree->Branch("tagPho_idTight",&tagPho_idTight_, "tagPho_idTight/I");
     tree->Branch("tagPho_idLoose",&tagPho_idLoose_, "tagPho_idLoose/I");
+    // gen.info on photon
+    if(doGenJets_){
+      tree->Branch("tagPho_genPt",&tagPho_genPt_, "tagPho_genPt/F");
+      tree->Branch("tagPho_genEnergy",&tagPho_genEnergy_,"tagPho_genEnergy/F");
+      tree->Branch("tagPho_genEta",&tagPho_genEta_, "tagPho_genEta/F");
+      tree->Branch("tagPho_genPhi",&tagPho_genPhi_, "tagPho_genPhi/F");
+      tree->Branch("tagPho_genDeltaR",&tagPho_genDeltaR_,"tagPho_genDeltaR/F");
+    }
+      // counters
     tree->Branch("nPhotons",&nPhotons_, "nPhotons/I");
     tree->Branch("nGenJets",&nGenJets_, "nGenJets/I");
   }

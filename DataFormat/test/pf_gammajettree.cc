@@ -80,6 +80,15 @@ void pf_gammajettree::ActivateBranches_forFitSkim() {
 
 // --------------------------------------------------------------
 
+void pf_gammajettree::ActivateBranches_genBasicSet() {
+  ActivateBranches(5,"tagPho_genPt","tagPho_genEnergy","tagPho_genEta",
+		   "tagPho_genPhi","tagPho_genDeltaR");
+  ActivateBranches(4,"ppfjet_genpt","ppfjet_genp","ppfjet_genE",
+		   "ppfjet_gendr");
+}
+
+// --------------------------------------------------------------
+
 Double_t pf_gammajettree::getSumEcalE(int tag, int includeOthers) const {
   double sum=0;
   if (tag==1) {

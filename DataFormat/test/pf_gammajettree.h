@@ -59,6 +59,11 @@ public :
    Int_t           tagPho_ConvSafeEleVeto;
    Int_t           tagPho_idTight;
    Int_t           tagPho_idLoose;
+   Float_t         tagPho_genPt;
+   Float_t         tagPho_genEnergy;
+   Float_t         tagPho_genEta;
+   Float_t         tagPho_genPhi;
+   Float_t         tagPho_genDeltaR;
    Int_t           nPhotons;
    Int_t           nGenJets;
    Int_t           nPFJets;
@@ -249,6 +254,11 @@ public :
    TBranch        *b_tagPho_ConvSafeEleVeto;   //!
    TBranch        *b_tagPho_idTight;   //!
    TBranch        *b_tagPho_idLoose;   //!
+   TBranch        *b_tagPho_genPt;
+   TBranch        *b_tagPho_genEnergy;
+   TBranch        *b_tagPho_genEta;
+   TBranch        *b_tagPho_genPhi;
+   TBranch        *b_tagPho_genDeltaR;
    TBranch        *b_nPhotons;   //!
    TBranch        *b_nGenJets;   //!
    TBranch        *b_nPFJets;   //!
@@ -426,6 +436,7 @@ public :
    void ActivateBranches(const std::vector<TString> &brV); // list of branch names
    void ActivateBranches_forRecHitsEnergyCalc();
    void ActivateBranches_forFitSkim();
+   void ActivateBranches_genBasicSet();
 
    friend
      std::ostream& operator<<(std::ostream &out, pf_gammajettree &obj) {
@@ -504,11 +515,6 @@ int pf_gammajettree::Init(const TString &fname)
    // (once per file to be processed).
 
    // Set object pointer
-   photonTrig_fired = 0;
-   photonTrig_prescale = 0;
-   jetTrig_fired = 0;
-   jetTrig_prescale = 0;
-   tagPho_pfiso_mycharged03 = 0;
    photonTrig_fired = 0;
    photonTrig_prescale = 0;
    jetTrig_fired = 0;
@@ -608,6 +614,11 @@ int pf_gammajettree::Init(const TString &fname)
    fChain->SetBranchAddress("tagPho_ConvSafeEleVeto", &tagPho_ConvSafeEleVeto, &b_tagPho_ConvSafeEleVeto);
    fChain->SetBranchAddress("tagPho_idTight", &tagPho_idTight, &b_tagPho_idTight);
    fChain->SetBranchAddress("tagPho_idLoose", &tagPho_idLoose, &b_tagPho_idLoose);
+   fChain->SetBranchAddress("tagPho_genPt", &tagPho_genPt, &b_tagPho_genPt);
+   fChain->SetBranchAddress("tagPho_genEnergy", &tagPho_genEnergy, &b_tagPho_genEnergy);
+   fChain->SetBranchAddress("tagPho_genEta", &tagPho_genEta, &b_tagPho_genEta);
+   fChain->SetBranchAddress("tagPho_genPhi", &tagPho_genPhi, &b_tagPho_genPhi);
+   fChain->SetBranchAddress("tagPho_genDeltaR", &tagPho_genDeltaR, &b_tagPho_genDeltaR);
    fChain->SetBranchAddress("nPhotons", &nPhotons, &b_nPhotons);
    fChain->SetBranchAddress("nGenJets", &nGenJets, &b_nGenJets);
    fChain->SetBranchAddress("nPFJets", &nPFJets, &b_nPFJets);
