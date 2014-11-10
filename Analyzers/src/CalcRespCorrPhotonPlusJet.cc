@@ -12,7 +12,8 @@
 #include "RecoEgamma/EgammaTools/interface/ConversionTools.h"
 #include "RecoEgamma/EgammaTools/interface/ConversionFinder.h"
 #include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
-
+#include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
+#include "JetMETCorrections/Objects/interface/JetCorrectionsRecord.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
 #include "FWCore/Common/interface/TriggerNames.h"
@@ -474,7 +475,7 @@ void CalcRespCorrPhotonPlusJet::analyze(const edm::Event& iEvent, const edm::Eve
 
   if (doCaloJets_ && (nCaloJets_>0)) {
         // Get jet corrections
-    const JetCorrector* correctorCalo = JetCorrector::getJetCorrector(caloJetCorrName_,evSetup);
+    const JetCorrector* correctorCalo = JetCorrector::getJetCorrector(caloJetCorrName_, evSetup);
 
     //////////////////////////////
     // Event Selection
@@ -737,7 +738,12 @@ void CalcRespCorrPhotonPlusJet::analyze(const edm::Event& iEvent, const edm::Eve
       if ((deltaR(photon_tag,jet)<0.5) &&
 	  (it!=pfjets->begin())) // do not allow photon to be inside leading jet
 	  continue;
-      pfjetcorretpairset.insert( PFJetCorretPair(jet, correctorPF->correction(jet->p4())) );
+      //int index = it-pfjets->begin();
+      //edm::RefToBase<reco::Jet> jetRef(edm::Ref<PFJetCollection>(pfjets,index));
+      //reco::PFJetRef jetRef = it->castTo<reco::PFJetRef>();
+      double jec = correctorPF->correction(*it, iEvent, evSetup);
+      //cout<<index<<'\t'<<jec<<'\t'<<it->et()<<'\t'<<it->pt()<<endl;
+      pfjetcorretpairset.insert( PFJetCorretPair(jet, jec));//correctorPF->correction(jet->p4())) );
     }
 
     PFJetCorretPair pfjet_probe;
