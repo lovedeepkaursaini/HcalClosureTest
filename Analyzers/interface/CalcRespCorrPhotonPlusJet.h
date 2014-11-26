@@ -13,9 +13,9 @@
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/Framework/interface/ESHandle.h"
-#include "RecoEgamma/EgammaTools/interface/ggPFClusters.h"
-#include "RecoEgamma/EgammaTools/interface/ggPFESClusters.h"
-#include "RecoEgamma/EgammaTools/interface/ggPFTracks.h"
+//#include "RecoEgamma/EgammaTools/interface/ggPFClusters.h"
+//#include "RecoEgamma/EgammaTools/interface/ggPFESClusters.h"
+//#include "RecoEgamma/EgammaTools/interface/ggPFTracks.h"
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "DataFormats/EgammaCandidates/interface/PhotonFwd.h"
@@ -182,6 +182,7 @@ class CalcRespCorrPhotonPlusJet : public edm::EDAnalyzer {
   bool doCaloJets_;                 // use CaloJets
   bool doPFJets_;                   // use PFJets
   bool doGenJets_;                  // use GenJets
+  bool ignoreHLT_;
 
   // root file/histograms
   TFile* rootfile_;
@@ -202,6 +203,16 @@ class CalcRespCorrPhotonPlusJet : public edm::EDAnalyzer {
   TH1D* h_twrietas_;
   TH2D* h_rechitspos_;
   TH1D* h_hbherecoieta_;
+
+  TH1D* hcount;
+  TH1D* h_nPho;
+  TH1D* h_nPFJets;
+  TH1D* h_leadJetCorrEt;
+  TH1D* h_2ndleadJetCorrEt;
+  TH1D* h_3rdleadJetCorrEt;
+  TH1D* h_dRphojet;
+  TH1D* h_dphi;
+  TH1D*   h_pfrecoOgen_et;
 
   TTree* misc_tree_; // misc.information. Will be filled only once
   TTree* calo_tree_;
@@ -317,7 +328,7 @@ class CalcRespCorrPhotonPlusJet : public edm::EDAnalyzer {
     float phi2=jet.jet()->phi();
     float dphi=fabs(phi1-phi2);
     const float cPi= 4*atan(1);
-    while (fabs(dphi-cPi)>cPi) dphi = 2*cPi - dphi;
+    while (dphi>cPi) dphi = fabs(2*cPi - dphi);
     return dphi;
   }
 
