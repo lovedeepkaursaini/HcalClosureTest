@@ -109,10 +109,14 @@ class PFJetCorretPair : protected std::pair<const reco::PFJet*, double> {
   PFJetCorretPair() {
     first=0;
     second=1.0;
+    mlp_qgt=-999999;
+    likelihood_qgt = -999999;
   }
   PFJetCorretPair(const reco::PFJet* j, double s) {
     first=j;
     second=s;
+    mlp_qgt=-999999;
+    likelihood_qgt = -999999;
   }
   ~PFJetCorretPair() {}
 
@@ -123,8 +127,10 @@ class PFJetCorretPair : protected std::pair<const reco::PFJet*, double> {
   double scaledEt() const { return first->et() * second; }
   bool isValid() const { return (first!=NULL) ? true:false; }
 
- private:
-  
+ public: //@later make them into private variables.
+  double mlp_qgt;
+  double likelihood_qgt;
+private:
 };
 
 // --------------------------------------------
@@ -155,6 +161,8 @@ class CalcRespCorrPhotonPlusJet : public edm::EDAnalyzer {
   // parameters
   int debug_;                      // print debug statements
   edm::InputTag rhoCollection_;
+  edm::InputTag pfType1METColl, pfMETColl ;
+
   std::string photonCollName_;      // label for the photon collection
   std::string caloJetCollName_;     // label for the calo jet collection
   std::string caloJetCorrName_;     // label for the calo jet correction service
@@ -167,6 +175,7 @@ class CalcRespCorrPhotonPlusJet : public edm::EDAnalyzer {
   std::string hfRecHitName_;        // label for HFRecHit collection
   std::string hoRecHitName_;        // label for HORecHit collection
   std::string rootHistFilename_;    // name of the histogram file
+  std::string pvCollName_; 
 
   bool allowNoPhoton_; // whether module is used for dijet analysis
   double photonPtMin_;   // lowest value of the leading photon pT
@@ -186,7 +195,9 @@ class CalcRespCorrPhotonPlusJet : public edm::EDAnalyzer {
 
   // root file/histograms
   TFile* rootfile_;
-
+  TH1D* hEvents_;
+  TH1D* hPU_;
+  TH1D* hPUTrue_;
   TH1D* h_types_;
   TH1D* h_ntypes_;
   TH1D* h_ietaHCAL_;
@@ -204,15 +215,18 @@ class CalcRespCorrPhotonPlusJet : public edm::EDAnalyzer {
   TH2D* h_rechitspos_;
   TH1D* h_hbherecoieta_;
 
-  TH1D* hcount;
+  TH1D* h_passedSteps;
   TH1D* h_nPho;
+  TH1D* h_nPho_good;
   TH1D* h_nPFJets;
+  TH1D* h_nPFJets_sel;
   TH1D* h_leadJetCorrEt;
   TH1D* h_2ndleadJetCorrEt;
   TH1D* h_3rdleadJetCorrEt;
   TH1D* h_dRphojet;
   TH1D* h_dphi;
-  TH1D*   h_pfrecoOgen_et;
+  TH1D* h_dphi_sel;
+  TH1D* h_pfrecoOgen_et;
 
   TTree* misc_tree_; // misc.information. Will be filled only once
   TTree* calo_tree_;
@@ -230,6 +244,17 @@ class CalcRespCorrPhotonPlusJet : public edm::EDAnalyzer {
   float eventWeight_;
   int nPhotons_, nGenJets_;
   int nCaloJets_, nPFJets_;
+  ULong64_t nProcessed_;
+
+ // PU
+  int nPUInfo_;
+  std::vector<int> nPU_;
+  std::vector<int> puBX_;
+  std::vector<float> puTrue_;
+
+  /// MET info 
+  float met_value_, met_phi_, met_sumEt_ ;
+  float metType1_value_, metType1_phi_, metType1_sumEt_ ;
 
   // photon info
   float rho2012_;
@@ -242,7 +267,7 @@ class CalcRespCorrPhotonPlusJet : public edm::EDAnalyzer {
   int tagPho_idTight_, tagPho_idLoose_;
   float tagPho_genPt_, tagPho_genEnergy_, tagPho_genEta_, tagPho_genPhi_;
   float tagPho_genDeltaR_;
-
+  int tagPho_genpdgId_;
   // Calo jets
   float tcalojet_et_;
   float tcalojet_pt_, tcalojet_p_, tcalojet_eta_, tcalojet_phi_, tcalojet_emf_, tcalojet_scale_;
@@ -269,9 +294,9 @@ class CalcRespCorrPhotonPlusJet : public edm::EDAnalyzer {
 
   // Particle-flow jets
   // leading Et jet info
-  float ppfjet_pt_, ppfjet_p_, ppfjet_E_, ppfjet_eta_, ppfjet_phi_, ppfjet_scale_;
+  float ppfjet_pt_, ppfjet_p_, ppfjet_E_, ppfjet_eta_, ppfjet_phi_, ppfjet_scale_, ppfjet_area_ , ppfjet_QGtagLD_, ppfjet_QGtagMLP_;
   float ppfjet_NeutralHadronFrac_, ppfjet_NeutralEMFrac_;
-  int ppfjet_nConstituents_;
+  int ppfjet_nConstituents_, ppfjet_partonFlavour_;
   float ppfjet_ChargedHadronFrac_, ppfjet_ChargedMultiplicity_, ppfjet_ChargedEMFrac_;
   float ppfjet_gendr_, ppfjet_genpt_, ppfjet_genp_, ppfjet_genE_;
   //float ppfjet_EBE_, ppfjet_EEE_, ppfjet_HBE_, ppfjet_HEE_, ppfjet_HFE_;
@@ -292,9 +317,9 @@ class CalcRespCorrPhotonPlusJet : public edm::EDAnalyzer {
   std::vector<float> ppfjet_candtrack_px_, ppfjet_candtrack_py_, ppfjet_candtrack_pz_, ppfjet_candtrack_EcalE_;
 
   // subleading Et jet info
-  float pfjet2_pt_, pfjet2_p_, pfjet2_E_, pfjet2_eta_, pfjet2_phi_, pfjet2_scale_;
+  float pfjet2_pt_, pfjet2_p_, pfjet2_E_, pfjet2_eta_, pfjet2_phi_, pfjet2_scale_, pfjet2_area_, pfjet2_QGtagLD_, pfjet2_QGtagMLP_;
   float pfjet2_NeutralHadronFrac_, pfjet2_NeutralEMFrac_;
-  int pfjet2_nConstituents_;
+  int pfjet2_nConstituents_, pfjet2_partonFlavour_;
   float pfjet2_ChargedHadronFrac_, pfjet2_ChargedMultiplicity_, pfjet2_ChargedEMFrac_;
   float pfjet2_gendr_, pfjet2_genpt_, pfjet2_genp_, pfjet2_genE_;
   //float pfjet2_EBE_, pfjet2_EEE_, pfjet2_HBE_, pfjet2_HEE_, pfjet2_HFE_;
@@ -316,7 +341,10 @@ class CalcRespCorrPhotonPlusJet : public edm::EDAnalyzer {
 
   float pf_thirdjet_et_;
   float pf_thirdjet_pt_, pf_thirdjet_p_, pf_thirdjet_px_, pf_thirdjet_py_;
-  float pf_thirdjet_E_, pf_thirdjet_eta_, pf_thirdjet_phi_, pf_thirdjet_scale_;
+  float pf_thirdjet_E_, pf_thirdjet_eta_, pf_thirdjet_phi_, pf_thirdjet_scale_, pf_thirdjet_area_;
+  int pf_NPV_;
+  //// MET info ////
+  
 
   // ------------------------------
   // helper functions

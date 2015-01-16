@@ -17,6 +17,10 @@
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
 #include "FWCore/Common/interface/TriggerNames.h"
+#include "DataFormats/METReco/interface/METCollection.h"
+#include "DataFormats/METReco/interface/PFMET.h"
+#include "DataFormats/METReco/interface/PFMETCollection.h"
+#include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 
 #include "TTree.h"
 #include "TFile.h"
@@ -102,6 +106,8 @@ CalcRespCorrPhotonPlusJet::CalcRespCorrPhotonPlusJet(const edm::ParameterSet& iC
 {
   // set parameters
   debug_               = iConfig.getUntrackedParameter<int>("debug", 0);
+  pfMETColl            = iConfig.getParameter<edm::InputTag>("PFMETColl");
+  pfType1METColl       = iConfig.getParameter<edm::InputTag>("PFMETTYPE1Coll");
   rhoCollection_       = iConfig.getParameter<edm::InputTag>("rhoColl");
   photonCollName_      = iConfig.getParameter<std::string>("photonCollName");
   caloJetCollName_     = iConfig.getParameter<std::string>("caloJetCollName");
@@ -115,7 +121,7 @@ CalcRespCorrPhotonPlusJet::CalcRespCorrPhotonPlusJet(const edm::ParameterSet& iC
   hfRecHitName_        = iConfig.getParameter<std::string>("hfRecHitName");
   hoRecHitName_        = iConfig.getParameter<std::string>("hoRecHitName");
   rootHistFilename_    = iConfig.getParameter<std::string>("rootHistFilename");
-
+  pvCollName_ = iConfig.getParameter<std::string>("pvCollName");
   allowNoPhoton_       = iConfig.getParameter<bool>("allowNoPhoton");
   photonPtMin_         = iConfig.getParameter<double>("photonPtMin");
   photonJetDPhiMin_    = iConfig.getParameter<double>("photonJetDPhiMin");
@@ -134,6 +140,7 @@ CalcRespCorrPhotonPlusJet::CalcRespCorrPhotonPlusJet(const edm::ParameterSet& iC
 
   // set it here to ensure the value is defined
   eventWeight_ = 1.0;
+  nProcessed_ = 0;
 }
 
 CalcRespCorrPhotonPlusJet::~CalcRespCorrPhotonPlusJet()
@@ -147,17 +154,18 @@ CalcRespCorrPhotonPlusJet::~CalcRespCorrPhotonPlusJet()
   
 // ------------ method called to for each event  ------------
 void CalcRespCorrPhotonPlusJet::analyze(const edm::Event& iEvent, const edm::EventSetup& evSetup)
-{ 
+{
   // Make preliminary checks to see that it is worth analyzing the event
   // 1. At least one photon with a goot pT
   // 2. At least one jet
   // 3. Trigger fired
-  hcount->Fill(0);
+ hEvents_->Fill(0.5);
+  h_passedSteps->Fill(0);
+  nProcessed_++;
+
   // 1st. Get Photons //
   edm::Handle<reco::PhotonCollection> photons;
   iEvent.getByLabel(photonCollName_, photons);
-  h_nPho->Fill(photons->size());
-
   if(!photons.isValid()) {
     throw edm::Exception(edm::errors::ProductNotFound)
       << " could not find PhotonCollection named " << photonCollName_ << ".\n";
@@ -168,29 +176,48 @@ void CalcRespCorrPhotonPlusJet::analyze(const edm::Event& iEvent, const edm::Eve
     if (debug_) std::cout << "no photons in the event\n";
     return;
   }
+
+  h_nPho->Fill(photons->size());
   nPhotons_= photons->size();
+  h_passedSteps->Fill(1);
 
   ///////// Run Over Photons /////////
 
-  //
+  // Get photon quality flags
   edm::Handle<edm::ValueMap<Bool_t> > loosePhotonQual, tightPhotonQual;
   iEvent.getByLabel("PhotonIDProd", "PhotonCutBasedIDLoose", loosePhotonQual);
   iEvent.getByLabel("PhotonIDProd", "PhotonCutBasedIDTight", tightPhotonQual);
   if (!loosePhotonQual.isValid() || !tightPhotonQual.isValid()) {
-    std::cout << "failed to get photon qualifiers" << std::endl;
+    std::cout << "failed to get photon quality flags" << std::endl;
+    throw edm::Exception(edm::errors::ProductNotFound) << " PhotonID flags\n";
   }
+
+
+  h_passedSteps->Fill(2);
 
   // sort photons by Et //
   // counter is needed later to get the reference to the ptr
   std::set<PhotonPair, PhotonPairComp> photonpairset;
-  int counter=0;
+  int counter=0;int idxpho=0; 
   for(reco::PhotonCollection::const_iterator it=photons->begin(); it!=photons->end(); ++it) {
     const reco::Photon* photon=&(*it);
-    if(loosePhotonQual.isValid()){
-     photonpairset.insert( PhotonPair(photon, photon->pt(), counter) );
-     counter++;
-    }
+  edm::Ref<reco::PhotonCollection> photonRef(photons,idxpho);
+    bool idTight = (tightPhotonQual.isValid()) ? (*tightPhotonQual)[photonRef] : -1;
+  //cout<<idTight<<endl;
+    //if(!idTight) continue;
+    
+      photonpairset.insert( PhotonPair(photon, photon->pt(), counter) );
+      counter++;
+   
   }
+
+  h_nPho_good->Fill(photonpairset.size());
+  if ((photonpairset.size()==0) && !allowNoPhoton_) {
+    if (debug_) std::cout << "no good quality photons in the event\n";
+    return;
+  }
+  h_passedSteps->Fill(3);
+
   ///////////////////////////////
   // TAG = Highest Et photon
   ///////////////////////////////
@@ -207,13 +234,18 @@ void CalcRespCorrPhotonPlusJet::analyze(const edm::Event& iEvent, const edm::Eve
     else break;
   }
 
-  if(!photon_tag.photon() && !allowNoPhoton_)return; // should be unreachable
-  hcount->Fill(1);
+  if (counter==0) {
+    // this should be unreachable
+    throw edm::Exception(edm::errors::ProductNotFound) << " code bug\n";
+  }
+  h_passedSteps->Fill(4);
+
   // cut on photon pt
   if (photon_tag.isValid() && ( photon_tag.pt() < photonPtMin_ )) {
     if (debug_) std::cout << "largest photonPt=" << photon_tag.pt()<<std::endl;
     return;
   }
+  h_passedSteps->Fill(5);
 
   // 2nd. Get Jets
   edm::Handle<reco::CaloJetCollection> calojets;
@@ -236,15 +268,16 @@ void CalcRespCorrPhotonPlusJet::analyze(const edm::Event& iEvent, const edm::Eve
 
   if (doPFJets_) {
     iEvent.getByLabel(pfJetCollName_,pfjets);
-    h_nPFJets->Fill(pfjets->size());
     if(!pfjets.isValid()) {
       throw edm::Exception(edm::errors::ProductNotFound)
 	<< " could not find PFJetCollection named " << pfJetCollName_ << ".\n";
       return;
     }
+    h_nPFJets->Fill(pfjets->size());
     anyJetCount+= pfjets->size();
     nPFJets_ = pfjets->size();
   }
+  h_passedSteps->Fill(6);
 
   if (anyJetCount==0) {
     if (debug_) std::cout << "event contains no jets\n";
@@ -260,9 +293,6 @@ void CalcRespCorrPhotonPlusJet::analyze(const edm::Event& iEvent, const edm::Eve
   jetTrigPrescale_.clear();
 
   // HLT Trigger
-  //HLTConfigProvider ;
-
-
   // assign "trig fired" if no triggers are specified
   bool photonTrigFlag= (photonTrigNamesV_.size()==0) ? true : false;
   bool jetTrigFlag= (jetTrigNamesV_.size()==0) ? true : false;
@@ -304,9 +334,11 @@ void CalcRespCorrPhotonPlusJet::analyze(const edm::Event& iEvent, const edm::Eve
       photonTrigFired_.push_back(fired);
       if (!writeTriggerPrescale_) photonTrigPrescale_.push_back(-1);
       else {
+ //cout<<"Trigger prescale: "<<hltConfig_.prescaleValue(iEvent, evSetup, evTrigNames.triggerName(id))<<endl;
+      photonTrigPrescale_.push_back(hltConfig_.prescaleValue(iEvent, evSetup, evTrigNames.triggerName(id)));
 	// for triggers with two L1 seeds this fails
-	std::pair<int,int> prescaleVals= hltConfig_.prescaleValues(iEvent,evSetup, evTrigNames.triggerName(id));
-	photonTrigPrescale_.push_back(prescaleVals.first * prescaleVals.second);
+//	std::pair<int,int> prescaleVals= hltConfig_.prescaleValues(iEvent,evSetup, evTrigNames.triggerName(id));
+ //	photonTrigPrescale_.push_back(prescaleVals.first * prescaleVals.second);
       }
     }
     for (size_t i=0; i<jetTrigNamesV_.size(); ++i) {
@@ -330,7 +362,8 @@ void CalcRespCorrPhotonPlusJet::analyze(const edm::Event& iEvent, const edm::Eve
     return;
   }
 
-  hcount->Fill(2);
+  h_passedSteps->Fill(7);
+
   //
   // proceed with further checks
   //
@@ -397,9 +430,29 @@ void CalcRespCorrPhotonPlusJet::analyze(const edm::Event& iEvent, const edm::Eve
   lumiBlock_ = iEvent.id().luminosityBlock();
   eventNumber_ = iEvent.id().event();
 
+nPU_.clear();
+puBX_.clear();
+puTrue_.clear();
+
+  nPUInfo_ = 0; 
+  edm::Handle< vector<PileupSummaryInfo> > pileupHandle;
+  if (iEvent.getByLabel("addPileupInfo", pileupHandle)) {
+   vector<PileupSummaryInfo>::const_iterator PVI;
+    for (PVI = pileupHandle->begin(); PVI != pileupHandle->end(); ++PVI) {
+     if (PVI->getBunchCrossing() == 0) {
+     hPU_->Fill(PVI->getPU_NumInteractions());
+     hPUTrue_->Fill(PVI->getTrueNumInteractions());
+    }
+    nPU_.push_back(PVI->getPU_NumInteractions());
+    puTrue_.push_back(PVI->getTrueNumInteractions());
+    puBX_.push_back(PVI->getBunchCrossing());
+    nPUInfo_++;
+   }
+  }
   //
   // Fill photon info
   //
+
   // fill tag photon variables
   if (!photon_tag.isValid()) {
     tagPho_pt_=-1;
@@ -421,6 +474,7 @@ void CalcRespCorrPhotonPlusJet::analyze(const edm::Event& iEvent, const edm::Eve
     tagPho_ConvSafeEleVeto_=0;
     tagPho_idTight_=0;
     tagPho_idLoose_=0;
+    tagPho_genpdgId_=9999;
     tagPho_genPt_=0;
     tagPho_genEnergy_=0;
     tagPho_genEta_=0;
@@ -428,7 +482,7 @@ void CalcRespCorrPhotonPlusJet::analyze(const edm::Event& iEvent, const edm::Eve
     tagPho_genDeltaR_=0;
   }
   else {
-  hcount->Fill(4);
+    h_passedSteps->Fill(8);
   tagPho_pt_    = photon_tag.photon()->pt();
   pho_2nd_pt_   = (photon_2nd.photon()) ? photon_2nd.photon()->pt() : -1.;
   tagPho_energy_     = photon_tag.photon()->energy();
@@ -455,6 +509,7 @@ void CalcRespCorrPhotonPlusJet::analyze(const edm::Event& iEvent, const edm::Eve
   tagPho_idTight_ = (tightPhotonQual.isValid()) ? (*tightPhotonQual)[photonRef] : -1;
   //std::cout << "photon tag ID = " << tagPho_idLoose_ << " and " << tagPho_idTight_ << std::endl;
 
+  tagPho_genpdgId_=9999;
   tagPho_genPt_=0;
   tagPho_genEnergy_=0;
   tagPho_genEta_=0;
@@ -464,6 +519,7 @@ void CalcRespCorrPhotonPlusJet::analyze(const edm::Event& iEvent, const edm::Eve
     tagPho_genDeltaR_=9999.;
     for (std::vector<reco::GenParticle>::const_iterator itmc=genparticles->begin();
 	 itmc!=genparticles->end(); itmc++) {
+        tagPho_genpdgId_ = itmc->pdgId();
       if (itmc->status() == 1 && itmc->pdgId()==22) {
 	float dR= deltaR(tagPho_eta_,tagPho_phi_,
 			 itmc->eta(),itmc->phi());
@@ -482,6 +538,8 @@ void CalcRespCorrPhotonPlusJet::analyze(const edm::Event& iEvent, const edm::Eve
   // Run over caloJets //
 
   if (doCaloJets_ && (nCaloJets_>0)) {
+    std::cout << "calo jets are currently disabled\n";
+    /*
         // Get jet corrections
     const JetCorrector* correctorCalo = JetCorrector::getJetCorrector(caloJetCorrName_, evSetup);
 
@@ -656,17 +714,18 @@ void CalcRespCorrPhotonPlusJet::analyze(const edm::Event& iEvent, const edm::Eve
 
       calo_tree_->Fill();
     }
-
+    */
   }
 
   // Run over PFJets //
 
   if(doPFJets_ && (nPFJets_>0)){
     unsigned int debugEvent = 0;
+    h_passedSteps->Fill(9);
 
-    hcount->Fill(5);
     // Get RecHits in HB and HE
     edm::Handle<edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>> hbhereco;
+//    iEvent.getByLabel("reducedHcalRecHits","hbhereco",hbhereco);
     iEvent.getByLabel(hbheRecHitName_,hbhereco);
     if(!hbhereco.isValid()) {
       throw edm::Exception(edm::errors::ProductNotFound)
@@ -677,6 +736,7 @@ void CalcRespCorrPhotonPlusJet::analyze(const edm::Event& iEvent, const edm::Eve
     // Get RecHits in HF
     edm::Handle<edm::SortedCollection<HFRecHit,edm::StrictWeakOrdering<HFRecHit>>> hfreco;
     iEvent.getByLabel(hfRecHitName_,hfreco);
+//    iEvent.getByLabel("reducedHcalRecHits","hfreco",hfreco);
     if(!hfreco.isValid()) {
       throw edm::Exception(edm::errors::ProductNotFound)
 	<< " could not find HFRecHit named " << hfRecHitName_ << ".\n";
@@ -686,6 +746,7 @@ void CalcRespCorrPhotonPlusJet::analyze(const edm::Event& iEvent, const edm::Eve
     // Get RecHits in HO
     edm::Handle<edm::SortedCollection<HORecHit,edm::StrictWeakOrdering<HORecHit>>> horeco;
     iEvent.getByLabel(hoRecHitName_,horeco);
+  //  iEvent.getByLabel("reducedHcalRecHits","horeco",horeco);
     if(!horeco.isValid()) {
       throw edm::Exception(edm::errors::ProductNotFound)
 	<< " could not find HORecHit named " << hoRecHitName_ << ".\n";
@@ -726,7 +787,26 @@ void CalcRespCorrPhotonPlusJet::analyze(const edm::Event& iEvent, const edm::Eve
     h_HBHE_n_->Fill(HBHE_n);
     h_HF_n_->Fill(HF_n);
     h_HO_n_->Fill(HO_n);
-    
+
+    // Get primary vertices
+    edm::Handle<std::vector<reco::Vertex>> pv;
+    iEvent.getByLabel(pvCollName_,pv);
+    if(!pv.isValid()) {
+     throw edm::Exception(edm::errors::ProductNotFound)
+     << " could not find Vertex named " << pvCollName_ << ".\n";
+     return;
+    }
+    pf_NPV_ = 0;
+    for(std::vector<reco::Vertex>::const_iterator it=pv->begin(); it!=pv->end(); ++it){
+      if(!it->isFake() && it->ndof() > 4) ++pf_NPV_;
+    }
+   
+edm::Handle<edm::ValueMap<float> >  QGTagsHandleMLP;
+  edm::Handle<edm::ValueMap<float> >  QGTagsHandleLikelihood;
+  iEvent.getByLabel("QGTagger","qgMLP", QGTagsHandleMLP);
+  iEvent.getByLabel("QGTagger","qgLikelihood", QGTagsHandleLikelihood);
+
+ 
     // Get jet corrections
     const JetCorrector* correctorPF = JetCorrector::getJetCorrector(pfJetCorrName_,evSetup);
     
@@ -738,55 +818,73 @@ void CalcRespCorrPhotonPlusJet::analyze(const edm::Event& iEvent, const edm::Eve
     std::set<PFJetCorretPair, PFJetCorretPairComp> pfjetcorretpairset;
     for(reco::PFJetCollection::const_iterator it=pfjets->begin(); it!=pfjets->end(); ++it) {
       const reco::PFJet* jet=&(*it);
-      //double minDr=99999;
-      //double dR= deltaR(photon_tag,jet);
-      //if (dR < minDr) minDr=dR;
-      //if(minDr<0.5) continue;
-      // shorter version
-      if ((deltaR(photon_tag,jet)<0.5) 
-	  //(it!=pfjets->begin())) // do not allow photon to be inside leading jet
-	 )
-      continue;
-      //int index = it-pfjets->begin();
-      //edm::RefToBase<reco::Jet> jetRef(edm::Ref<PFJetCollection>(pfjets,index));
-      //reco::PFJetRef jetRef = it->castTo<reco::PFJetRef>();
+//pass LooseJetID?
+	bool jetidloose=false;
+        if(fabs(it->eta())<2.4){
+                        if((it->neutralHadronEnergyFraction()<0.99)&& (it->neutralEmEnergyFraction()<0.99) && (it->nConstituents()>1))jetidloose=true;
+}
+	else if(fabs(it->eta())>2.4){
+			if((it->neutralHadronEnergyFraction()<0.99)&& (it->neutralEmEnergyFraction()<0.99) && (it->nConstituents()>1) && (it->chargedHadronEnergyFraction()>0.) && (it->chargedMultiplicity())>0. && (it->chargedEmEnergyFraction()<0.99))
+			jetidloose=true;
+		}
+//	if(!jetidloose)continue;
+
+      // do not let the jet to be close to the tag photon
+      if (deltaR(photon_tag,jet)<0.5) continue;
       double jec = correctorPF->correction(*it, iEvent, evSetup);
-      //cout<<index<<'\t'<<jec<<'\t'<<it->et()<<'\t'<<it->pt()<<endl;
-      pfjetcorretpairset.insert( PFJetCorretPair(jet, jec));//correctorPF->correction(jet->p4())) );
-    }
-    if(pfjetcorretpairset.size()==0)return;
+      PFJetCorretPair J(jet, jec); //small variable name for this temporary variable.
+      int ijet = it - pfjets->begin();
+      edm::RefToBase<reco::Jet> jetRef(edm::Ref<reco::PFJetCollection>(pfjets,ijet));
+      if (QGTagsHandleMLP.isValid()) J.mlp_qgt = (*QGTagsHandleMLP)[jetRef] ;
+      if (QGTagsHandleLikelihood.isValid()) J.likelihood_qgt = (*QGTagsHandleLikelihood)[jetRef];
+
+      pfjetcorretpairset.insert(J);
+     // pfjetcorretpairset.insert( PFJetCorretPair(jet, jec));
+    
+}
     PFJetCorretPair pfjet_probe;
     PFJetCorretPair pf_2ndjet;
     PFJetCorretPair pf_3rdjet;
-    int cntr=0;
+    int jet_cntr=0;
     for(std::set<PFJetCorretPair, PFJetCorretPairComp>::const_iterator it=pfjetcorretpairset.begin(); it!=pfjetcorretpairset.end(); ++it) {
       PFJetCorretPair jet=(*it);
-      ++cntr;
-      if(cntr==1) pfjet_probe = jet;
-      else if(cntr==2) pf_2ndjet = jet;
-      else if(cntr==3) pf_3rdjet = jet;
-      else break;
+      ++jet_cntr;
+      if(jet_cntr==1) pfjet_probe = jet;
+      else if(jet_cntr==2) pf_2ndjet = jet;
+      else if(jet_cntr==3) pf_3rdjet = jet;
+      //else break; // don't break for the statistics
     }
+  h_passedSteps->Fill(10);
 
     // Check selection
     int failSelPF = 0;
-    h_dRphojet->Fill(deltaR(photon_tag,pfjet_probe.jet()));    
-    h_dphi->Fill(calc_dPhi(photon_tag,pfjet_probe));
-    h_leadJetCorrEt->Fill(pfjet_probe.scaledEt());
-    if (pf_2ndjet.isValid())h_2ndleadJetCorrEt->Fill(pf_2ndjet.scaledEt());
-    if (pf_3rdjet.isValid() )h_3rdleadJetCorrEt->Fill(pf_3rdjet.scaledEt());
 
-    if (pfjet_probe.scaledEt() < jetEtMin_) failSelPF |= 1;
-    if (calc_dPhi(photon_tag,pfjet_probe) < photonJetDPhiMin_) failSelPF |= 2;
-    if (deltaR(photon_tag,pfjet_probe.jet())<0.5) failSelPF |= 4;
-    if (pf_2ndjet.isValid() && (pf_2ndjet.scaledEt() > jet2EtMax_))
-      failSelPF |= 8;
-    if (pf_3rdjet.isValid() && (pf_3rdjet.scaledEt() > jet3EtMax_))
-      failSelPF |= 16;
+    if (pfjet_probe.isValid()) {
+    h_passedSteps->Fill(11);
+    h_dRphojet->Fill(deltaR(photon_tag,pfjet_probe.jet()));
+      h_dphi->Fill(calc_dPhi(photon_tag,pfjet_probe));
+      h_leadJetCorrEt->Fill(pfjet_probe.scaledEt());
+    }
+    if (pf_2ndjet.isValid()) h_2ndleadJetCorrEt->Fill(pf_2ndjet.scaledEt());
+    if (pf_3rdjet.isValid()) h_3rdleadJetCorrEt->Fill(pf_3rdjet.scaledEt());
 
-    if (!failSelPF) {
+    if (!pfjet_probe.isValid()) failSelPF |= 1;
+    else {
+      if (pfjet_probe.scaledEt() < jetEtMin_) failSelPF |= 2;
+    //  if (calc_dPhi(photon_tag,pfjet_probe) < photonJetDPhiMin_) failSelPF |= 3;
+      if (deltaR(photon_tag,pfjet_probe.jet())<0.5) failSelPF |= 4;
+  //    if (pf_2ndjet.isValid() && (pf_2ndjet.scaledEt() > jet2EtMax_))
+//	failSelPF |= 5;
+  //    if (pf_3rdjet.isValid() && (pf_3rdjet.scaledEt() > jet3EtMax_))
+//	failSelPF |= 6;
+    }
+
+    if(!failSelPF) {
       // a good event
-     hcount->Fill(6);
+  //    h_passedSteps->Fill(12);
+      h_dphi_sel->Fill(calc_dPhi(photon_tag,pfjet_probe));
+      h_nPFJets_sel->Fill(jet_cntr);
+
       // prepare the container -- later in the loop
       // clear_leadingPfJetVars();
 
@@ -801,13 +899,14 @@ void CalcRespCorrPhotonPlusJet::analyze(const edm::Event& iEvent, const edm::Eve
 	pf_thirdjet_eta_= pf_3rdjet.jet()->eta();
 	pf_thirdjet_phi_= pf_3rdjet.jet()->phi();
 	pf_thirdjet_scale_= pf_3rdjet.scale();
+        pf_thirdjet_area_= pf_3rdjet.jet()->jetArea();
       }
       else {
 	pf_thirdjet_et_ = 0;
 	pf_thirdjet_pt_ = pf_thirdjet_p_ = 0;
 	pf_thirdjet_px_ = pf_thirdjet_py_ = 0;
 	pf_thirdjet_E_ = pf_thirdjet_eta_ = pf_thirdjet_phi_ = 0;
-	pf_thirdjet_scale_=0;
+	pf_thirdjet_scale_= pf_thirdjet_area_ = 0;
       }
 
     int types = 0;
@@ -855,10 +954,14 @@ void CalcRespCorrPhotonPlusJet::analyze(const edm::Event& iEvent, const edm::Eve
       ppfjet_ChargedMultiplicity_= pfjet_probe.jet()->chargedMultiplicity();
       ppfjet_ChargedEMFrac_      = pfjet_probe.jet()->chargedEmEnergyFraction();
       ppfjet_scale_ = pfjet_probe.scale();
+      ppfjet_area_   = pfjet_probe.jet()->jetArea();
+      if (QGTagsHandleMLP.isValid()) ppfjet_QGtagMLP_ = pfjet_probe.mlp_qgt ;
+      if (QGTagsHandleLikelihood.isValid()) ppfjet_QGtagLD_ = pfjet_probe.likelihood_qgt ;
       ppfjet_ntwrs_=0;
       ppfjet_cluster_n_=0;
       ppfjet_ncandtracks_=0;
-      
+      //ppfjet_partonFlavour_ = pfjet_probe.jet()->partonFlavour();
+ 
       if(iEvent.id().event() == debugEvent){
 	std::cout << "Probe eta: " << ppfjet_eta_ << " phi: " << ppfjet_phi_ << std::endl;
       }
@@ -1349,7 +1452,7 @@ void CalcRespCorrPhotonPlusJet::analyze(const edm::Event& iEvent, const edm::Eve
 	default:
 	  ppfjet_had_emf_.push_back(-1);
 	  break;
-	}
+	  }
       } // Loop over PF constitutents
  
     if(doGenJets_){
@@ -1369,8 +1472,6 @@ void CalcRespCorrPhotonPlusJet::analyze(const edm::Event& iEvent, const edm::Eve
 	}
       }
     } // doGenJets_
-
-    
     if (iJet==2) {
       copy_leadingPfJetVars_to_pfJet2();
     }
@@ -1379,12 +1480,42 @@ void CalcRespCorrPhotonPlusJet::analyze(const edm::Event& iEvent, const edm::Eve
     h_types_->Fill(types);
     h_ntypes_->Fill(ntypes);
     
+    
+    // calculate the jet resolution
+    h_passedSteps->Fill(13);
+    double jer= (ppfjet_genpt_==double(0)) ?
+      0. : pfjet_probe.jet()->et()/ppfjet_genpt_;
+    h_pfrecoOgen_et->Fill(jer, eventWeight_);
+    
+
+    ///// MET /////
+    edm::Handle<reco::PFMETCollection> pfmet_h;
+    iEvent.getByLabel(pfMETColl, pfmet_h);
+    if (!pfmet_h.isValid()) {
+      throw edm::Exception(edm::errors::ProductNotFound)
+	<< " could not find " << pfMETColl << ".\n";
+      return;
+    }
+    met_value_ = pfmet_h->begin()->et();
+    met_phi_   = pfmet_h->begin()->phi();
+    met_sumEt_ = pfmet_h->begin()->sumEt();
+
+    edm::Handle<reco::PFMETCollection> pfmetType1_h;
+    iEvent.getByLabel(pfType1METColl, pfmetType1_h);
+    if ( pfmetType1_h.isValid()) {
+      metType1_value_ = pfmetType1_h->begin()->et();
+      metType1_phi_   = pfmetType1_h->begin()->phi();
+      metType1_sumEt_ = pfmetType1_h->begin()->sumEt();
+    }
+    else {
+      // do we need an exception here?
+      metType1_value_ = -999.;
+      metType1_phi_   = -999.;
+      metType1_sumEt_ = -999.;
+    }
 
 
     // fill photon+jet variables
- 
-    hcount->Fill(7);
-    h_pfrecoOgen_et->Fill(pfjet_probe.jet()->et()/ppfjet_genpt_);
     pf_tree_->Fill();
     }
   }
@@ -1400,6 +1531,9 @@ void CalcRespCorrPhotonPlusJet::beginJob()
 
   // book histograms
   rootfile_ = new TFile(rootHistFilename_.c_str(), "RECREATE");
+  hEvents_ = new TH1D("hEvents", "total processed and skimmed events", 2, 0, 2);
+  hPU_ = new TH1D("hPU", "number of pileup", 100, 0, 100);
+  hPUTrue_ = new TH1D("hPUTrue", "number of true pilepu" , 500, 0, 100);
 
   if(doPFJets_){
     h_types_ = new TH1D("h_types","h_types",16,0,16);
@@ -1418,34 +1552,20 @@ void CalcRespCorrPhotonPlusJet::beginJob()
     h_twrietas_ = new TH1D("h_twrietas","h_twrietas",20,0,20);
     h_rechitspos_ = new TH2D("h_rechitspos","h_rechitspos",83,-41.5,41.5,72,-0.5,71.5);
     h_hbherecoieta_ = new TH1D("h_hbherecoieta","h_hbherecoieta",83,-41.5,41.5);
-   
-    hcount=new TH1D("hcount","counter",15,0,15);
-    h_nPho = new TH1D("h_nPho","nPho",5,0,5);
-    h_nPFJets = new TH1D("h_nPFJets","nPFJets",10,0,10);
-    h_dRphojet=new TH1D("h_dRphojet","h_dRphojet",100,0,6);
-    h_dphi=new TH1D("h_dphi","dphi",100,-4,4.);
-    h_leadJetCorrEt=new TH1D("h_leadJetCorrEt","h_leadJetCorrEt",200,0,200);
-    h_2ndleadJetCorrEt=new TH1D("h_2ndleadJetCorrEt","h_2ndleadJetCorrEt",200,0,200);
-    h_3rdleadJetCorrEt=new TH1D("h_3rdleadJetCorrEt","h_3rdleadJetCorrEt",200,0,200);
-    h_pfrecoOgen_et=new TH1D("h_pfrecoOgen_et","PFjet over GenJet (Et)",100,0,2);
 
-  }
+    h_passedSteps=new TH1D("h_passedSteps","Counter of passed steps;step;count",15,0,15);
+    h_nPho = new TH1D("h_nPho","nPho in the event;number of photons;count",5,0,5);
+    h_nPho_good = new TH1D("h_nPho_good","nPho with looseID;number of looseID photons;count",5,0,5);
+    h_nPFJets = new TH1D("h_nPFJets","nPFJets in the event;number of PF jets;count",10,0,10);
+    h_nPFJets_sel = new TH1D("h_nPFJets_sel","nPFJets after selection;number of PF jets;count",10,0,10);
+    h_leadJetCorrEt=new TH1D("h_leadJetCorrEt","h_leadJetCorrEt;corrected #it{E}_{T}^{j1} [GeV];count",200,0,200);
+    h_2ndleadJetCorrEt=new TH1D("h_2ndleadJetCorrEt","h_2ndleadJetCorrEt;corrected #it{E}_{T}^{j2} [GeV];count;",200,0,200);
+    h_3rdleadJetCorrEt=new TH1D("h_3rdleadJetCorrEt","h_3rdleadJetCorrEt;corrected #it{E}_{T}^{j3} [GeV];count",200,0,200);
+    h_dRphojet=new TH1D("h_dRphojet","h_dRphojet;#DeltaR(#gamma,j_{1});count",100,0,6);
+    h_dphi=new TH1D("h_dphi","dphi;#Delta#phi(#gamma,j_{1});count",100,-4,4.);
+    h_dphi_sel=new TH1D("h_dphi_sel","dphi_sel;#Delta#phi(#gamma,j_{1});count",100,-4,4.);
+    h_pfrecoOgen_et=new TH1D("h_pfrecoOgen_et","Leading jet resolution;#it{E}_{T}^{PF}/#it{E}_{T}^{gen};count",100,0,2);
 
-  // Save info about the triggers and other misc items
-  {
-    rootfile_->mkdir("miscItems");
-    rootfile_->cd("miscItems");
-    misc_tree_= new TTree("misc_tree","tree for misc.info");
-    misc_tree_->Branch("photonTriggerNames",&photonTrigNamesV_);
-    misc_tree_->Branch("jetTriggerNames",&jetTrigNamesV_);
-    // put time stamp
-    time_t ltime;
-    ltime=time(NULL);
-    TString str = TString(asctime(localtime(&ltime)));
-    if (str[str.Length()-1]=='\n') str.Remove(str.Length()-1,1);
-    TObjString date(str);
-    date.Write(str.Data());
-    rootfile_->cd();
   }
 
   // create the trees for the calo/pf jets
@@ -1478,6 +1598,12 @@ void CalcRespCorrPhotonPlusJet::beginJob()
     tree->Branch("EventNumber",&eventNumber_, "EventNumber/I");
     tree->Branch("EventWeight",&eventWeight_, "EventWeight/F");
 
+    // PU Info
+    tree->Branch("nPUInfo", &nPUInfo_, "nPUInfo/I");
+    tree->Branch("nPU", &nPU_);
+    tree->Branch("puBX", &puBX_);
+    tree->Branch("puTrue", &puTrue_);
+
     // Photon info
     tree->Branch("rho2012", &rho2012_, "rho2012/F");
     tree->Branch("tagPho_pt",    &tagPho_pt_,    "tagPho_pt/F");
@@ -1501,6 +1627,7 @@ void CalcRespCorrPhotonPlusJet::beginJob()
     tree->Branch("tagPho_idLoose",&tagPho_idLoose_, "tagPho_idLoose/I");
     // gen.info on photon
     if(doGenJets_){
+      tree->Branch("tagPho_genpdgId",&tagPho_genpdgId_, "tagPho_genpdgId/I");
       tree->Branch("tagPho_genPt",&tagPho_genPt_, "tagPho_genPt/F");
       tree->Branch("tagPho_genEnergy",&tagPho_genEnergy_,"tagPho_genEnergy/F");
       tree->Branch("tagPho_genEta",&tagPho_genEta_, "tagPho_genEta/F");
@@ -1593,12 +1720,17 @@ void CalcRespCorrPhotonPlusJet::beginJob()
     pf_tree_->Branch("ppfjet_eta",&ppfjet_eta_, "ppfjet_eta/F");
     pf_tree_->Branch("ppfjet_phi",&ppfjet_phi_, "ppfjet_phi/F");
     pf_tree_->Branch("ppfjet_scale",&ppfjet_scale_, "ppfjet_scale/F");
+    pf_tree_->Branch("ppfjet_area",&ppfjet_area_, "ppfjet_area/F");
+    pf_tree_->Branch("ppfjet_QGtagLD",&ppfjet_QGtagLD_, "ppfjet_QGtagLD/F");
+    pf_tree_->Branch("ppfjet_QGtagMLP",&ppfjet_QGtagMLP_, "ppfjet_QGtagMLP/F");
     pf_tree_->Branch("ppfjet_NeutralHadronFrac", &ppfjet_NeutralHadronFrac_, "ppfjet_NeutralHadronFrac/F");
     pf_tree_->Branch("ppfjet_NeutralEMFrac", &ppfjet_NeutralEMFrac_, "ppfjet_NeutralEMFrac/F");
     pf_tree_->Branch("ppfjet_nConstituents", &ppfjet_nConstituents_, "ppfjet_nConstituents/I");
+    pf_tree_->Branch("ppfjet_partonFlavour", &ppfjet_partonFlavour_, "ppfjet_partonFlavour/I");
     pf_tree_->Branch("ppfjet_ChargedHadronFrac", &ppfjet_ChargedHadronFrac_, "ppfjet_ChargedHadronFrac/F");
     pf_tree_->Branch("ppfjet_ChargedMultiplicity", &ppfjet_ChargedMultiplicity_, "ppfjet_ChargedMultiplicity/F");
     pf_tree_->Branch("ppfjet_ChargedEMFrac", &ppfjet_ChargedEMFrac_, "ppfjet_ChargedEMFrac/F");
+
     if(doGenJets_){
       pf_tree_->Branch("ppfjet_genpt",&ppfjet_genpt_, "ppfjet_genpt/F");
       pf_tree_->Branch("ppfjet_genp",&ppfjet_genp_, "ppfjet_genp/F");
@@ -1639,6 +1771,7 @@ void CalcRespCorrPhotonPlusJet::beginJob()
     pf_tree_->Branch("ppfjet_had_emf",&ppfjet_had_emf_);
     pf_tree_->Branch("ppfjet_had_id",&ppfjet_had_id_);
     pf_tree_->Branch("ppfjet_had_candtrackind",&ppfjet_had_candtrackind_);
+    pf_tree_->Branch("pf_NPV",&pf_NPV_, "pf_NPV/I");
     if(doGenJets_){
       pf_tree_->Branch("ppfjet_had_E_mctruth",&ppfjet_had_E_mctruth_);
       pf_tree_->Branch("ppfjet_had_mcpdgId",&ppfjet_had_mcpdgId_);
@@ -1673,12 +1806,17 @@ void CalcRespCorrPhotonPlusJet::beginJob()
     pf_tree_->Branch("pfjet2_eta",&pfjet2_eta_, "pfjet2_eta/F");
     pf_tree_->Branch("pfjet2_phi",&pfjet2_phi_, "pfjet2_phi/F");
     pf_tree_->Branch("pfjet2_scale",&pfjet2_scale_, "pfjet2_scale/F");
+    pf_tree_->Branch("pfjet2_area",&pfjet2_area_, "pfjet2_area/F");
     pf_tree_->Branch("pfjet2_NeutralHadronFrac", &pfjet2_NeutralHadronFrac_, "pfjet2_NeutralHadronFrac/F");
     pf_tree_->Branch("pfjet2_NeutralEMFrac", &pfjet2_NeutralEMFrac_, "pfjet2_NeutralEMFrac/F");
     pf_tree_->Branch("pfjet2_nConstituents", &pfjet2_nConstituents_, "pfjet2_nConstituents/I");
+    pf_tree_->Branch("pfjet2_partonFlavour", &pfjet2_partonFlavour_, "pfjet2_partonFlavour/I");
     pf_tree_->Branch("pfjet2_ChargedHadronFrac", &pfjet2_ChargedHadronFrac_, "pfjet2_ChargedHadronFrac/F");
     pf_tree_->Branch("pfjet2_ChargedMultiplicity", &pfjet2_ChargedMultiplicity_, "pfjet2_ChargedMultiplicity/F");
     pf_tree_->Branch("pfjet2_ChargedEMFrac", &pfjet2_ChargedEMFrac_, "pfjet2_ChargedEMFrac/F");
+    pf_tree_->Branch("pfjet2_QGtagLD",&pfjet2_QGtagLD_, "pfjet2_QGtagLD/F");
+    pf_tree_->Branch("pfjet2_QGtagMLP",&pfjet2_QGtagMLP_, "pfjet2_QGtagMLP/F");
+
     if(doGenJets_){
       pf_tree_->Branch("pfjet2_genpt",&pfjet2_genpt_, "pfjet2_genpt/F");
       pf_tree_->Branch("pfjet2_genp",&pfjet2_genp_, "pfjet2_genp/F");
@@ -1756,7 +1894,15 @@ void CalcRespCorrPhotonPlusJet::beginJob()
     pf_tree_->Branch("pf_thirdjet_eta", &pf_thirdjet_eta_, "pf_thirdjet_eta/F");
     pf_tree_->Branch("pf_thirdjet_phi", &pf_thirdjet_phi_, "pf_thirdjet_phi/F");
     pf_tree_->Branch("pf_thirdjet_scale", &pf_thirdjet_scale_, "pf_thirdjet_scale/F");
+    pf_tree_->Branch("pf_thirdjet_area", &pf_thirdjet_area_, "pf_thirdjet_area/F");
   }
+
+  pf_tree_->Branch("met_value", &met_value_, "met_value/F");
+  pf_tree_->Branch("met_phi", &met_phi_, "met_phi/F");
+  pf_tree_->Branch("met_sumEt", &met_sumEt_, "met_sumEt/F");
+  pf_tree_->Branch("metType1_value", &metType1_value_, "metType1_value/F");
+  pf_tree_->Branch("metType1_phi", &metType1_phi_, "metType1_phi/F");
+  pf_tree_->Branch("metType1_sumEt", &metType1_sumEt_, "metType1_sumEt/F");
 
   return;
   ////  std::cout << "End beginJob()" << std::endl;
@@ -1767,12 +1913,6 @@ void
 CalcRespCorrPhotonPlusJet::endJob() {
   ///  std::cout << "Start endJob()" << std::endl;
 
-  // write miscItems
-  rootfile_->cd();
-  rootfile_->cd("miscItems");
-  misc_tree_->Fill();
-  misc_tree_->Write();
-
   rootfile_->cd();
 
   if (doCaloJets_) {
@@ -1781,6 +1921,9 @@ CalcRespCorrPhotonPlusJet::endJob() {
 
   if(doPFJets_){
     // write histograms
+    hEvents_->Write();
+    hPU_->Write();
+    hPUTrue_->Write();
     h_types_->Write();
     h_ntypes_->Write();
     h_ietaHCAL_->Write();
@@ -1797,19 +1940,49 @@ CalcRespCorrPhotonPlusJet::endJob() {
     h_twrietas_->Write();
     h_rechitspos_->Write();
     h_hbherecoieta_->Write();
+
+    h_passedSteps->Write();
+    h_nPho->Write();
+    h_nPho_good->Write();
+    h_nPFJets->Write();
+    h_nPFJets_sel->Write();
+    h_leadJetCorrEt->Write();
+    h_2ndleadJetCorrEt->Write();
+    h_3rdleadJetCorrEt->Write();
+    h_dRphojet->Write();
+    h_dphi->Write();
+    h_dphi_sel->Write();
+    h_pfrecoOgen_et->Write();
+
     pf_tree_->Write();
-
-h_nPho->Write();
-h_nPFJets->Write();
-hcount->Write();
-h_dRphojet->Write();
-h_dphi->Write();
-h_leadJetCorrEt->Write();
-h_2ndleadJetCorrEt->Write();
-h_3rdleadJetCorrEt->Write();
-h_pfrecoOgen_et->Write();
-
   }
+
+  // write miscItems
+  // Save info about the triggers and other misc items
+  {
+    rootfile_->cd();
+    rootfile_->mkdir("miscItems");
+    rootfile_->cd("miscItems");
+    misc_tree_= new TTree("misc_tree","tree for misc.info");
+    misc_tree_->Branch("ignoreHLT",&ignoreHLT_,"ignoreHLT/O");
+    misc_tree_->Branch("doCaloJets",&doCaloJets_,"doCaloJets/O");
+    misc_tree_->Branch("doPFJets",&doPFJets_,"doPFJets/O");
+    misc_tree_->Branch("doGenJets",&doGenJets_,"doGenJets/O");
+    misc_tree_->Branch("photonTriggerNames",&photonTrigNamesV_);
+    misc_tree_->Branch("jetTriggerNames",&jetTrigNamesV_);
+    misc_tree_->Branch("nProcessed",&nProcessed_,"nProcessed/l");
+    // put time stamp
+    time_t ltime;
+    ltime=time(NULL);
+    TString str = TString(asctime(localtime(&ltime)));
+    if (str[str.Length()-1]=='\n') str.Remove(str.Length()-1,1);
+    TObjString date(str);
+    date.Write(str.Data());
+    misc_tree_->Fill();
+    misc_tree_->Write();
+    rootfile_->cd();
+  }
+
   rootfile_->Close();
   ////  std::cout << "End endJob()" << std::endl;
 }
@@ -1846,8 +2019,12 @@ void CalcRespCorrPhotonPlusJet::beginRun(const edm::Run &iRun,
     if (debug_) std::cout <<"Initializing trigger information for individual run"<<std::endl;
     bool changed(true);
     std::string processName="HLT";
+    bool result = hltConfig_.init(iRun,setup,processName,changed);
+
+
     if (hltConfig_.init(iRun,setup,processName,changed)) {
-      // if init returns TRUE, initialisation has succeeded!
+cout<<hltConfig_.tableName()<<endl;
+     // if init returns TRUE, initialisation has succeeded!
       if (changed) {
 	// The HLT config has actually changed wrt the previous Run, hence rebook your
 	// histograms or do anything else dependent on the revised HLT config
@@ -1995,9 +2172,9 @@ std::vector<float> CalcRespCorrPhotonPlusJet::pfTkIsoWithVertex(const reco::Phot
 
 void CalcRespCorrPhotonPlusJet::clear_leadingPfJetVars() {
   ppfjet_pt_ = ppfjet_p_ = ppfjet_E_ = 0;
-  ppfjet_eta_ = ppfjet_phi_ = ppfjet_scale_ = 0.;
+  ppfjet_eta_ = ppfjet_phi_ = ppfjet_scale_ = ppfjet_area_ = ppfjet_QGtagLD_ = ppfjet_QGtagMLP_ = 0.;
   ppfjet_NeutralHadronFrac_ = ppfjet_NeutralEMFrac_ = 0.;
-  ppfjet_nConstituents_ = 0;
+  ppfjet_nConstituents_ = ppfjet_partonFlavour_=0;
   ppfjet_ChargedHadronFrac_ = ppfjet_ChargedMultiplicity_ = 0;
   ppfjet_ChargedEMFrac_ = 0.;
   ppfjet_gendr_ = ppfjet_genpt_ = ppfjet_genp_ = ppfjet_genE_ = 0.;
@@ -2054,12 +2231,16 @@ void CalcRespCorrPhotonPlusJet::copy_leadingPfJetVars_to_pfJet2() {
   pfjet2_eta_ = ppfjet_eta_;
   pfjet2_phi_ = ppfjet_phi_;
   pfjet2_scale_ = ppfjet_scale_;
+  pfjet2_area_ = ppfjet_area_;
   pfjet2_NeutralHadronFrac_ = ppfjet_NeutralHadronFrac_;
   pfjet2_NeutralEMFrac_ = ppfjet_NeutralEMFrac_;
   pfjet2_nConstituents_ = ppfjet_nConstituents_;
+  pfjet2_partonFlavour_ = ppfjet_partonFlavour_;
   pfjet2_ChargedHadronFrac_ = ppfjet_ChargedHadronFrac_;
   pfjet2_ChargedMultiplicity_ = ppfjet_ChargedMultiplicity_;
   pfjet2_ChargedEMFrac_ = ppfjet_ChargedEMFrac_;
+  pfjet2_QGtagLD_ = ppfjet_QGtagLD_;
+  pfjet2_QGtagMLP_ = ppfjet_QGtagMLP_;
 
   pfjet2_gendr_ = ppfjet_gendr_;
   pfjet2_genpt_ = ppfjet_genpt_;
